@@ -1,13 +1,13 @@
-package org.example.backend;
+package org.example.springbootproject;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class BackendApplication {
+public class SpringBootProjectApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(BackendApplication.class, args);
+        SpringApplication.run(SpringBootProjectApplication.class, args);
     }
 
 }
