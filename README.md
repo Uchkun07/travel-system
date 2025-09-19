@@ -110,7 +110,7 @@
 
 1. **访问系统**
    - 后端API默认地址：http://localhost:5000
-   - 前端界面默认地址：http://localhost:8080（如使用Vue/React前端）
+   - 前端界面默认地址：http://localhost:8080
 
 2. **用户操作**
    - 注册/登录账号
