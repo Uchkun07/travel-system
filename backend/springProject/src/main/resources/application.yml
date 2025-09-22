@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/travel_system?useSSL=false
-    username: root
-    password: 102030
-    driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/travel_system?useSSL=false
+      username: root
+      password: 102030
+      driver-class-name: com.mysql.cj.jdbc.Driver
