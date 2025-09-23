@@ -17,7 +17,7 @@ public class SwaggerConfig {
                 .info(new Info().title("Travel-System-API")
                         .description("This is the API documentation of a tourism recommendation system, which is used to manage information such as users, scenic spots, routes, and orders.")
                         .version("v1.0.0")
-                        .contact(new Contact().name("MRX").url("https://blog.csdn.net/").email("123456789@qq.com"))
+                        .contact(new Contact().name("MRX").url("https://blog.csdn.net/").email("SuperMartian0413@outlook.com"))
                         .license(new License().name("Apache 2.0").url("http://springdoc.org")))
                 .externalDocs(new ExternalDocumentation()
                         .description("External document")
