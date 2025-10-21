@@ -1,0 +1,5 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.project.explorer.showNonJavaResources": true,
+    "java.dependency.packagePresentation": "hierarchical"
+}
