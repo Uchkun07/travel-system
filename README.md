@@ -92,7 +92,7 @@
    cd ..
    
    # 进入前端目录
-   cd frontend/
+   cd frontend
    
    # 安装npm依赖
    pnpm install
