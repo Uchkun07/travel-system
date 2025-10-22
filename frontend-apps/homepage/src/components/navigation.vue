@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar">
     <div class="logo">
-      <logo />
+      <img src="@/assets/imgs/logo.png" alt="悦旅 Logo" />
       <h1>悦旅</h1>
     </div>
     <div class="menu">
@@ -20,9 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
 import { ElButton } from "element-plus";
-import Logo from "@/assets/svgs/logo.vue";
 </script>
 
 <style scoped>
@@ -46,6 +44,11 @@ import Logo from "@/assets/svgs/logo.vue";
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8rem;
+  img {
+    width: 75px;
+    height: 75px;
+    object-fit: contain;
+  }
   h1 {
     font-size: 1.5rem;
     font-weight: bold;
