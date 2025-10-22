@@ -40,15 +40,8 @@
         </div>
 
         <div class="social-login">
-          <el-button
-            class="social-btn wechat"
-            @click="handleSocialLogin('wechat')"
-          >
-            微信登录
-          </el-button>
-          <el-button class="social-btn qq" @click="handleSocialLogin('qq')">
-            QQ登录
-          </el-button>
+          <el-button class="social-btn"> 微信登录 </el-button>
+          <el-button class="social-btn"> QQ登录 </el-button>
         </div>
 
         <div class="register-link">

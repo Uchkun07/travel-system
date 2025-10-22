@@ -2,7 +2,6 @@
   <div class="container">
     <navigation @show-login="showLogin" />
     <loginWindow v-model="loginVisible" />
-    <!-- <Window /> -->
   </div>
 </template>
 
@@ -10,7 +9,6 @@
 import { ref } from "vue";
 import Navigation from "@/components/navigation.vue";
 import loginWindow from "@/components/LoginWindow.vue";
-// import Window from "@/components/Window.vue";
 
 const loginVisible = ref(false);
 
