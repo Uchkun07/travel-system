@@ -7,13 +7,13 @@
     <div class="menu">
       <ul>
         <li><router-link to="/">景点推荐</router-link></li>
-        <li><router-link to="/about">探索</router-link></li>
-        <li><router-link to="/services">热门城市</router-link></li>
-        <li><router-link to="/contact">路线规划</router-link></li>
+        <li><router-link to="/">探索</router-link></li>
+        <li><router-link to="/">热门城市</router-link></li>
+        <li><router-link to="/">路线规划</router-link></li>
       </ul>
     </div>
     <div class="user">
-      <ElButton>登录</ElButton>
+      <ElButton @click="handleLogin">登录</ElButton>
       <ElButton type="primary">注册</ElButton>
     </div>
   </nav>
@@ -21,6 +21,14 @@
 
 <script setup lang="ts">
 import { ElButton } from "element-plus";
+
+const emit = defineEmits<{
+  "show-login": [];
+}>();
+
+const handleLogin = () => {
+  emit("show-login");
+};
 </script>
 
 <style scoped>
