@@ -27,13 +27,11 @@
           <label class="remember">
             <el-checkbox v-model="rememberMe">记住我</el-checkbox>
           </label>
-          <ElLink class="forgot-password" @click="$emit('show-register')"
-            >忘记密码?</ElLink
-          >
+          <ElLink class="forgot-password">忘记密码?</ElLink>
         </div>
       </ElForm>
       <div class="login-body">
-        <el-button class="login-btn" @click="handleSubmit"> 登录 </el-button>
+        <el-button class="login-btn"> 登录 </el-button>
 
         <div class="divider">
           <span>或</span>
@@ -60,8 +58,6 @@ import { ElMessage, ElInput, ElCheckbox, ElLink, ElButton } from "element-plus";
 
 const visible = defineModel<boolean>();
 const emit = defineEmits<{
-  close: [];
-  login: [data: { username: string; password: string; rememberMe: boolean }];
   "show-register": [];
 }>();
 
@@ -82,32 +78,6 @@ const loginRules: FormRules = {
 
 const handleClose = () => {
   visible.value = false;
-  emit("close");
-};
-
-const handleSubmit = async () => {
-  if (!loginFormRef.value) return;
-
-  await loginFormRef.value.validate((valid) => {
-    if (valid) {
-      console.log("Login:", {
-        username: loginForm.value.username,
-        password: loginForm.value.password,
-        rememberMe: rememberMe.value,
-      });
-
-      emit("login", {
-        username: loginForm.value.username,
-        password: loginForm.value.password,
-        rememberMe: rememberMe.value,
-      });
-
-      ElMessage.success("登录成功！");
-      handleClose();
-    } else {
-      ElMessage.error("请填写完整且正确的信息");
-    }
-  });
 };
 </script>
 
