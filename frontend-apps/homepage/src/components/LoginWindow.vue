@@ -6,7 +6,12 @@
         <button class="close-btn" @click="handleClose">×</button>
       </div>
       <div class="longdivider"></div>
-      <ElForm :model="loginForm" :rules="loginRules" ref="loginFormRef">
+      <ElForm
+        :model="loginForm"
+        :rules="loginRules"
+        ref="loginFormRef"
+        @keyup.enter="handleLogin"
+      >
         <el-form-item label="用户名" prop="username" label-position="top">
           <el-input
             v-model="loginForm.username"
@@ -31,7 +36,9 @@
         </div>
       </ElForm>
       <div class="login-body">
-        <el-button class="login-btn"> 登录 </el-button>
+        <el-button class="login-btn" :loading="loading" @click="handleLogin">
+          {{ loading ? "登录中..." : "登录" }}
+        </el-button>
 
         <div class="divider">
           <span>或</span>
@@ -60,16 +67,20 @@
 import type { FormInstance, FormRules } from "element-plus";
 import { ref } from "vue";
 import { ElMessage, ElInput, ElCheckbox, ElLink, ElButton } from "element-plus";
+import { useUserStore } from "@/stores";
+import { useRouter } from "vue-router";
 
 const visible = defineModel<boolean>();
 const emit = defineEmits<{
   "show-register": [];
   close: [];
-  login: [data: { username: string; password: string; rememberMe: boolean }];
 }>();
 
+const router = useRouter();
+const userStore = useUserStore();
 const loginFormRef = ref<FormInstance>();
 const rememberMe = ref(false);
+const loading = ref(false);
 const loginForm = ref({
   username: "",
   password: "",
@@ -77,15 +88,50 @@ const loginForm = ref({
 
 const loginRules: FormRules = {
   username: [
-    { required: true, message: "请输入用户名", trigger: "blur" },
-    { max: 20, message: "用户名长度不能超过20个字符", trigger: "blur" },
+    { required: true, message: "请输入用户名或邮箱", trigger: "blur" },
+    { max: 50, message: "长度不能超过50个字符", trigger: "blur" },
   ],
-  password: [{ required: true, message: "请输入密码", trigger: "blur" }],
+  password: [
+    { required: true, message: "请输入密码", trigger: "blur" },
+    { min: 6, message: "密码长度不能少于6位", trigger: "blur" },
+  ],
 };
 
 const handleClose = () => {
   visible.value = false;
+  loginForm.value = {
+    username: "",
+    password: "",
+  };
+  rememberMe.value = false;
+  loginFormRef.value?.clearValidate();
   emit("close");
+};
+
+const handleLogin = async () => {
+  if (!loginFormRef.value) return;
+
+  try {
+    const valid = await loginFormRef.value.validate();
+    if (!valid) return;
+
+    loading.value = true;
+    const success = await userStore.login({
+      username: loginForm.value.username,
+      password: loginForm.value.password,
+      rememberMe: rememberMe.value,
+    });
+
+    if (success) {
+      handleClose();
+      // 可选：跳转到首页或其他页面
+      // router.push('/');
+    }
+  } catch (error) {
+    console.error("登录失败:", error);
+  } finally {
+    loading.value = false;
+  }
 };
 
 const openRegister = () => {

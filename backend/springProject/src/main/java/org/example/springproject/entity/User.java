@@ -18,8 +18,14 @@ public class User {
     @TableField("username")
     private String username;
 
-    @TableField("password")
-    private String password;
+    @TableField("password_hash")
+    private String passwordHash;
+
+    @TableField("salt")
+    private String salt;
+
+    @TableField("iterations")
+    private Integer iterations;
 
     @TableField("email")
     private String email;
@@ -42,15 +48,6 @@ public class User {
     @TableField("address")
     private String address;
 
-    @TableField(fill = FieldFill.INSERT)
-    private Date registerTime;
-
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date lastLoginTime;
-
-    @TableField("status")
-    private Byte status;
-
     @TableField("preference_type")
     private String preferenceType;
 
@@ -59,4 +56,19 @@ public class User {
 
     @TableField("budget_range")
     private String budgetRange;
+
+    @TableField("last_login_time")
+    private Date lastLoginTime;
+
+    @TableField("status")
+    private Byte status;
+
+    @TableField(value = "register_time", fill = FieldFill.INSERT)
+    private Date registerTime;
+
+    @TableField("union_id")
+    private String unionId;
+
+    @TableField("register_source")
+    private String registerSource;
 }

@@ -78,7 +78,13 @@
       </ElForm>
 
       <div class="login-body">
-        <el-button class="login-btn" @click="handleRegister"> 注册 </el-button>
+        <el-button 
+          class="login-btn" 
+          :loading="loading"
+          @click="handleRegister"
+        > 
+          {{ loading ? '注册中...' : '注册' }}
+        </el-button>
 
         <div class="divider">
           <span>或</span>
@@ -106,16 +112,18 @@
 import type { FormInstance, FormRules } from "element-plus";
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
+import { sendVerificationCode, register, checkUsername, checkEmail } from "@/apis";
 
 const visible = defineModel<boolean>();
 const emit = defineEmits<{
   close: [];
-  register: [data: { username: string; password: string; email: string }];
   "show-login": [];
 }>();
 
 const registerFormRef = ref<FormInstance>();
 const agree = ref(true);
+const loading = ref(false);
+const countdownRef = ref(0);
 const registerForm = ref({
   username: "",
   password: "",
@@ -124,16 +132,57 @@ const registerForm = ref({
   captcha: "",
 });
 
+// 自定义验证器 - 用户名唯一性
+const validateUsername = async (_rule: any, value: string, callback: any) => {
+  if (!value) {
+    callback();
+    return;
+  }
+  try {
+    const res = await checkUsername(value);
+    if (!res.available) {
+      callback(new Error("用户名已存在"));
+    } else {
+      callback();
+    }
+  } catch (error) {
+    callback();
+  }
+};
+
+// 自定义验证器 - 邮箱唯一性
+const validateEmail = async (_rule: any, value: string, callback: any) => {
+  if (!value) {
+    callback();
+    return;
+  }
+  try {
+    const res = await checkEmail(value);
+    if (!res.available) {
+      callback(new Error("该邮箱已被注册"));
+    } else {
+      callback();
+    }
+  } catch (error) {
+    callback();
+  }
+};
+
 const registerRules: FormRules = {
   username: [
     { required: true, message: "请输入用户名", trigger: "blur" },
-    { max: 20, message: "用户名长度不能超过20个字符", trigger: "blur" },
+    { min: 3, max: 20, message: "用户名长度为3-20个字符", trigger: "blur" },
+    { pattern: /^[a-zA-Z0-9_]+$/, message: "用户名只能包含字母、数字和下划线", trigger: "blur" },
+    { asyncValidator: validateUsername, trigger: "blur" },
   ],
-  password: [{ required: true, message: "请输入密码", trigger: "blur" }],
+  password: [
+    { required: true, message: "请输入密码", trigger: "blur" },
+    { min: 6, max: 20, message: "密码长度为6-20个字符", trigger: "blur" },
+  ],
   confirmPassword: [
-    { required: true, message: "请确认密码", trigger: "blur" },
+    { required: true, message: "请再次输入密码", trigger: "blur" },
     {
-      validator: (rule, value, callback) => {
+      validator: (_rule, value, callback) => {
         if (value !== registerForm.value.password) {
           callback(new Error("两次输入的密码不一致"));
         } else {
@@ -146,28 +195,56 @@ const registerRules: FormRules = {
   email: [
     { required: true, message: "请输入邮箱", trigger: "blur" },
     { type: "email", message: "邮箱格式不正确", trigger: "blur" },
+    { asyncValidator: validateEmail, trigger: "blur" },
   ],
-  captcha: [{ required: true, message: "请输入验证码", trigger: "blur" }],
+  captcha: [
+    { required: true, message: "请输入验证码", trigger: "blur" },
+    { len: 6, message: "验证码为6位", trigger: "blur" },
+  ],
 };
 
 const handleClose = () => {
   visible.value = false;
+  registerForm.value = {
+    username: "",
+    password: "",
+    confirmPassword: "",
+    email: "",
+    captcha: "",
+  };
+  agree.value = true;
+  countdownRef.value = 0;
+  registerFormRef.value?.clearValidate();
   emit("close");
 };
 
-const countdownRef = ref(0);
-
-const sendCaptcha = () => {
+const sendCaptcha = async () => {
   if (countdownRef.value > 0) return;
-  // 这里可以调用后端发送验证码的 API
-  ElMessage.info("验证码已发送（模拟）");
-  startCountdown();
+
+  // 先验证邮箱
+  if (!registerForm.value.email) {
+    ElMessage.warning("请先输入邮箱地址");
+    return;
+  }
+
+  try {
+    await registerFormRef.value?.validateField("email");
+    
+    // 发送验证码
+    const res = await sendVerificationCode({ email: registerForm.value.email });
+    if (res.success) {
+      ElMessage.success(res.message);
+      startCountdown();
+    }
+  } catch (error) {
+    console.error("发送验证码失败:", error);
+  }
 };
 
 const startCountdown = () => {
   countdownRef.value = 60;
   const timer = setInterval(() => {
-    countdownRef.value -= 1;
+    countdownRef.value--;
     if (countdownRef.value <= 0) {
       clearInterval(timer);
     }
@@ -176,23 +253,29 @@ const startCountdown = () => {
 
 const handleRegister = async () => {
   if (!registerFormRef.value) return;
-  await registerFormRef.value.validate((valid) => {
-    if (valid) {
-      if (!agree.value) {
-        ElMessage.warning("请先同意服务条款");
-        return;
-      }
-      emit("register", {
-        username: registerForm.value.username,
-        password: registerForm.value.password,
-        email: registerForm.value.email,
-      });
-      ElMessage.success("注册成功（模拟）");
+
+  if (!agree.value) {
+    ElMessage.warning("请先同意用户协议和隐私政策");
+    return;
+  }
+
+  try {
+    const valid = await registerFormRef.value.validate();
+    if (!valid) return;
+
+    loading.value = true;
+    const res = await register(registerForm.value);
+    
+    if (res.success) {
+      ElMessage.success("注册成功!请登录");
       handleClose();
-    } else {
-      ElMessage.error("请填写完整且正确的信息");
+      emit("show-login");
     }
-  });
+  } catch (error) {
+    console.error("注册失败:", error);
+  } finally {
+    loading.value = false;
+  }
 };
 
 const switchToLogin = () => {

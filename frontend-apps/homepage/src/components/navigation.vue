@@ -12,15 +12,58 @@
         <li><router-link to="/">路线规划</router-link></li>
       </ul>
     </div>
-    <div class="user">
+
+    <!-- 未登录状态 -->
+    <div class="user" v-if="!userStore.isLoggedIn">
       <ElButton @click="handleLogin">登录</ElButton>
       <ElButton type="primary" @click="handleRegister">注册</ElButton>
+    </div>
+
+    <!-- 已登录状态 - 用户头像和下拉菜单 -->
+    <div class="user-info" v-else>
+      <ElDropdown @command="handleCommand">
+        <div class="avatar-wrapper">
+          <img
+            :src="userStore.avatar"
+            :alt="userStore.username"
+            class="avatar"
+          />
+          <span class="username">{{ userStore.username }}</span>
+        </div>
+        <template #dropdown>
+          <ElDropdownMenu>
+            <ElDropdownItem command="profile">
+              <ElIcon><User /></ElIcon>
+              个人中心
+            </ElDropdownItem>
+            <ElDropdownItem command="settings">
+              <ElIcon><Setting /></ElIcon>
+              账号设置
+            </ElDropdownItem>
+            <ElDropdownItem divided command="logout">
+              <ElIcon><SwitchButton /></ElIcon>
+              退出登录
+            </ElDropdownItem>
+          </ElDropdownMenu>
+        </template>
+      </ElDropdown>
     </div>
   </nav>
 </template>
 
 <script setup lang="ts">
-import { ElButton } from "element-plus";
+import {
+  ElButton,
+  ElDropdown,
+  ElDropdownMenu,
+  ElDropdownItem,
+  ElIcon,
+} from "element-plus";
+import { User, Setting, SwitchButton } from "@element-plus/icons-vue";
+import { useUserStore } from "@/stores";
+import { ElMessage } from "element-plus";
+
+const userStore = useUserStore();
 
 const emit = defineEmits<{
   "show-login": [];
@@ -33,6 +76,23 @@ const handleLogin = () => {
 
 const handleRegister = () => {
   emit("show-register");
+};
+
+// 处理下拉菜单命令
+const handleCommand = async (command: string) => {
+  switch (command) {
+    case "profile":
+      // TODO: 跳转到个人中心
+      ElMessage.info("个人中心功能开发中...");
+      break;
+    case "settings":
+      // TODO: 跳转到账号设置
+      ElMessage.info("账号设置功能开发中...");
+      break;
+    case "logout":
+      await userStore.logout();
+      break;
+  }
 };
 </script>
 
@@ -107,6 +167,83 @@ const handleRegister = () => {
   display: flex;
   gap: 1.5rem;
 }
+
+/* 已登录用户信息样式 */
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.avatar-wrapper:hover {
+  background-color: rgba(45, 136, 255, 0.1);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #2d88ff;
+  transition: all 0.3s ease;
+}
+
+.avatar-wrapper:hover .avatar {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(45, 136, 255, 0.3);
+}
+
+.username {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+/* 移除 Dropdown 触发器的 outline 和 focus 样式 */
+:deep(.el-tooltip__trigger) {
+  outline: none !important;
+}
+
+:deep(.el-tooltip__trigger:focus) {
+  outline: none !important;
+}
+
+:deep(.el-tooltip__trigger:focus-visible) {
+  outline: none !important;
+}
+
+/* 下拉菜单样式 */
+:deep(.el-dropdown-menu__item) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+:deep(.el-dropdown-menu__item:hover) {
+  background-color: rgba(45, 136, 255, 0.1);
+  color: #2d88ff;
+}
+
+:deep(.el-dropdown-menu__item--divided) {
+  border-top: 1px solid #ebeef5;
+}
+
+:deep(.el-icon) {
+  font-size: 16px;
+}
+
 :deep(.el-button) {
   font-family: "Montserrat", sans-serif;
   font-weight: 600;
