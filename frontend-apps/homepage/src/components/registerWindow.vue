@@ -2,36 +2,83 @@
   <div class="login-overlay" v-if="visible" @click.self="handleClose">
     <div class="loginWindow">
       <div class="login-header">
-        <h2>欢迎回来</h2>
+        <h2>创建账号</h2>
         <button class="close-btn" @click="handleClose">×</button>
       </div>
       <div class="longdivider"></div>
-      <ElForm :model="loginForm" :rules="loginRules" ref="loginFormRef">
+
+      <ElForm
+        :model="registerForm"
+        :rules="registerRules"
+        ref="registerFormRef"
+      >
         <el-form-item label="用户名" prop="username" label-position="top">
           <el-input
-            v-model="loginForm.username"
-            placeholder="请输入用户名或邮箱"
+            v-model="registerForm.username"
+            placeholder="请输入用户名"
             autocomplete="off"
           />
         </el-form-item>
+
         <el-form-item label="密码" prop="password" label-position="top">
           <el-input
-            v-model="loginForm.password"
+            v-model="registerForm.password"
             type="password"
             placeholder="请输入密码"
             autocomplete="off"
             show-password
           />
         </el-form-item>
+
+        <el-form-item
+          label="确认密码"
+          prop="confirmPassword"
+          label-position="top"
+        >
+          <el-input
+            v-model="registerForm.confirmPassword"
+            type="password"
+            placeholder="请再次输入密码"
+            autocomplete="off"
+            show-password
+          />
+        </el-form-item>
+
+        <el-form-item label="邮箱" prop="email" label-position="top">
+          <el-input
+            v-model="registerForm.email"
+            placeholder="请输入邮箱"
+            autocomplete="off"
+          />
+        </el-form-item>
+
+        <el-form-item label="验证码" prop="captcha" label-position="top">
+          <div class="captcha-row">
+            <el-input
+              v-model="registerForm.captcha"
+              placeholder="请输入验证码"
+              autocomplete="off"
+            />
+            <el-button
+              :disabled="countdownRef > 0"
+              class="captcha-btn"
+              @click="sendCaptcha"
+            >
+              <template v-if="countdownRef === 0">获取验证码</template>
+              <template v-else>{{ countdownRef }}s</template>
+            </el-button>
+          </div>
+        </el-form-item>
+
         <div class="options">
           <label class="remember">
-            <el-checkbox v-model="rememberMe">记住我</el-checkbox>
+            <el-checkbox v-model="agree">我已阅读并同意服务条款</el-checkbox>
           </label>
-          <ElLink class="forgot-password">忘记密码?</ElLink>
         </div>
       </ElForm>
+
       <div class="login-body">
-        <el-button class="login-btn"> 登录 </el-button>
+        <el-button class="login-btn" @click="handleRegister"> 注册 </el-button>
 
         <div class="divider">
           <span>或</span>
@@ -47,40 +94,60 @@
         </div>
 
         <div class="register-link">
-          还没有账号?
-          <span @click="openRegister">立即注册</span>
+          已有帐号?
+          <span @click="switchToLogin">登录</span>
         </div>
       </div>
     </div>
-    <div class="registerWindow"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { FormInstance, FormRules } from "element-plus";
 import { ref } from "vue";
-import { ElMessage, ElInput, ElCheckbox, ElLink, ElButton } from "element-plus";
+import { ElMessage } from "element-plus";
 
 const visible = defineModel<boolean>();
 const emit = defineEmits<{
-  "show-register": [];
   close: [];
-  login: [data: { username: string; password: string; rememberMe: boolean }];
+  register: [data: { username: string; password: string; email: string }];
+  "show-login": [];
 }>();
 
-const loginFormRef = ref<FormInstance>();
-const rememberMe = ref(false);
-const loginForm = ref({
+const registerFormRef = ref<FormInstance>();
+const agree = ref(true);
+const registerForm = ref({
   username: "",
   password: "",
+  confirmPassword: "",
+  email: "",
+  captcha: "",
 });
 
-const loginRules: FormRules = {
+const registerRules: FormRules = {
   username: [
     { required: true, message: "请输入用户名", trigger: "blur" },
     { max: 20, message: "用户名长度不能超过20个字符", trigger: "blur" },
   ],
   password: [{ required: true, message: "请输入密码", trigger: "blur" }],
+  confirmPassword: [
+    { required: true, message: "请确认密码", trigger: "blur" },
+    {
+      validator: (rule, value, callback) => {
+        if (value !== registerForm.value.password) {
+          callback(new Error("两次输入的密码不一致"));
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur",
+    },
+  ],
+  email: [
+    { required: true, message: "请输入邮箱", trigger: "blur" },
+    { type: "email", message: "邮箱格式不正确", trigger: "blur" },
+  ],
+  captcha: [{ required: true, message: "请输入验证码", trigger: "blur" }],
 };
 
 const handleClose = () => {
@@ -88,8 +155,48 @@ const handleClose = () => {
   emit("close");
 };
 
-const openRegister = () => {
-  emit("show-register");
+const countdownRef = ref(0);
+
+const sendCaptcha = () => {
+  if (countdownRef.value > 0) return;
+  // 这里可以调用后端发送验证码的 API
+  ElMessage.info("验证码已发送（模拟）");
+  startCountdown();
+};
+
+const startCountdown = () => {
+  countdownRef.value = 60;
+  const timer = setInterval(() => {
+    countdownRef.value -= 1;
+    if (countdownRef.value <= 0) {
+      clearInterval(timer);
+    }
+  }, 1000);
+};
+
+const handleRegister = async () => {
+  if (!registerFormRef.value) return;
+  await registerFormRef.value.validate((valid) => {
+    if (valid) {
+      if (!agree.value) {
+        ElMessage.warning("请先同意服务条款");
+        return;
+      }
+      emit("register", {
+        username: registerForm.value.username,
+        password: registerForm.value.password,
+        email: registerForm.value.email,
+      });
+      ElMessage.success("注册成功（模拟）");
+      handleClose();
+    } else {
+      ElMessage.error("请填写完整且正确的信息");
+    }
+  });
+};
+
+const switchToLogin = () => {
+  emit("show-login");
   handleClose();
 };
 
@@ -100,6 +207,7 @@ const handleSocialLogin = (type: string) => {
 </script>
 
 <style scoped>
+/* 复用 loginWindow 的样式 - 复制并微调，保持视觉一致 */
 .login-overlay {
   position: fixed;
   top: 0;
@@ -227,6 +335,38 @@ const handleSocialLogin = (type: string) => {
 
 :deep(.el-input__inner::placeholder) {
   color: #bbb;
+}
+
+/* 验证码行 */
+.captcha-row {
+  display: flex;
+  gap: 8px;
+}
+
+.captcha-row :deep(.el-input__wrapper) {
+  flex: 1;
+  min-width: 250px;
+}
+
+.captcha-btn {
+  min-width: 126px;
+  height: 46px;
+  padding: 8px 12px;
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.captcha-btn:hover {
+  border-color: #4caf50;
+  color: #4caf50;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
 }
 
 /* 错误提示样式 */

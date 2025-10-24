@@ -14,7 +14,7 @@
     </div>
     <div class="user">
       <ElButton @click="handleLogin">登录</ElButton>
-      <ElButton type="primary">注册</ElButton>
+      <ElButton type="primary" @click="handleRegister">注册</ElButton>
     </div>
   </nav>
 </template>
@@ -24,10 +24,15 @@ import { ElButton } from "element-plus";
 
 const emit = defineEmits<{
   "show-login": [];
+  "show-register": [];
 }>();
 
 const handleLogin = () => {
   emit("show-login");
+};
+
+const handleRegister = () => {
+  emit("show-register");
 };
 </script>
 
