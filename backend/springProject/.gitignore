@@ -4,6 +4,14 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Environment Variables ###
+.env
+.env.local
+.env.*.local
+
+### PowerShell Scripts with Sensitive Data ###
+start.ps1
+
 ### STS ###
 .apt_generated
 .classpath
