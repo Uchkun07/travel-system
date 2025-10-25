@@ -9,7 +9,8 @@ target/
 .env.local
 .env.*.local
 
-start-with-env.ps1
+### PowerShell Scripts with Sensitive Data ###
+start.ps1
 
 ### STS ###
 .apt_generated
