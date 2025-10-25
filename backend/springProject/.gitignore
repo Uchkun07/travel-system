@@ -9,6 +9,8 @@ target/
 .env.local
 .env.*.local
 
+start-with-env.ps1
+
 ### STS ###
 .apt_generated
 .classpath

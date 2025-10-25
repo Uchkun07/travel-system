@@ -18,10 +18,17 @@ cp .env.example .env
 
 编辑 `.env` 文件,填入真实的配置信息:
 
+> **⚠️ 安全提示**  
+> 以下配置信息包含敏感数据,实际值已被隐藏。  
+> 如需获取真实的配置信息,请联系项目负责人:
+>
+> - **负责人**: Uchkun07
+> - **Email**: SuperMartian@outlook.com
+
 ```properties
 # 数据库配置
 DB_USERNAME=root
-DB_PASSWORD=102030
+DB_PASSWORD=your_database_password
 
 # Redis 配置
 REDIS_HOST=localhost
@@ -29,16 +36,16 @@ REDIS_PORT=6379
 REDIS_PASSWORD=
 
 # SSL 配置
-SSL_KEYSTORE_PASSWORD=123456
+SSL_KEYSTORE_PASSWORD=your_keystore_password
 
 # 邮箱配置
 MAIL_HOST=smtp.qq.com
 MAIL_PORT=587
-MAIL_USERNAME=2208844091@qq.com
-MAIL_PASSWORD=tczyvqbqpplyeahe
+MAIL_USERNAME=your_email@qq.com
+MAIL_PASSWORD=your_qq_smtp_authorization_code
 
 # JWT 配置
-JWT_SECRET=travel-system-secret-key-for-jwt-token-generation-and-validation-2024
+JWT_SECRET=your_jwt_secret_key_at_least_256_bits
 ```
 
 ### 3. 在 IDE 中配置环境变量
@@ -54,6 +61,13 @@ JWT_SECRET=travel-system-secret-key-for-jwt-token-generation-and-validation-2024
 
 在 `launch.json` 中添加:
 
+> **⚠️ 安全提示**  
+> 以下配置信息包含敏感数据,实际值已被隐藏。  
+> 如需获取真实的配置信息,请联系项目负责人:
+>
+> - **负责人**: Uchkun07
+> - **Email**: SuperMartian@outlook.com
+
 ```json
 {
   "configurations": [
@@ -64,16 +78,16 @@ JWT_SECRET=travel-system-secret-key-for-jwt-token-generation-and-validation-2024
       "mainClass": "org.example.springproject.SpringProjectApplication",
       "env": {
         "DB_USERNAME": "root",
-        "DB_PASSWORD": "102030",
+        "DB_PASSWORD": "your_database_password",
         "REDIS_HOST": "localhost",
         "REDIS_PORT": "6379",
         "REDIS_PASSWORD": "",
-        "SSL_KEYSTORE_PASSWORD": "123456",
+        "SSL_KEYSTORE_PASSWORD": "your_keystore_password",
         "MAIL_HOST": "smtp.qq.com",
         "MAIL_PORT": "587",
-        "MAIL_USERNAME": "2208844091@qq.com",
-        "MAIL_PASSWORD": "tczyvqbqpplyeahe",
-        "JWT_SECRET": "travel-system-secret-key-for-jwt-token-generation-and-validation-2024"
+        "MAIL_USERNAME": "your_email@qq.com",
+        "MAIL_PASSWORD": "your_qq_smtp_authorization_code",
+        "JWT_SECRET": "your_jwt_secret_key_at_least_256_bits"
       }
     }
   ]
@@ -152,19 +166,25 @@ $env:JWT_SECRET="your_jwt_secret"
 
 ## 环境变量说明
 
-| 变量名                | 说明            | 示例值      | 必填             |
-| --------------------- | --------------- | ----------- | ---------------- |
-| DB_USERNAME           | 数据库用户名    | root        | 否(默认 root)    |
-| DB_PASSWORD           | 数据库密码      | 102030      | 是               |
-| REDIS_HOST            | Redis 主机地址  | localhost   | 否               |
-| REDIS_PORT            | Redis 端口      | 6379        | 否               |
-| REDIS_PASSWORD        | Redis 密码      | -           | 否               |
-| SSL_KEYSTORE_PASSWORD | SSL 密钥库密码  | 123456      | 否               |
-| MAIL_HOST             | SMTP 服务器地址 | smtp.qq.com | 否               |
-| MAIL_PORT             | SMTP 端口       | 587         | 否               |
-| MAIL_USERNAME         | 发件邮箱        | xxx@qq.com  | 是               |
-| MAIL_PASSWORD         | SMTP 授权码     | xxxxxxxx    | 是               |
-| JWT_SECRET            | JWT 签名密钥    | 至少 256 位 | 否(强烈建议设置) |
+> **📧 获取配置信息**  
+> 实际的配置值已被隐藏以保护安全。如需获取真实配置,请联系:
+>
+> - **项目负责人**: Uchkun07
+> - **Email**: SuperMartian@outlook.com
+
+| 变量名                | 说明            | 示例值                          | 必填             |
+| --------------------- | --------------- | ------------------------------- | ---------------- |
+| DB_USERNAME           | 数据库用户名    | root                            | 否(默认 root)    |
+| DB_PASSWORD           | 数据库密码      | your_database_password          | 是               |
+| REDIS_HOST            | Redis 主机地址  | localhost                       | 否               |
+| REDIS_PORT            | Redis 端口      | 6379                            | 否               |
+| REDIS_PASSWORD        | Redis 密码      | -                               | 否               |
+| SSL_KEYSTORE_PASSWORD | SSL 密钥库密码  | your_keystore_password          | 否               |
+| MAIL_HOST             | SMTP 服务器地址 | smtp.qq.com                     | 否               |
+| MAIL_PORT             | SMTP 端口       | 587                             | 否               |
+| MAIL_USERNAME         | 发件邮箱        | your_email@qq.com               | 是               |
+| MAIL_PASSWORD         | SMTP 授权码     | your_qq_smtp_authorization_code | 是               |
+| JWT_SECRET            | JWT 签名密钥    | 至少 256 位                     | 否(强烈建议设置) |
 
 ## 故障排查
 
