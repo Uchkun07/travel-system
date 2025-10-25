@@ -14,7 +14,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * 邮件服务实现类
@@ -263,10 +263,11 @@ public class EmailServiceImpl implements IEmailService {
 
     /**
      * 生成6位数字验证码
+     * 使用 SecureRandom 提供密码学安全的随机数生成
      */
     private String generateVerificationCode() {
-        Random random = new Random();
-        int code = random.nextInt(900000) + 100000;
+        SecureRandom secureRandom = new SecureRandom();
+        int code = secureRandom.nextInt(900000) + 100000;
         return String.valueOf(code);
     }
 

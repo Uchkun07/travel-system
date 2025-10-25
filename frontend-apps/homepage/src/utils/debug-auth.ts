@@ -1,6 +1,13 @@
 /**
  * 认证调试工具
  * 用于查看和清理认证相关的存储
+ *
+ * ⚠️ 注意: 此调试工具仅在开发环境 (import.meta.env.DEV) 下暴露到 window 对象
+ * 生产环境不会暴露 window.debugAuth 和 window.cleanAuth 方法
+ *
+ * 使用方法 (开发环境):
+ * - window.debugAuth() : 查看当前认证状态
+ * - window.cleanAuth() : 强制清除所有认证信息
  */
 import Cookies from "js-cookie";
 
@@ -75,12 +82,12 @@ export function forceCleanAuth() {
 }
 
 /**
- * 在控制台暴露调试方法
+ * 在控制台暴露调试方法 (仅开发环境)
  */
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && import.meta.env.DEV) {
   (window as any).debugAuth = debugAuthStatus;
   (window as any).cleanAuth = forceCleanAuth;
-  console.log("💡 调试工具已加载:");
+  console.log("💡 调试工具已加载 (开发环境):");
   console.log("  - window.debugAuth() : 查看认证状态");
   console.log("  - window.cleanAuth() : 强制清除所有认证信息");
 }

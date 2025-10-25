@@ -207,7 +207,7 @@ public class RedisUtil {
      */
     public Map<Object, Object> hmget(String key) {
         if (key == null) {
-            return Map.of();
+            return null;
         }
         return redisTemplate.opsForHash().entries(key);
     }

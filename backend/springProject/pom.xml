@@ -51,6 +51,12 @@
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 
+		<!-- Spring Security for authentication and password encoding -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
 		<!-- Configuration Processor for custom properties -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -121,7 +121,7 @@ const emit = defineEmits<{
 }>();
 
 const registerFormRef = ref<FormInstance>();
-const agree = ref(true);
+const agree = ref(false);
 const loading = ref(false);
 const countdownRef = ref(0);
 const registerForm = ref({

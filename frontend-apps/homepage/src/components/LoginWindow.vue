@@ -10,7 +10,7 @@
         :model="loginForm"
         :rules="loginRules"
         ref="loginFormRef"
-        @keyup.enter="handleLogin"
+        @keydown.enter.prevent="handleLogin"
       >
         <el-form-item label="用户名" prop="username" label-position="top">
           <el-input
@@ -81,6 +81,8 @@ const userStore = useUserStore();
 const loginFormRef = ref<FormInstance>();
 const rememberMe = ref(false);
 const loading = ref(false);
+const loginAttempts = ref(0);
+const maxAttempts = 5;
 const loginForm = ref({
   username: "",
   password: "",
@@ -104,12 +106,25 @@ const handleClose = () => {
     password: "",
   };
   rememberMe.value = false;
+  loginAttempts.value = 0; // 重置登录尝试次数
   loginFormRef.value?.clearValidate();
   emit("close");
 };
 
 const handleLogin = async () => {
   if (!loginFormRef.value) return;
+
+  // 防止重复提交
+  if (loading.value) {
+    ElMessage.warning("请勿重复提交");
+    return;
+  }
+
+  // 检查登录尝试次数
+  if (loginAttempts.value >= maxAttempts) {
+    ElMessage.error(`登录失败次数过多,请稍后再试`);
+    return;
+  }
 
   try {
     const valid = await loginFormRef.value.validate();
@@ -123,12 +138,34 @@ const handleLogin = async () => {
     });
 
     if (success) {
+      ElMessage.success("登录成功!");
+      loginAttempts.value = 0; // 重置失败次数
       handleClose();
       // 可选：跳转到首页或其他页面
       // router.push('/');
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("登录失败:", error);
+
+    // 增加失败次数
+    loginAttempts.value++;
+
+    // 提供详细的错误反馈
+    const errorMessage =
+      error?.response?.data?.message || error?.message || "登录失败,请稍后重试";
+
+    // 显示错误信息和剩余尝试次数
+    const remainingAttempts = maxAttempts - loginAttempts.value;
+    if (remainingAttempts > 0) {
+      ElMessage.error(`${errorMessage} (剩余尝试次数: ${remainingAttempts})`);
+    } else {
+      ElMessage.error("登录失败次数过多,请稍后再试");
+    }
+
+    // 如果是密码错误,清空密码输入框
+    if (errorMessage.includes("密码") || errorMessage.includes("password")) {
+      loginForm.value.password = "";
+    }
   } finally {
     loading.value = false;
   }
