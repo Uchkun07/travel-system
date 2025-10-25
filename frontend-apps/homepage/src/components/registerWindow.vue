@@ -78,12 +78,8 @@
       </ElForm>
 
       <div class="login-body">
-        <el-button 
-          class="login-btn" 
-          :loading="loading"
-          @click="handleRegister"
-        > 
-          {{ loading ? '注册中...' : '注册' }}
+        <el-button class="login-btn" :loading="loading" @click="handleRegister">
+          {{ loading ? "注册中..." : "注册" }}
         </el-button>
 
         <div class="divider">
@@ -112,7 +108,12 @@
 import type { FormInstance, FormRules } from "element-plus";
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
-import { sendVerificationCode, register, checkUsername, checkEmail } from "@/apis";
+import {
+  sendVerificationCode,
+  register,
+  checkUsername,
+  checkEmail,
+} from "@/apis";
 
 const visible = defineModel<boolean>();
 const emit = defineEmits<{
@@ -172,7 +173,11 @@ const registerRules: FormRules = {
   username: [
     { required: true, message: "请输入用户名", trigger: "blur" },
     { min: 3, max: 20, message: "用户名长度为3-20个字符", trigger: "blur" },
-    { pattern: /^[a-zA-Z0-9_]+$/, message: "用户名只能包含字母、数字和下划线", trigger: "blur" },
+    {
+      pattern: /^[a-zA-Z0-9_]+$/,
+      message: "用户名只能包含字母、数字和下划线",
+      trigger: "blur",
+    },
     { asyncValidator: validateUsername, trigger: "blur" },
   ],
   password: [
@@ -212,7 +217,7 @@ const handleClose = () => {
     email: "",
     captcha: "",
   };
-  agree.value = true;
+  agree.value = false;
   countdownRef.value = 0;
   registerFormRef.value?.clearValidate();
   emit("close");
@@ -229,7 +234,7 @@ const sendCaptcha = async () => {
 
   try {
     await registerFormRef.value?.validateField("email");
-    
+
     // 发送验证码
     const res = await sendVerificationCode({ email: registerForm.value.email });
     if (res.success) {
@@ -237,7 +242,7 @@ const sendCaptcha = async () => {
       startCountdown();
     }
   } catch (error) {
-    console.error("发送验证码失败:", error);
+    ElMessage.error("发送验证码失败，请稍后重试");
   }
 };
 
@@ -265,14 +270,14 @@ const handleRegister = async () => {
 
     loading.value = true;
     const res = await register(registerForm.value);
-    
+
     if (res.success) {
       ElMessage.success("注册成功!请登录");
       handleClose();
       emit("show-login");
     }
   } catch (error) {
-    console.error("注册失败:", error);
+    ElMessage.error("注册失败，请检查输入信息或稍后重试");
   } finally {
     loading.value = false;
   }
