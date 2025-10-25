@@ -115,7 +115,7 @@ import {
   checkEmail,
 } from "@/apis";
 
-const visible = defineModel<boolean>();
+const visible = defineModel<boolean>("visible", { default: false });
 const emit = defineEmits<{
   close: [];
   "show-login": [];

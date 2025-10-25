@@ -7,9 +7,9 @@
     <div class="menu">
       <ul>
         <li><router-link to="/">景点推荐</router-link></li>
-        <li><router-link to="/">探索</router-link></li>
-        <li><router-link to="/">热门城市</router-link></li>
-        <li><router-link to="/">路线规划</router-link></li>
+        <li><router-link to="/explore">探索</router-link></li>
+        <li><router-link to="/hotcity">热门城市</router-link></li>
+        <li><router-link to="/routeline">路线规划</router-link></li>
       </ul>
     </div>
 
@@ -62,8 +62,10 @@ import {
 import { User, Setting, SwitchButton } from "@element-plus/icons-vue";
 import { useUserStore } from "@/stores";
 import { ElMessage } from "element-plus";
+import { useRouter } from "vue-router";
 
 const userStore = useUserStore();
+const router = useRouter();
 
 const emit = defineEmits<{
   "show-login": [];
@@ -82,15 +84,17 @@ const handleRegister = () => {
 const handleCommand = async (command: string) => {
   switch (command) {
     case "profile":
-      // TODO: 跳转到个人中心
-      ElMessage.info("个人中心功能开发中...");
+      // 跳转到个人中心
+      router.push("/profile");
       break;
     case "settings":
-      // TODO: 跳转到账号设置
-      ElMessage.info("账号设置功能开发中...");
+      // 跳转到账号设置
+      router.push("/settings");
       break;
     case "logout":
       await userStore.logout();
+      // 退出后跳转到首页
+      router.push("/");
       break;
   }
 };
@@ -104,8 +108,10 @@ const handleCommand = async (command: string) => {
   align-items: center;
   padding: 0 18rem;
   background-color: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  position: relative;
+  z-index: 100;
 }
 .navbar :deep(svg) {
   width: 30px;
@@ -150,17 +156,18 @@ const handleCommand = async (command: string) => {
     bottom: 0;
     left: 0;
     width: 0;
-    height: 2px;
-    background: #ff6b35;
+    height: 3px;
+    border-radius: 10px;
+    background: #3498db;
     transition: all 0.2s ease;
   }
   a:hover:after,
-  a.router-link-active:after {
+  a.router-link-exact-active:after {
     width: 100%;
   }
   a:hover,
-  a.router-link-active {
-    color: #ff6b35;
+  a.router-link-exact-active {
+    color: #3498db;
   }
 }
 .user {
