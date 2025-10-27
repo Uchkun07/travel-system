@@ -1,58 +1,31 @@
 <template>
-  <div class="container">
-    <navigation @show-login="showLogin" @show-register="showRegister" />
-    <loginWindow
-      v-model="loginVisible"
-      @show-register="showRegister"
-      @close="onLoginClose"
-    />
-    <registerWindow
-      v-model="registerVisible"
-      @show-login="showLogin"
-      @close="onRegisterClose"
-      @register="onRegister"
-    />
+  <div class="home-page">
+    <!-- 首页内容 -->
+    <h1>欢迎来到悦旅</h1>
+    <p>探索世界的每一个角落</p>
+
+    <!-- 这里放置首页的其他内容 -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import Navigation from "@/components/navigation.vue";
-import loginWindow from "@/components/LoginWindow.vue";
-import registerWindow from "@/components/registerWindow.vue";
-
-const loginVisible = ref(false);
-const registerVisible = ref(false);
-
-const showLogin = () => {
-  loginVisible.value = true;
-};
-
-const showRegister = () => {
-  registerVisible.value = true;
-};
-
-const onLoginClose = () => {
-  loginVisible.value = false;
-};
-
-const onRegisterClose = () => {
-  registerVisible.value = false;
-};
-
-const onRegister = (data: {
-  username: string;
-  password: string;
-  email: string;
-}) => {
-  // 处理注册后的逻辑（示例：直接打开登录窗口或显示消息）
-  console.log("registered", data);
-};
+// 现在不需要导入导航栏和弹窗了，它们在 Layout 中统一管理
 </script>
 
 <style scoped>
-.container {
-  width: 100%;
-  height: auto;
+.home-page {
+  padding: 40px 18rem;
+  min-height: calc(100vh - 75px); /* 减去导航栏高度 */
+}
+
+.home-page h1 {
+  font-size: 3rem;
+  color: #2d88ff;
+  margin-bottom: 1rem;
+}
+
+.home-page p {
+  font-size: 1.5rem;
+  color: #666;
 }
 </style>

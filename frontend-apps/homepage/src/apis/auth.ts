@@ -1,4 +1,4 @@
-import { post, get } from "./request";
+import { post, get, put } from "./request";
 
 // 请求接口类型定义
 export interface SendCodeRequest {
@@ -28,6 +28,9 @@ export interface LoginResponse {
   email?: string;
   avatar?: string;
   fullName?: string;
+  phone?: string;
+  gender?: number; // 0=保密, 1=男, 2=女
+  birthday?: string; // 生日
   token?: string;
 }
 
@@ -39,6 +42,9 @@ export interface UserInfoResponse {
   email?: string;
   fullName?: string;
   avatar?: string;
+  phone?: string;
+  gender?: number;
+  birthday?: string;
   status?: number;
 }
 
@@ -46,6 +52,34 @@ export interface CheckResponse {
   success: boolean;
   available: boolean;
   message: string;
+}
+
+// 更新用户资料请求接口
+export interface UpdateProfileRequest {
+  username?: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  gender?: number; // 0=保密, 1=男, 2=女
+  birthday?: string; // YYYY-MM-DD 格式
+  avatar?: string;
+}
+
+// 更新用户资料响应接口
+export interface UpdateProfileResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+  userInfo?: {
+    userId: number;
+    username: string;
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    gender?: number;
+    birthday?: string;
+    avatar?: string;
+  };
 }
 
 /**
@@ -95,4 +129,11 @@ export function checkUsername(username: string) {
  */
 export function checkEmail(email: string) {
   return get<CheckResponse>("/auth/checkEmail", { email });
+}
+
+/**
+ * 更新用户资料（需要JWT认证）
+ */
+export function updateUserProfile(data: UpdateProfileRequest) {
+  return put<UpdateProfileResponse>("/v1/users/profile", data);
 }

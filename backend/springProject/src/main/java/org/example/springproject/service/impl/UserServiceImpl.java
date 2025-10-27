@@ -221,9 +221,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             user.setLastLoginTime(new Date());
             updateById(user);
 
-            // 6. 生成JWT令牌
+            // 6. 生成JWT令牌（包含完整用户信息）
             boolean rememberMe = request.getRememberMe() != null && request.getRememberMe();
-            String token = jwtUtil.generateToken(user.getUserId().longValue(), user.getUsername(), rememberMe);
+            String token = jwtUtil.generateTokenWithUserInfo(
+                    user.getUserId().longValue(), 
+                    user.getUsername(), 
+                    user.getEmail(),
+                    user.getFullName(),
+                    user.getAvatar(),
+                    user.getPhone(),
+                    user.getGender(),
+                    user.getBirthday(),
+                    rememberMe
+            );
 
             // 7. 返回登录成功信息
             result.put("success", true);
@@ -233,6 +243,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             result.put("email", user.getEmail());
             result.put("avatar", user.getAvatar());
             result.put("fullName", user.getFullName());
+            result.put("phone", user.getPhone());
+            result.put("gender", user.getGender());
+            result.put("birthday", user.getBirthday());
             result.put("token", token);
 
             log.info("用户登录成功,用户名:{}", user.getUsername());

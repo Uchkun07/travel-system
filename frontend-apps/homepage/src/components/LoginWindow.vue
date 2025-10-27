@@ -70,7 +70,7 @@ import { ElMessage, ElInput, ElCheckbox, ElLink, ElButton } from "element-plus";
 import { useUserStore } from "@/stores";
 import { useRouter } from "vue-router";
 
-const visible = defineModel<boolean>();
+const visible = defineModel<boolean>("visible", { default: false });
 const emit = defineEmits<{
   "show-register": [];
   close: [];

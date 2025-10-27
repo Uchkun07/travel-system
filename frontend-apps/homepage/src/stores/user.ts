@@ -16,6 +16,9 @@ export interface UserInfo {
   email: string;
   fullName?: string;
   avatar?: string;
+  phone?: string;
+  gender?: number; // 0=保密, 1=男, 2=女
+  birthday?: string; // 生日
   status?: number;
 }
 
@@ -106,6 +109,9 @@ export const useUserStore = defineStore("user", () => {
           email: res.email!,
           fullName: res.fullName,
           avatar: res.avatar,
+          phone: res.phone,
+          gender: res.gender,
+          birthday: res.birthday,
         });
 
         ElMessage.success(res.message || "登录成功");
@@ -158,6 +164,9 @@ export const useUserStore = defineStore("user", () => {
           email: res.email!,
           fullName: res.fullName,
           avatar: res.avatar,
+          phone: res.phone,
+          gender: res.gender,
+          birthday: res.birthday,
           status: res.status,
         });
         return true;

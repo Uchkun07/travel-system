@@ -126,6 +126,9 @@ public class AuthController {
             result.put("email", user.getEmail());
             result.put("fullName", user.getFullName());
             result.put("avatar", user.getAvatar());
+            result.put("phone", user.getPhone());
+            result.put("gender", user.getGender());
+            result.put("birthday", user.getBirthday());
             result.put("status", user.getStatus());
             
         } catch (Exception e) {
