@@ -8,7 +8,7 @@
 - **后端**: Spring Boot 3.5.7 + MyBatis-Plus + Redis + JWT
 - **数据库**: MySQL 8.0+
 - **算法支持**:
-  - PDA-GNN 模型：用于景点推荐
+  - Fun-rec 模型：用于景点推荐
   - 模拟退火算法：用于最优路线规划
   - LSTM 模型：用于景点人流量预测
 
@@ -187,21 +187,25 @@ redis-server --daemonize yes
 **使用脚本启动 (推荐):**
 
 # 在 backend/springProject 目录
+
 cd backend\springProject
 .\start.ps1
+
 ```
 **启动成功标志:**
 
 ```
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
+
+. \_**\_ \_ ** \_ \_
+/\\ / **_'_ ** \_ _(_)_ \_\_ \_\_ _ \ \ \ \
+( ( )\_** | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/ \_**)| |_)| | | | | || (_| | ) ) ) )
+' |\_**\_| .**|_| |_|_| |_\__, | / / / /
+=========|_|==============|_\_\_/=/_/_/_/
 
 Started SpringProjectApplication in 3.2 seconds
-```
+
+````
 
 **后端服务地址:**
 
@@ -215,7 +219,7 @@ Started SpringProjectApplication in 3.2 seconds
 ```bash
 # 在项目根目录
 pnpm install
-```
+````
 
 #### 4.2 启动主页前端
 
@@ -264,38 +268,35 @@ python main.py
 
 ### 系统访问地址
 
-| 服务 | 地址 | 说明 |
-|------|------|------|
-| 前端主页 | https://localhost:5173 | 用户界面 |
-| 后端API | https://localhost:8080/api | RESTful API |
-| 仪表盘 | https://localhost:5174 | 管理后台 (可选) |
+| 服务     | 地址                       | 说明            |
+| -------- | -------------------------- | --------------- |
+| 前端主页 | https://localhost:5173     | 用户界面        |
+| 后端 API | https://localhost:8080/api | RESTful API     |
+| 仪表盘   | https://localhost:5174     | 管理后台 (可选) |
 
 ### 核心功能使用
 
 #### 1. 用户注册与登录
 
 **注册流程:**
+
 1. 访问主页,点击"注册"按钮
 2. 填写用户名、邮箱、密码
-3. 点击"获取验证码",系统会发送6位验证码到邮箱
+3. 点击"获取验证码",系统会发送 6 位验证码到邮箱
 4. 输入验证码并完成注册
 5. 系统自动分配默认头像
 
 **登录方式:**
+
 - 支持用户名登录
 - 支持邮箱登录
-- 登录失败保护: 最多允许5次失败尝试
+- 登录失败保护: 最多允许 5 次失败尝试
 
 #### 2. 景点推荐 (待实现)
 
-
-
 #### 3. 路线规划 (待实现)
 
-
 #### 4. 人流量预测 (待实现)
-
-
 
 ### API 接口文档
 
@@ -349,18 +350,20 @@ travel-system/
 ### 技术要点
 
 **后端安全特性:**
-- ✅ JWT Token 认证 (7天有效期)
-- ✅ 密码加密存储 (PBKDF2WithHmacSHA256, 100,000次迭代)
-- ✅ 邮箱验证码 (5分钟有效期, SecureRandom生成)
-- ✅ Token黑名单 (Redis管理)
-- ✅ 登录失败限制 (最多5次)
+
+- ✅ JWT Token 认证 (7 天有效期)
+- ✅ 密码加密存储 (PBKDF2WithHmacSHA256, 100,000 次迭代)
+- ✅ 邮箱验证码 (5 分钟有效期, SecureRandom 生成)
+- ✅ Token 黑名单 (Redis 管理)
+- ✅ 登录失败限制 (最多 5 次)
 - ✅ HTTPS 强制加密
 - ✅ Spring Security 集成
 
 **前端安全特性:**
-- ✅ Token存储在Cookie (HttpOnly级别)
+
+- ✅ Token 存储在 Cookie (HttpOnly 级别)
 - ✅ 路由守卫保护
-- ✅ 请求拦截器自动添加Token
+- ✅ 请求拦截器自动添加 Token
 - ✅ 双击提交防护
 - ✅ 敏感信息脱敏显示
 
@@ -368,33 +371,37 @@ travel-system/
 
 **Q: 启动时提示环境变量未设置?**
 
-A: 请确保已运行环境变量配置脚本或在IDE中配置了所有必需的环境变量。详见 [docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md)
+A: 请确保已运行环境变量配置脚本或在 IDE 中配置了所有必需的环境变量。详见 [docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md)
 
 **Q: 邮件发送失败?**
 
-A: 
-1. 确认 `MAIL_PASSWORD` 使用的是QQ邮箱SMTP授权码,不是邮箱密码
-2. 检查QQ邮箱是否开启了SMTP服务
-3. 授权码获取: QQ邮箱设置 → 账户 → POP3/IMAP/SMTP服务 → 生成授权码
+A:
 
-**Q: 前端无法访问后端API?**
+1. 确认 `MAIL_PASSWORD` 使用的是 QQ 邮箱 SMTP 授权码,不是邮箱密码
+2. 检查 QQ 邮箱是否开启了 SMTP 服务
+3. 授权码获取: QQ 邮箱设置 → 账户 → POP3/IMAP/SMTP 服务 → 生成授权码
 
-A: 
+**Q: 前端无法访问后端 API?**
+
+A:
+
 1. 检查后端是否正常启动 (https://localhost:8080/api)
-2. 确认SSL证书已配置
+2. 确认 SSL 证书已配置
 3. 浏览器可能提示证书不受信任,点击"高级"→"继续访问"即可
 
-**Q: Redis连接失败?**
+**Q: Redis 连接失败?**
 
-A: 
-1. 确认Redis服务已启动: `redis-cli ping` (应返回PONG)
-2. Windows用户检查Redis服务: `net start Redis`
-3. 检查端口6379是否被占用
+A:
 
-**Q: MySQL连接失败?**
+1. 确认 Redis 服务已启动: `redis-cli ping` (应返回 PONG)
+2. Windows 用户检查 Redis 服务: `net start Redis`
+3. 检查端口 6379 是否被占用
 
-A: 
-1. 确认MySQL服务已启动
+**Q: MySQL 连接失败?**
+
+A:
+
+1. 确认 MySQL 服务已启动
 2. 检查数据库名称是否为 `travel_system`
 3. 确认环境变量 `DB_PASSWORD` 设置正确
 
@@ -444,7 +451,7 @@ chore: 构建/工具链更新
 
 ## 📄 许可证
 
-本项目采用 [MIT许可证](LICENSE) 进行许可。
+本项目采用 [MIT 许可证](LICENSE) 进行许可。
 
 Copyright (c) 2025 Uchkun07
 

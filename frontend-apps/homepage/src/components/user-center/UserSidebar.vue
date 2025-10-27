@@ -6,7 +6,8 @@
         <img :src="userStore.avatar" :alt="userStore.username" />
       </div>
       <h3 class="user-name">{{ userStore.username }}</h3>
-      <span class="user-level">黄金会员</span>
+      <span class="user-level">资深游侠</span>
+      <span class="user-level">全球</span>
     </div>
 
     <!-- 菜单列表 -->

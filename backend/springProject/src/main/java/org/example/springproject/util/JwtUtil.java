@@ -55,6 +55,47 @@ public class JwtUtil {
     }
 
     /**
+     * 生成包含完整用户信息的JWT令牌
+     * @param userId 用户ID
+     * @param username 用户名
+     * @param email 邮箱
+     * @param fullName 全名
+     * @param avatar 头像
+     * @param phone 手机号
+     * @param gender 性别
+     * @param birthday 生日
+     * @param rememberMe 是否记住我
+     * @return JWT令牌
+     */
+    public String generateTokenWithUserInfo(Long userId, String username, String email, 
+                                           String fullName, String avatar, String phone, 
+                                           Byte gender, Date birthday, boolean rememberMe) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("username", username);
+        claims.put("email", email);
+        claims.put("fullName", fullName);
+        claims.put("avatar", avatar);
+        claims.put("phone", phone);
+        claims.put("gender", gender);
+        // 将生日转换为时间戳存储
+        if (birthday != null) {
+            claims.put("birthday", birthday.getTime());
+        }
+        
+        long expirationTime = rememberMe ? jwtProperties.getExpiration() : jwtProperties.getExpirationShort();
+        Date expirationDate = new Date(System.currentTimeMillis() + expirationTime);
+        
+        return Jwts.builder()
+                .claims(claims)
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(expirationDate)
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    /**
      * 从令牌中获取所有声明
      * @param token JWT令牌
      * @return 声明对象
@@ -88,6 +129,74 @@ public class JwtUtil {
      */
     public String getUsernameFromToken(String token) {
         return parseToken(token).getSubject();
+    }
+
+    /**
+     * 从令牌中获取邮箱
+     * @param token JWT令牌
+     * @return 邮箱
+     */
+    public String getEmailFromToken(String token) {
+        Claims claims = parseToken(token);
+        return claims.get("email", String.class);
+    }
+
+    /**
+     * 从令牌中获取全名
+     * @param token JWT令牌
+     * @return 全名
+     */
+    public String getFullNameFromToken(String token) {
+        Claims claims = parseToken(token);
+        return claims.get("fullName", String.class);
+    }
+
+    /**
+     * 从令牌中获取头像
+     * @param token JWT令牌
+     * @return 头像URL
+     */
+    public String getAvatarFromToken(String token) {
+        Claims claims = parseToken(token);
+        return claims.get("avatar", String.class);
+    }
+
+    /**
+     * 从令牌中获取手机号
+     * @param token JWT令牌
+     * @return 手机号
+     */
+    public String getPhoneFromToken(String token) {
+        Claims claims = parseToken(token);
+        return claims.get("phone", String.class);
+    }
+
+    /**
+     * 从令牌中获取性别
+     * @param token JWT令牌
+     * @return 性别
+     */
+    public Byte getGenderFromToken(String token) {
+        Claims claims = parseToken(token);
+        Object gender = claims.get("gender");
+        if (gender instanceof Number) {
+            return ((Number) gender).byteValue();
+        }
+        return null;
+    }
+
+    /**
+     * 从令牌中获取生日
+     * @param token JWT令牌
+     * @return 生日
+     */
+    public Date getBirthdayFromToken(String token) {
+        Claims claims = parseToken(token);
+        Object birthday = claims.get("birthday");
+        if (birthday instanceof Number) {
+            return new Date(((Number) birthday).longValue());
+        }
+        return null;
     }
 
     /**

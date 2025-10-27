@@ -54,10 +54,6 @@
           </ElCol>
         </ElRow>
 
-        <ElFormItem label="电子邮箱">
-          <ElInput v-model="profileForm.email" :disabled="!isEditing" />
-        </ElFormItem>
-
         <ElFormItem label="手机号码">
           <ElInput v-model="profileForm.phone" :disabled="!isEditing" />
         </ElFormItem>
@@ -70,9 +66,9 @@
                 :disabled="!isEditing"
                 style="width: 100%"
               >
-                <ElOption label="男" value="male" />
-                <ElOption label="女" value="female" />
-                <ElOption label="保密" value="secret" />
+                <ElOption label="保密" :value="0" />
+                <ElOption label="男" :value="1" />
+                <ElOption label="女" :value="2" />
               </ElSelect>
             </ElFormItem>
           </ElCol>
@@ -89,16 +85,6 @@
           </ElCol>
         </ElRow>
 
-        <ElFormItem label="个人简介">
-          <ElInput
-            v-model="profileForm.bio"
-            type="textarea"
-            :rows="4"
-            :disabled="!isEditing"
-            placeholder="介绍一下你自己..."
-          />
-        </ElFormItem>
-
         <ElFormItem v-if="isEditing">
           <ElButton type="primary" @click="handleSave">保存修改</ElButton>
           <ElButton @click="handleCancel">取消</ElButton>
@@ -109,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import {
   ElButton,
   ElIcon,
@@ -125,9 +111,11 @@ import {
 } from "element-plus";
 import { Edit, Suitcase, Star, Calendar } from "@element-plus/icons-vue";
 import { useUserStore } from "@/stores";
+import { updateUserProfile, type UpdateProfileRequest } from "@/apis/auth";
 
 const userStore = useUserStore();
 const isEditing = ref(false);
+const loading = ref(false);
 
 // 统计数据
 const stats = reactive({
@@ -138,28 +126,115 @@ const stats = reactive({
 
 // 个人资料表单
 const profileForm = reactive({
-  username: userStore.username || "张明",
-  realName: "张明",
-  email: userStore.userInfo?.email || "zhangming@example.com",
-  phone: "13800138000",
-  gender: "male",
-  birthday: "1990-05-15",
-  bio: "热爱旅行、摄影和美食，足迹遍布五大洲30个国家。",
+  username: "",
+  realName: "",
+  email: "",
+  phone: "",
+  gender: 0 as number, // 0=保密, 1=男, 2=女
+  birthday: null as Date | null,
+  avatar: "",
 });
 
 // 备份原始数据
-const originalForm = { ...profileForm };
+let originalForm = { ...profileForm };
+
+// 组件挂载时加载用户信息
+onMounted(() => {
+  if (userStore.userInfo) {
+    profileForm.username = userStore.userInfo.username || "";
+    profileForm.realName = userStore.userInfo.fullName || "";
+    profileForm.email = userStore.userInfo.email || "";
+    profileForm.phone = userStore.userInfo.phone || "";
+    profileForm.gender = userStore.userInfo.gender ?? 0;
+    profileForm.avatar = userStore.userInfo.avatar || "";
+
+    // 解析生日字符串为 Date 对象
+    if (userStore.userInfo.birthday) {
+      profileForm.birthday = new Date(userStore.userInfo.birthday);
+    }
+
+    // 保存原始数据
+    originalForm = { ...profileForm };
+  }
+});
 
 const handleEdit = () => {
   isEditing.value = true;
 };
 
-const handleSave = () => {
-  // TODO: 调用API保存数据
-  ElMessage.success("保存成功");
-  isEditing.value = false;
-  // 更新备份
-  Object.assign(originalForm, profileForm);
+const handleSave = async () => {
+  loading.value = true;
+
+  try {
+    // 构建更新请求数据
+    const updateData: UpdateProfileRequest = {
+      username: profileForm.username || undefined,
+      fullName: profileForm.realName || undefined,
+      email: profileForm.email || undefined,
+      phone: profileForm.phone || undefined,
+      gender: profileForm.gender,
+      birthday: profileForm.birthday
+        ? profileForm.birthday.toISOString().split("T")[0]
+        : undefined,
+      avatar: profileForm.avatar || undefined,
+    };
+
+    const response = await updateUserProfile(updateData);
+
+    if (response.success && response.token) {
+      ElMessage.success(response.message || "资料更新成功");
+      isEditing.value = false;
+
+      // 更新本地存储的 token
+      userStore.setToken(response.token, true);
+
+      // 更新用户信息
+      if (response.userInfo) {
+        userStore.setUserInfo({
+          userId: response.userInfo.userId,
+          username: response.userInfo.username,
+          email: response.userInfo.email || "",
+          fullName: response.userInfo.fullName,
+          avatar: response.userInfo.avatar,
+        });
+
+        // 更新表单显示
+        profileForm.username = response.userInfo.username;
+        profileForm.realName = response.userInfo.fullName || "";
+        profileForm.email = response.userInfo.email || "";
+        profileForm.phone = response.userInfo.phone || "";
+        profileForm.gender = response.userInfo.gender || 0;
+        profileForm.birthday = response.userInfo.birthday
+          ? new Date(response.userInfo.birthday)
+          : null;
+        profileForm.avatar = response.userInfo.avatar || "";
+      }
+
+      // 更新备份
+      originalForm = { ...profileForm };
+    } else {
+      ElMessage.error(response.message || "资料更新失败");
+    }
+  } catch (error: any) {
+    console.error("保存用户资料失败:", error);
+
+    // 处理不同的错误状态
+    if (error.response) {
+      const status = error.response.status;
+      if (status === 401) {
+        ElMessage.error("登录已过期，请重新登录");
+        userStore.logout();
+      } else if (status === 400) {
+        ElMessage.error(error.response.data?.message || "参数验证失败");
+      } else {
+        ElMessage.error("保存失败，请稍后重试");
+      }
+    } else {
+      ElMessage.error("网络错误，请检查连接");
+    }
+  } finally {
+    loading.value = false;
+  }
 };
 
 const handleCancel = () => {
@@ -264,7 +339,7 @@ const handleCancel = () => {
 
 :deep(.el-input__wrapper) {
   font-size: 16px;
-  padding: 12px 15px;
+  padding: 2px 5px;
   border: 1px solid #ddd;
   border-radius: 8px;
   transition: all 0.3s ease;

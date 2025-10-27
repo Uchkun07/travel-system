@@ -28,7 +28,7 @@ const handleMenuChange = (menu: string) => {
 .user-center {
   min-height: calc(100vh - 75px);
   background-color: #f9fbfd;
-  padding: 80px 0;
+  padding: 25px 0;
   margin-top: 0;
 }
 
