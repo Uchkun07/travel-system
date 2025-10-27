@@ -11,6 +11,9 @@
       <router-view />
     </main>
 
+    <!-- 页脚 -->
+    <Footer />
+
     <!-- 登录弹窗 -->
     <LoginWindow
       v-model:visible="loginVisible"
@@ -28,6 +31,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import Navigation from "@/components/navigation.vue";
+import Footer from "@/components/Footer.vue";
 import LoginWindow from "@/components/LoginWindow.vue";
 import RegisterWindow from "@/components/registerWindow.vue";
 
