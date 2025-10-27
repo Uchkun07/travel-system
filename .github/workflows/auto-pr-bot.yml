@@ -1,0 +1,185 @@
+name: 【Bot】自动创建PR
+
+on:
+  push:
+    branches-ignore:
+      - "main"
+      - "**release**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  auto-create-pr:
+    # 跳过 main 分支和包含 [skip pr] 的提交
+    if: github.ref_type == 'branch' &&
+      github.ref_name != 'main' &&
+      !contains(github.event.head_commit.message, '[skip pr]')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 比较当前分支与 main 的差异
+      - name: 检查分支差异
+        id: check_diff
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const head = context.ref.replace('refs/heads/', '');
+            const base = 'main';
+
+            console.log(`正在比较 ${base}...${head}`);
+
+            try {
+              const { data: compare } = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${base}...${head}`
+              });
+              
+              const aheadBy = compare.ahead_by;
+              const behindBy = compare.behind_by;
+              
+              core.setOutput('ahead', String(aheadBy));
+              core.setOutput('behind', String(behindBy));
+              
+              console.log(`✓ ahead_by=${aheadBy}, behind_by=${behindBy}`);
+              
+              if (aheadBy === 0) {
+                console.log('⚠ 当前分支没有新提交，跳过创建 PR');
+              }
+            } catch (error) {
+              core.setFailed(`比较分支失败: ${error.message}`);
+            }
+
+      - name: 终止（无新提交）
+        if: steps.check_diff.outputs.ahead == '0'
+        run: |
+          echo "📋 当前分支相对于 main 没有新的提交"
+          echo "✓ 跳过创建 PR"
+          exit 0
+
+      # 创建或更新 PR
+      - name: 创建或更新 PR
+        if: steps.check_diff.outputs.ahead != '0'
+        id: create_pr
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const headBranch = context.ref.replace('refs/heads/', '');
+            const head = `${owner}:${headBranch}`;
+            const base = 'main';
+
+            // 获取第一个提交的消息作为 PR 标题
+            const { data: compare } = await github.rest.repos.compareCommitsWithBasehead({
+              owner,
+              repo,
+              basehead: `${base}...${headBranch}`
+            });
+
+            const firstCommit = compare.commits[0];
+            const commitMessage = firstCommit?.commit.message || `合并 ${headBranch} 到 ${base}`;
+            const title = commitMessage.split('\n')[0]; // 取第一行作为标题
+
+            // 生成 PR 描述
+            const commitCount = compare.commits.length;
+            const filesChanged = compare.files?.length || 0;
+
+            let body = `## 📝 变更摘要\n\n`;
+            body += `- **分支**: \`${headBranch}\` → \`${base}\`\n`;
+            body += `- **提交数**: ${commitCount} 个提交\n`;
+            body += `- **文件变更**: ${filesChanged} 个文件\n\n`;
+            body += `## 📋 提交历史\n\n`;
+
+            compare.commits.slice(0, 10).forEach(commit => {
+              const msg = commit.commit.message.split('\n')[0];
+              const sha = commit.sha.substring(0, 7);
+              const author = commit.commit.author.name;
+              body += `- \`${sha}\` ${msg} - *${author}*\n`;
+            });
+
+            if (commitCount > 10) {
+              body += `\n... 还有 ${commitCount - 10} 个提交\n`;
+            }
+
+            body += `\n---\n🤖 此 PR 由 GitHub Actions 自动创建`;
+
+            // 检查是否已存在开放的 PR
+            const { data: existingPRs } = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              head,
+              base
+            });
+
+            if (existingPRs.length > 0) {
+              const prNumber = existingPRs[0].number;
+              console.log(`✓ PR 已存在: #${prNumber}`);
+              console.log(`📍 URL: ${existingPRs[0].html_url}`);
+              
+              // 更新现有 PR
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: prNumber,
+                title,
+                body
+              });
+              
+              core.setOutput('pr_number', String(prNumber));
+              core.setOutput('pr_url', existingPRs[0].html_url);
+              core.setOutput('action', 'updated');
+              
+              // 添加评论
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: `🔄 PR 已更新\n\n新增 ${commitCount} 个提交，修改 ${filesChanged} 个文件。`
+              });
+            } else {
+              // 创建新 PR
+              const { data: newPR } = await github.rest.pulls.create({
+                owner,
+                repo,
+                title,
+                head,
+                base,
+                body
+              });
+              
+              console.log(`✅ PR 创建成功: #${newPR.number}`);
+              console.log(`📍 URL: ${newPR.html_url}`);
+              
+              core.setOutput('pr_number', String(newPR.number));
+              core.setOutput('pr_url', newPR.html_url);
+              core.setOutput('action', 'created');
+              
+              // 添加标签
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: newPR.number,
+                labels: ['🤖 auto-pr']
+              });
+            }
+
+      - name: 输出结果
+        if: steps.create_pr.outputs.pr_number
+        run: |
+          echo "🎉 操作完成！"
+          echo "📌 PR #${{ steps.create_pr.outputs.pr_number }}"
+          echo "🔗 ${{ steps.create_pr.outputs.pr_url }}"
+          echo "✨ 动作: ${{ steps.create_pr.outputs.action }}"
