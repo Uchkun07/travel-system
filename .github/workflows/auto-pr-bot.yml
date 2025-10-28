@@ -73,8 +73,11 @@ jobs:
         if: steps.check_diff.outputs.ahead != '0'
         id: create_pr
         uses: actions/github-script@v7
+        # 使用名为 AUTO_PR_TOKEN 的个人访问令牌(PAT)来创建 PR
+        # 说明: 使用 PAT 创建 PR 可以保证触发由 pull_request 事件驱动的 workflow（例如 coderabbit 的审核）。
+        # 请在仓库 Settings -> Secrets 中添加一个具有 repo 权限的 PAT，命名为 AUTO_PR_TOKEN。
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.AUTO_PR_TOKEN }}
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
@@ -116,7 +119,7 @@ jobs:
 
             body += `\n---\n🤖 此 PR 由 GitHub Actions 自动创建`;
 
-            // 检查是否已存在开放的 PR
+              // 检查是否已存在开放的 PR
             const { data: existingPRs } = await github.rest.pulls.list({
               owner,
               repo,

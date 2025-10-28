@@ -14,7 +14,8 @@ const routes: RouteRecordRaw[] = [
         path: "",
         name: "Home",
         meta: { title: "悦旅 - 探索世界的每一个角落" },
-        component: () => import("@/views/home/Home.vue"),
+        component: () =>
+          import("@/views/recommend-attraction/recommend-attraction.vue"),
       },
       {
         path: "explore",
