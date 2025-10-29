@@ -5,7 +5,7 @@ import org.example.springproject.entity.Slideshow;
 
 import java.util.List;
 
-public interface SlideshowService extends IService<Slideshow> {
+public interface ISlideshowService extends IService<Slideshow> {
     
     /**
      * 获取所有启用的轮播图(前台展示)

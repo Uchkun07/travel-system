@@ -5,14 +5,14 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.example.springproject.entity.Slideshow;
 import org.example.springproject.mapper.SlideshowMapper;
-import org.example.springproject.service.SlideshowService;
+import org.example.springproject.service.ISlideshowService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-public class SlideshowImpl extends ServiceImpl<SlideshowMapper, Slideshow> implements SlideshowService {
+public class SlideshowImpl extends ServiceImpl<SlideshowMapper, Slideshow> implements ISlideshowService {
     
     @Override
     public List<Slideshow> getActiveSlideshow() {
