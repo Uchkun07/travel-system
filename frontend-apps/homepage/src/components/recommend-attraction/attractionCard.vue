@@ -35,14 +35,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { computed } from "vue";
 import { ElMessage } from "element-plus";
+import { useCollectionStore } from "@/stores/collection";
+import { useUserStore } from "@/stores/user"; // 改为使用 userStore
 import heart from "@/assets/svgs/heart.vue";
-import {
-  collectAttraction,
-  uncollectAttraction,
-  checkCollectionStatus,
-} from "@/apis/attraction";
 
 interface Attraction {
   id: number | string;
@@ -64,47 +61,29 @@ const emit = defineEmits<{
   favorite: [id: number | string, isFavorite: boolean];
 }>();
 
-const isFavorite = ref(false);
+const collectionStore = useCollectionStore();
+const userStore = useUserStore(); // 使用 userStore 而不是 authStore
 
-onMounted(async () => {
-  try {
-    const id = Number(props.attraction.id);
-    if (!Number.isFinite(id)) return;
-    const res = await checkCollectionStatus(id);
-    if (res && res.code === 200 && res.data) {
-      isFavorite.value = !!res.data.collected;
-    }
-  } catch (e) {
-    // 忽略初始化失败，不打断渲染
-  }
+// 计算收藏状态
+const isFavorite = computed(() => {
+  const id = Number(props.attraction.id);
+  return Number.isFinite(id) ? collectionStore.isCollected(id) : false;
 });
 
+// 切换收藏
 const toggleFavorite = async () => {
+  // 检查用户是否登录 - 使用 userStore 的 isLoggedIn
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning("请先登录后再收藏");
+    return;
+  }
+
   const id = Number(props.attraction.id);
   if (!Number.isFinite(id)) return;
-  try {
-    if (isFavorite.value) {
-      const res = await uncollectAttraction(id);
-      if (res.code === 200) {
-        isFavorite.value = false;
-        emit("favorite", props.attraction.id, isFavorite.value);
-        ElMessage.success(res.message || "已取消收藏");
-      } else {
-        ElMessage.error(res.message || "取消收藏失败");
-      }
-    } else {
-      const res = await collectAttraction(id);
-      if (res.code === 200) {
-        isFavorite.value = true;
-        emit("favorite", props.attraction.id, isFavorite.value);
-        ElMessage.success(res.message || "收藏成功");
-      } else {
-        ElMessage.error(res.message || "收藏失败");
-      }
-    }
-  } catch (error: any) {
-    // 全局拦截器会处理401等，这里兜底提示
-    ElMessage.error(error?.message || "操作失败");
+
+  const success = await collectionStore.toggleCollection(id);
+  if (success) {
+    emit("favorite", props.attraction.id, collectionStore.isCollected(id));
   }
 };
 
@@ -112,6 +91,8 @@ const formatPrice = (price: number): string => {
   return price.toLocaleString("zh-CN");
 };
 </script>
+
+<!-- 样式保持不变 -->
 
 <style scoped>
 /* 目的地卡片 */
@@ -158,7 +139,7 @@ const formatPrice = (price: number): string => {
   color: white;
   padding: 0.3125rem 0.9375rem;
   border-radius: 50px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
   z-index: 2;
 }

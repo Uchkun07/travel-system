@@ -10,12 +10,13 @@
       <div class="section-header">
         <h2 class="section-title">热门景点推荐</h2>
         <p class="section-subtitle">发现最受欢迎的旅游目的地</p>
+        <div v-if="userStore.isLoggedIn" class="collection-info">
+          已收藏 {{ collectionStore.collectionCount }} 个景点
+        </div>
       </div>
 
       <!-- 景点列表 -->
-      <div v-if="loading" class="loading-text">
-        加载中...
-      </div>
+      <div v-if="loading" class="loading-text">加载中...</div>
       <div v-else-if="attractions.length === 0" class="placeholder-text">
         暂无景点数据
       </div>
@@ -32,11 +33,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { ElMessage } from "element-plus";
 import Slideshow from "@/components/recommend-attraction/slideshow.vue";
 import attractionCard from "@/components/recommend-attraction/attractionCard.vue";
-import { getAllAttractions, type Attraction as ApiAttraction } from "@/apis/attraction";
+import {
+  getAllAttractions,
+  type Attraction as ApiAttraction,
+} from "@/apis/attraction";
+import { useCollectionStore } from "@/stores/collection";
+import { useUserStore } from "@/stores/user"; // 改为使用 userStore
 
 // 组件所需的景点数据格式
 interface AttractionCardData {
@@ -54,8 +60,14 @@ interface AttractionCardData {
 const attractions = ref<AttractionCardData[]>([]);
 const loading = ref(false);
 
+// Store
+const collectionStore = useCollectionStore();
+const userStore = useUserStore(); // 使用 userStore
+
 // 数据转换：将后端数据转换为组件需要的格式
-const transformAttraction = (attraction: ApiAttraction): AttractionCardData => ({
+const transformAttraction = (
+  attraction: ApiAttraction
+): AttractionCardData => ({
   id: attraction.attractionId,
   title: attraction.name,
   location: attraction.location,
@@ -72,6 +84,11 @@ const loadAttractions = async () => {
   try {
     const data = await getAllAttractions();
     attractions.value = data.map(transformAttraction);
+
+    // 如果用户已登录，初始化收藏列表
+    if (userStore.isLoggedIn && !collectionStore.initialized) {
+      await collectionStore.initializeCollections();
+    }
   } catch (error: any) {
     ElMessage.error("加载景点数据失败: " + (error?.message || "未知错误"));
     console.error("加载景点失败:", error);
@@ -84,6 +101,17 @@ const loadAttractions = async () => {
 const handleFavorite = (id: number | string, isFavorite: boolean) => {
   console.log(`景点 ${id} 收藏状态: ${isFavorite}`);
 };
+
+// 监听登录状态变化
+watch(
+  () => userStore.isLoggedIn,
+  (newVal) => {
+    if (newVal && attractions.value.length > 0) {
+      // 用户登录后初始化收藏列表
+      collectionStore.initializeCollections();
+    }
+  }
+);
 
 // 组件挂载时加载数据
 onMounted(() => {
@@ -116,6 +144,16 @@ onMounted(() => {
 .section-subtitle {
   font-size: 1.2rem;
   color: #666;
+  margin-bottom: 8px;
+}
+
+.collection-info {
+  font-size: 1rem;
+  color: #999;
+  background: #e8f4ff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: inline-block;
 }
 
 .attraction-card {
