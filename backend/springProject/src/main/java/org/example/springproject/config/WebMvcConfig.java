@@ -37,6 +37,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                             "/auth/login",           // 登录接口
                             "/auth/checkUsername",   // 检查用户名接口
                             "/auth/checkEmail",      // 检查邮箱接口
+                            "/slideshow/active",     // 获取启用的轮播图(前台展示) - 允许匿名访问
+                            "/attractions/list",     // 获取所有景点 - 允许匿名访问
                             "/email/sendCode",       // 发送验证码接口
                             "/swagger-ui/**",        // Swagger UI
                             "/v3/api-docs/**",       // Swagger API文档

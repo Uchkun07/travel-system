@@ -35,6 +35,6 @@ public class UserAttractionCollection  {
 
     /** 逻辑删除标记（支撑取消收藏需求） */
     @TableField("is_deleted")
-    @TableLogic
+    // @TableLogic  这个千万不能加，气死我了，找了半天结果bug在这里
     private Integer isDeleted;
 }

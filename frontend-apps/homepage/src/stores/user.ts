@@ -1,3 +1,4 @@
+// stores/user.ts (在现有基础上添加收藏相关功能)
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import Cookies from "js-cookie";
@@ -9,6 +10,7 @@ import {
 } from "@/apis";
 import { ElMessage } from "element-plus";
 import { router } from "@/routers";
+import { useCollectionStore } from "./collection";
 
 export interface UserInfo {
   userId: number;
@@ -89,6 +91,10 @@ export const useUserStore = defineStore("user", () => {
 
     // 额外清理:防止有旧的 token 残留
     localStorage.removeItem("token");
+
+    // 清空收藏状态
+    const collectionStore = useCollectionStore();
+    collectionStore.clearCollections();
   }
 
   /**
@@ -113,6 +119,10 @@ export const useUserStore = defineStore("user", () => {
           gender: res.gender,
           birthday: res.birthday,
         });
+
+        // 登录后初始化收藏列表
+        const collectionStore = useCollectionStore();
+        await collectionStore.initializeCollections();
 
         ElMessage.success(res.message || "登录成功");
         return true;
@@ -169,6 +179,11 @@ export const useUserStore = defineStore("user", () => {
           birthday: res.birthday,
           status: res.status,
         });
+
+        // 获取用户信息后初始化收藏列表
+        const collectionStore = useCollectionStore();
+        await collectionStore.initializeCollections();
+
         return true;
       } else {
         // 获取失败,清除本地信息
