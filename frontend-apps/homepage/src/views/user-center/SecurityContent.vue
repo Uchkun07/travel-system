@@ -23,31 +23,17 @@
 
     <!-- 安全设置项 -->
     <div class="security-items">
-      <!-- 修改密码 -->
+      <!-- 更改用户名 -->
       <div class="security-item">
         <div class="item-info">
-          <ElIcon class="item-icon"><Key /></ElIcon>
+          <ElIcon class="item-icon"><User /></ElIcon>
           <div class="item-content">
-            <h4>登录密码</h4>
-            <p>定期修改密码可以提高账户安全性</p>
+            <h4>更改用户名</h4>
+            <p>为了保护您的账户安全，请定期更改用户名</p>
           </div>
         </div>
-        <ElButton type="primary" plain @click="showPasswordDialog = true">
-          修改密码
-        </ElButton>
-      </div>
-
-      <!-- 手机绑定 -->
-      <div class="security-item">
-        <div class="item-info">
-          <ElIcon class="item-icon"><Iphone /></ElIcon>
-          <div class="item-content">
-            <h4>手机绑定</h4>
-            <p>{{ phoneInfo }}</p>
-          </div>
-        </div>
-        <ElButton type="primary" plain @click="showPhoneDialog = true">
-          {{ phoneBound ? "更换手机" : "绑定手机" }}
+        <ElButton type="primary" plain @click="showUsernameDialog = true">
+          更改用户名
         </ElButton>
       </div>
 
@@ -65,42 +51,46 @@
         </ElButton>
       </div>
 
-      <!-- 两步验证 -->
+      <!-- 修改密码 -->
       <div class="security-item">
         <div class="item-info">
-          <ElIcon class="item-icon"><Lock /></ElIcon>
+          <ElIcon class="item-icon"><Key /></ElIcon>
           <div class="item-content">
-            <h4>两步验证</h4>
-            <p>
-              {{
-                twoFactorEnabled
-                  ? "已开启两步验证"
-                  : "未开启两步验证，建议开启以提高安全性"
-              }}
-            </p>
+            <h4>登录密码</h4>
+            <p>定期修改密码可以提高账户安全性</p>
           </div>
         </div>
-        <ElSwitch
-          v-model="twoFactorEnabled"
-          size="large"
-          @change="handleTwoFactorChange"
-        />
-      </div>
-
-      <!-- 登录设备管理 -->
-      <div class="security-item">
-        <div class="item-info">
-          <ElIcon class="item-icon"><Monitor /></ElIcon>
-          <div class="item-content">
-            <h4>登录设备管理</h4>
-            <p>管理所有登录过的设备</p>
-          </div>
-        </div>
-        <ElButton type="primary" plain @click="showDevicesDialog = true">
-          查看设备
+        <ElButton type="primary" plain @click="showPasswordDialog = true">
+          修改密码
         </ElButton>
       </div>
     </div>
+
+    <!-- 修改用户名对话框 -->
+    <ElDialog
+      v-model="showUsernameDialog"
+      title="更改用户名"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <ElForm
+        :model="usernameForm"
+        :rules="usernameRules"
+        ref="usernameFormRef"
+        label-width="100px"
+      >
+        <ElFormItem label="新用户名" prop="username">
+          <ElInput
+            v-model="usernameForm.username"
+            placeholder="请输入新用户名"
+          />
+        </ElFormItem>
+      </ElForm>
+      <template #footer>
+        <ElButton @click="showUsernameDialog = false">取消</ElButton>
+        <ElButton type="primary" @click="handleUsernameSubmit">确定</ElButton>
+      </template>
+    </ElDialog>
 
     <!-- 修改密码对话框 -->
     <ElDialog
@@ -143,32 +133,6 @@
       </template>
     </ElDialog>
 
-    <!-- 手机绑定对话框 -->
-    <ElDialog
-      v-model="showPhoneDialog"
-      :title="phoneBound ? '更换手机' : '绑定手机'"
-      width="500px"
-      :close-on-click-modal="false"
-    >
-      <ElForm :model="phoneForm" ref="phoneFormRef" label-width="100px">
-        <ElFormItem label="手机号">
-          <ElInput v-model="phoneForm.phone" placeholder="请输入手机号" />
-        </ElFormItem>
-        <ElFormItem label="验证码">
-          <div style="display: flex; gap: 10px">
-            <ElInput v-model="phoneForm.code" placeholder="请输入验证码" />
-            <ElButton :disabled="phoneCounting" @click="sendPhoneCode">
-              {{ phoneCountText }}
-            </ElButton>
-          </div>
-        </ElFormItem>
-      </ElForm>
-      <template #footer>
-        <ElButton @click="showPhoneDialog = false">取消</ElButton>
-        <ElButton type="primary" @click="handlePhoneSubmit">确定</ElButton>
-      </template>
-    </ElDialog>
-
     <!-- 邮箱绑定对话框 -->
     <ElDialog
       v-model="showEmailDialog"
@@ -181,10 +145,11 @@
           <ElInput v-model="emailForm.email" placeholder="请输入邮箱地址" />
         </ElFormItem>
         <ElFormItem label="验证码">
-          <div style="display: flex; gap: 10px">
+          <div style="display: flex; align-items: center; gap: 10px">
             <ElInput v-model="emailForm.code" placeholder="请输入验证码" />
-            <ElButton :disabled="emailCounting" @click="sendEmailCode">
-              {{ emailCountText }}
+            <ElButton :disabled="countdownRef > 0" @click="sendEmailCode">
+              <template v-if="countdownRef === 0">发送验证码</template>
+              <template v-else>{{ countdownRef }}s</template>
             </ElButton>
           </div>
         </ElFormItem>
@@ -194,59 +159,50 @@
         <ElButton type="primary" @click="handleEmailSubmit">确定</ElButton>
       </template>
     </ElDialog>
-
-    <!-- 登录设备对话框 -->
-    <ElDialog v-model="showDevicesDialog" title="登录设备管理" width="600px">
-      <div class="devices-list">
-        <div
-          v-for="device in loginDevices"
-          :key="device.id"
-          class="device-item"
-        >
-          <ElIcon class="device-icon"><Monitor /></ElIcon>
-          <div class="device-info">
-            <h4>{{ device.name }}</h4>
-            <p>{{ device.location }} · {{ device.time }}</p>
-          </div>
-          <ElTag v-if="device.current" type="success">当前设备</ElTag>
-          <ElButton
-            v-else
-            type="danger"
-            text
-            @click="handleRemoveDevice(device.id)"
-          >
-            移除
-          </ElButton>
-        </div>
-      </div>
-    </ElDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
 import {
   ElIcon,
   ElButton,
   ElProgress,
-  ElSwitch,
   ElDialog,
   ElForm,
   ElFormItem,
   ElInput,
-  ElTag,
   ElMessage,
   type FormInstance,
   type FormRules,
 } from "element-plus";
-import { Lock, Key, Iphone, Message, Monitor } from "@element-plus/icons-vue";
+import { Lock, Key, Message, User } from "@element-plus/icons-vue";
+import { useUserStore } from "@/stores";
+import {
+  changePassword,
+  changeUsername,
+  changeEmail,
+  sendVerificationCode,
+  type ChangePasswordRequest,
+  type ChangeUsernameRequest,
+  type ChangeEmailRequest,
+} from "@/apis/auth";
 
-// 安全等级
+const userStore = useUserStore();
+
+// 安全等级 (用户名30% + 密码30% + 邮箱40%)
 const securityLevel = computed(() => {
   let level = 0;
-  if (phoneBound.value) level += 30;
-  if (emailBound.value) level += 30;
-  if (twoFactorEnabled.value) level += 40;
+  const userInfo = userStore.userInfo;
+
+  // 用户名：30分 (用户登录即有用户名)
+  if (userInfo?.username) level += 30;
+
+  // 密码：30分 (用户登录即有密码)
+  level += 30;
+
+  // 邮箱绑定：40分
+  if (emailBound.value) level += 40;
 
   return {
     percentage: level,
@@ -257,22 +213,33 @@ const securityLevel = computed(() => {
 });
 
 // 安全设置状态
-const phoneBound = ref(true);
-const emailBound = ref(true);
-const twoFactorEnabled = ref(false);
+const emailBound = ref(false);
 
-const phoneInfo = computed(() =>
-  phoneBound.value ? "已绑定手机：138****8000" : "未绑定手机"
-);
-const emailInfo = computed(() =>
-  emailBound.value ? "已绑定邮箱：zhang****@example.com" : "未绑定邮箱"
-);
+const emailInfo = computed(() => {
+  if (userStore.userInfo?.email) {
+    const email = userStore.userInfo.email;
+    const parts = email.split("@");
+    if (parts.length === 2) {
+      const [name, domain] = parts;
+      const maskedName =
+        name && name.length > 2 ? name.slice(0, 2) + "****" : name;
+      return `已绑定邮箱：${maskedName}@${domain}`;
+    }
+  }
+  return "未绑定邮箱";
+});
+
+// 组件挂载时初始化
+onMounted(() => {
+  if (userStore.userInfo?.email) {
+    emailBound.value = true;
+  }
+});
 
 // 对话框显示状态
 const showPasswordDialog = ref(false);
-const showPhoneDialog = ref(false);
 const showEmailDialog = ref(false);
-const showDevicesDialog = ref(false);
+const showUsernameDialog = ref(false);
 
 // 修改密码表单
 const passwordFormRef = ref<FormInstance>();
@@ -303,19 +270,6 @@ const passwordRules: FormRules = {
   ],
 };
 
-// 手机绑定表单
-const phoneFormRef = ref<FormInstance>();
-const phoneForm = reactive({
-  phone: "",
-  code: "",
-});
-
-const phoneCounting = ref(false);
-const phoneCountdown = ref(60);
-const phoneCountText = computed(() =>
-  phoneCounting.value ? `${phoneCountdown.value}s` : "发送验证码"
-);
-
 // 邮箱绑定表单
 const emailFormRef = ref<FormInstance>();
 const emailForm = reactive({
@@ -323,140 +277,205 @@ const emailForm = reactive({
   code: "",
 });
 
-const emailCounting = ref(false);
-const emailCountdown = ref(60);
-const emailCountText = computed(() =>
-  emailCounting.value ? `${emailCountdown.value}s` : "发送验证码"
-);
-
-// 登录设备列表
-const loginDevices = ref([
-  {
-    id: 1,
-    name: "Windows 10 · Chrome 120",
-    location: "北京市",
-    time: "当前",
-    current: true,
-  },
-  {
-    id: 2,
-    name: "iPhone 14 · Safari",
-    location: "上海市",
-    time: "2小时前",
-    current: false,
-  },
-  {
-    id: 3,
-    name: "MacBook Pro · Chrome 119",
-    location: "广州市",
-    time: "1天前",
-    current: false,
-  },
-]);
+const countdownRef = ref(0);
 
 // 修改密码
 const handlePasswordSubmit = async () => {
   if (!passwordFormRef.value) return;
 
-  await passwordFormRef.value.validate((valid) => {
-    if (valid) {
-      // TODO: 调用API修改密码
-      ElMessage.success("密码修改成功");
+  try {
+    const valid = await passwordFormRef.value.validate();
+    if (!valid) return;
+
+    const requestData: ChangePasswordRequest = {
+      oldPassword: passwordForm.oldPassword,
+      newPassword: passwordForm.newPassword,
+      confirmPassword: passwordForm.confirmPassword,
+    };
+
+    const response = await changePassword(requestData);
+
+    if (response.success) {
+      ElMessage.success(response.message || "密码修改成功");
       showPasswordDialog.value = false;
       passwordForm.oldPassword = "";
       passwordForm.newPassword = "";
       passwordForm.confirmPassword = "";
+    } else {
+      ElMessage.error(response.message || "密码修改失败");
     }
-  });
-};
-
-// 发送手机验证码
-const sendPhoneCode = () => {
-  if (!phoneForm.phone) {
-    ElMessage.warning("请输入手机号");
-    return;
-  }
-
-  // TODO: 调用API发送验证码
-  ElMessage.success("验证码已发送");
-  phoneCounting.value = true;
-  phoneCountdown.value = 60;
-
-  const timer = setInterval(() => {
-    phoneCountdown.value--;
-    if (phoneCountdown.value <= 0) {
-      clearInterval(timer);
-      phoneCounting.value = false;
+  } catch (error: any) {
+    console.error("修改密码失败:", error);
+    if (error.response?.status === 401) {
+      ElMessage.error("登录已过期，请重新登录");
+      userStore.logout();
+    } else if (error.response?.data?.message) {
+      ElMessage.error(error.response.data.message);
+    } else {
+      ElMessage.error("密码修改失败，请稍后重试");
     }
-  }, 1000);
-};
-
-// 绑定手机
-const handlePhoneSubmit = () => {
-  if (!phoneForm.phone || !phoneForm.code) {
-    ElMessage.warning("请填写完整信息");
-    return;
   }
-
-  // TODO: 调用API绑定手机
-  ElMessage.success(phoneBound.value ? "手机更换成功" : "手机绑定成功");
-  phoneBound.value = true;
-  showPhoneDialog.value = false;
-  phoneForm.phone = "";
-  phoneForm.code = "";
 };
 
 // 发送邮箱验证码
-const sendEmailCode = () => {
+const sendEmailCode = async () => {
+  if (countdownRef.value > 0) return;
+
   if (!emailForm.email) {
     ElMessage.warning("请输入邮箱地址");
     return;
   }
 
-  // TODO: 调用API发送验证码
-  ElMessage.success("验证码已发送");
-  emailCounting.value = true;
-  emailCountdown.value = 60;
+  // 验证邮箱格式
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailForm.email)) {
+    ElMessage.warning("请输入有效的邮箱地址");
+    return;
+  }
 
-  const timer = setInterval(() => {
-    emailCountdown.value--;
-    if (emailCountdown.value <= 0) {
-      clearInterval(timer);
-      emailCounting.value = false;
+  try {
+    const response = await sendVerificationCode({ email: emailForm.email });
+
+    if (response.success) {
+      ElMessage.success(response.message || "验证码已发送");
+      startCountdown();
+    } else {
+      ElMessage.error(response.message || "验证码发送失败");
     }
-  }, 1000);
+  } catch (error: any) {
+    console.error("发送验证码失败:", error);
+    if (error.response?.data?.message) {
+      ElMessage.error(error.response.data.message);
+    } else {
+      ElMessage.error("验证码发送失败,请稍后重试");
+    }
+  }
 };
 
-// 绑定邮箱
-const handleEmailSubmit = () => {
+const startCountdown = () => {
+  countdownRef.value = 60;
+  const timer = setInterval(() => {
+    countdownRef.value--;
+    if (countdownRef.value <= 0) {
+      clearInterval(timer);
+    }
+  }, 1000);
+}; // 绑定邮箱
+const handleEmailSubmit = async () => {
   if (!emailForm.email || !emailForm.code) {
     ElMessage.warning("请填写完整信息");
     return;
   }
 
-  // TODO: 调用API绑定邮箱
-  ElMessage.success(emailBound.value ? "邮箱更换成功" : "邮箱绑定成功");
-  emailBound.value = true;
-  showEmailDialog.value = false;
-  emailForm.email = "";
-  emailForm.code = "";
-};
+  // 验证邮箱格式
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailForm.email)) {
+    ElMessage.warning("请输入有效的邮箱地址");
+    return;
+  }
 
-// 两步验证切换
-const handleTwoFactorChange = (value: string | number | boolean) => {
-  if (value) {
-    ElMessage.success("两步验证已开启");
-  } else {
-    ElMessage.info("两步验证已关闭");
+  try {
+    const requestData: ChangeEmailRequest = {
+      email: emailForm.email,
+      captcha: emailForm.code,
+    };
+
+    const response = await changeEmail(requestData);
+
+    if (response.success) {
+      ElMessage.success(
+        response.message || emailBound.value ? "邮箱更换成功" : "邮箱绑定成功"
+      );
+      emailBound.value = true;
+      showEmailDialog.value = false;
+      emailForm.email = "";
+      emailForm.code = "";
+
+      // 更新本地用户信息
+      if (response.email && userStore.userInfo) {
+        userStore.setUserInfo({
+          userId: userStore.userInfo.userId,
+          username: userStore.userInfo.username,
+          email: response.email,
+          fullName: userStore.userInfo.fullName,
+          avatar: userStore.userInfo.avatar,
+        });
+      }
+    } else {
+      ElMessage.error(response.message || "邮箱绑定失败");
+    }
+  } catch (error: any) {
+    console.error("绑定邮箱失败:", error);
+    if (error.response?.status === 401) {
+      ElMessage.error("登录已过期，请重新登录");
+      userStore.logout();
+    } else if (error.response?.data?.message) {
+      ElMessage.error(error.response.data.message);
+    } else {
+      ElMessage.error("邮箱绑定失败，请稍后重试");
+    }
   }
 };
 
-// 移除设备
-const handleRemoveDevice = (id: number) => {
-  const index = loginDevices.value.findIndex((d) => d.id === id);
-  if (index > -1) {
-    loginDevices.value.splice(index, 1);
-    ElMessage.success("设备已移除");
+// 更改用户名表单
+const usernameFormRef = ref<FormInstance>();
+const usernameForm = reactive({
+  username: "",
+});
+
+const usernameRules: FormRules = {
+  username: [
+    { required: true, message: "请输入新用户名", trigger: "blur" },
+    { min: 3, max: 20, message: "用户名长度在3-20个字符之间", trigger: "blur" },
+    {
+      pattern: /^[a-zA-Z0-9_]+$/,
+      message: "用户名只能包含字母、数字和下划线",
+      trigger: "blur",
+    },
+  ],
+};
+
+// 提交用户名修改
+const handleUsernameSubmit = async () => {
+  if (!usernameFormRef.value) return;
+
+  try {
+    const valid = await usernameFormRef.value.validate();
+    if (!valid) return;
+
+    const response = await changeUsername({ username: usernameForm.username });
+
+    if (response.success) {
+      ElMessage.success(response.message || "用户名修改成功");
+      showUsernameDialog.value = false;
+      usernameForm.username = "";
+
+      // 更新本地用户信息
+      if (response.token) {
+        userStore.setToken(response.token, true);
+      }
+      if (response.username && userStore.userInfo) {
+        userStore.setUserInfo({
+          userId: userStore.userInfo.userId,
+          username: response.username,
+          email: userStore.userInfo.email,
+          fullName: userStore.userInfo.fullName,
+          avatar: userStore.userInfo.avatar,
+        });
+      }
+    } else {
+      ElMessage.error(response.message || "用户名修改失败");
+    }
+  } catch (error: any) {
+    console.error("修改用户名失败:", error);
+    if (error.response?.status === 401) {
+      ElMessage.error("登录已过期，请重新登录");
+      userStore.logout();
+    } else if (error.response?.data?.message) {
+      ElMessage.error(error.response.data.message);
+    } else {
+      ElMessage.error("用户名修改失败，请稍后重试");
+    }
   }
 };
 </script>
@@ -575,8 +594,8 @@ const handleRemoveDevice = (id: number) => {
 }
 
 :deep(.el-button) {
-  font-size: 15px;
-  padding: 12px 25px;
+  font-size: 16px;
+  padding: 18px 25px;
   border-radius: 50px;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -618,6 +637,10 @@ const handleRemoveDevice = (id: number) => {
   padding: 15px 30px 25px;
 }
 
+:deep(.el-form-item) {
+  align-items: center;
+}
+
 :deep(.el-form-item__label) {
   font-size: 16px;
   font-weight: 600;
@@ -627,57 +650,6 @@ const handleRemoveDevice = (id: number) => {
   font-size: 16px;
   padding: 12px 15px;
   border-radius: 8px;
-}
-
-/* 设备列表 */
-.devices-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.device-item {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border: 1px solid #eee;
-  transition: all 0.3s ease;
-}
-
-.device-item:hover {
-  background: #ecf0f1;
-}
-
-.device-icon {
-  font-size: 30px;
-  color: #3498db;
-}
-
-.device-info {
-  flex: 1;
-}
-
-.device-info h4 {
-  font-size: 16px;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 5px;
-}
-
-.device-info p {
-  font-size: 14px;
-  color: #7f8c8d;
-}
-
-:deep(.el-tag) {
-  font-size: 14px;
-  padding: 5px 12px;
-  font-weight: 600;
 }
 
 @media (max-width: 768px) {
@@ -692,17 +664,8 @@ const handleRemoveDevice = (id: number) => {
     width: 100%;
   }
 
-  .security-item :deep(.el-button),
-  .security-item :deep(.el-switch) {
+  .security-item :deep(.el-button) {
     align-self: flex-end;
-  }
-
-  .device-item {
-    flex-wrap: wrap;
-  }
-
-  .device-info {
-    flex-basis: 100%;
   }
 
   .status-header {

@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { ElIcon, ElMessageBox, ElMessage } from "element-plus";
 import { User, Star, Lock, SwitchButton } from "@element-plus/icons-vue";
 import { useUserStore } from "@/stores";
@@ -65,9 +65,24 @@ const userStore = useUserStore();
 const router = useRouter();
 const activeMenu = ref("profile");
 
+const props = defineProps<{
+  initialMenu?: string;
+}>();
+
 const emit = defineEmits<{
   "menu-change": [menu: string];
 }>();
+
+// 监听 props 变化
+watch(
+  () => props.initialMenu,
+  (newMenu) => {
+    if (newMenu) {
+      activeMenu.value = newMenu;
+    }
+  },
+  { immediate: true }
+);
 
 const handleMenuClick = (menu: string) => {
   activeMenu.value = menu;

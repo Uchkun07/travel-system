@@ -278,4 +278,242 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         wrapper.eq("email", email);
         return getOne(wrapper);
     }
+
+    @Override
+    public Map<String, Object> changePassword(Long userId, String oldPassword, String newPassword) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            // 1. 验证参数
+            if (userId == null) {
+                result.put("success", false);
+                result.put("message", "用户ID不能为空");
+                return result;
+            }
+
+            if (oldPassword == null || oldPassword.trim().isEmpty()) {
+                result.put("success", false);
+                result.put("message", "当前密码不能为空");
+                return result;
+            }
+
+            if (newPassword == null || newPassword.trim().isEmpty()) {
+                result.put("success", false);
+                result.put("message", "新密码不能为空");
+                return result;
+            }
+
+            // 2. 获取用户信息
+            User user = getById(userId);
+            if (user == null) {
+                result.put("success", false);
+                result.put("message", "用户不存在");
+                return result;
+            }
+
+            // 3. 验证当前密码
+            boolean passwordMatch = PasswordUtil.verifyPassword(
+                    oldPassword,
+                    user.getSalt(),
+                    user.getIterations(),
+                    user.getPasswordHash()
+            );
+
+            if (!passwordMatch) {
+                result.put("success", false);
+                result.put("message", "当前密码不正确");
+                log.warn("修改密码失败，当前密码不正确, userId: {}", userId);
+                return result;
+            }
+
+            // 4. 生成新的盐值和密码哈希
+            try {
+                String newSalt = PasswordUtil.generateSalt();
+                int iterations = PasswordUtil.getDefaultIterations();
+                String newPasswordHash = PasswordUtil.hashPassword(newPassword, newSalt, iterations);
+
+                user.setSalt(newSalt);
+                user.setIterations(iterations);
+                user.setPasswordHash(newPasswordHash);
+            } catch (Exception e) {
+                result.put("success", false);
+                result.put("message", "密码加密失败");
+                log.error("密码加密失败", e);
+                return result;
+            }
+
+            // 5. 更新用户信息
+            boolean updated = updateById(user);
+            if (updated) {
+                result.put("success", true);
+                result.put("message", "密码修改成功");
+                log.info("用户密码修改成功, userId: {}", userId);
+            } else {
+                result.put("success", false);
+                result.put("message", "密码修改失败，请稍后重试");
+            }
+
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "密码修改失败: " + e.getMessage());
+            log.error("修改密码异常", e);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> changeUsername(Long userId, String newUsername) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            // 1. 验证参数
+            if (userId == null) {
+                result.put("success", false);
+                result.put("message", "用户ID不能为空");
+                return result;
+            }
+
+            if (newUsername == null || newUsername.trim().isEmpty()) {
+                result.put("success", false);
+                result.put("message", "新用户名不能为空");
+                return result;
+            }
+
+            // 2. 获取用户信息
+            User user = getById(userId);
+            if (user == null) {
+                result.put("success", false);
+                result.put("message", "用户不存在");
+                return result;
+            }
+
+            // 3. 检查新用户名是否与当前用户名相同
+            if (newUsername.equals(user.getUsername())) {
+                result.put("success", false);
+                result.put("message", "新用户名与当前用户名相同");
+                return result;
+            }
+
+            // 4. 检查新用户名是否已被使用
+            User existUser = getUserByUsername(newUsername);
+            if (existUser != null) {
+                result.put("success", false);
+                result.put("message", "该用户名已被使用");
+                return result;
+            }
+
+            // 5. 更新用户名
+            user.setUsername(newUsername);
+            boolean updated = updateById(user);
+
+            if (updated) {
+                // 6. 生成新的JWT令牌（包含更新后的用户名）
+                String token = jwtUtil.generateTokenWithUserInfo(
+                        user.getUserId().longValue(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getFullName(),
+                        user.getAvatar(),
+                        user.getPhone(),
+                        user.getGender(),
+                        user.getBirthday(),
+                        true
+                );
+
+                result.put("success", true);
+                result.put("message", "用户名修改成功");
+                result.put("token", token);
+                result.put("username", user.getUsername());
+                log.info("用户名修改成功, userId: {}, newUsername: {}", userId, newUsername);
+            } else {
+                result.put("success", false);
+                result.put("message", "用户名修改失败，请稍后重试");
+            }
+
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "用户名修改失败: " + e.getMessage());
+            log.error("修改用户名异常", e);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> changeEmail(Long userId, String newEmail, String captcha) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            // 1. 验证参数
+            if (userId == null) {
+                result.put("success", false);
+                result.put("message", "用户ID不能为空");
+                return result;
+            }
+
+            if (newEmail == null || newEmail.trim().isEmpty()) {
+                result.put("success", false);
+                result.put("message", "新邮箱不能为空");
+                return result;
+            }
+
+            if (captcha == null || captcha.trim().isEmpty()) {
+                result.put("success", false);
+                result.put("message", "验证码不能为空");
+                return result;
+            }
+
+            // 2. 验证邮箱验证码
+            if (!emailService.verifyCode(newEmail, captcha)) {
+                result.put("success", false);
+                result.put("message", "验证码错误或已过期");
+                return result;
+            }
+
+            // 3. 获取用户信息
+            User user = getById(userId);
+            if (user == null) {
+                result.put("success", false);
+                result.put("message", "用户不存在");
+                return result;
+            }
+
+            // 4. 检查新邮箱是否与当前邮箱相同
+            if (newEmail.equals(user.getEmail())) {
+                result.put("success", false);
+                result.put("message", "新邮箱与当前邮箱相同");
+                return result;
+            }
+
+            // 5. 检查新邮箱是否已被使用
+            User existUser = getUserByEmail(newEmail);
+            if (existUser != null && !existUser.getUserId().equals(user.getUserId())) {
+                result.put("success", false);
+                result.put("message", "该邮箱已被使用");
+                return result;
+            }
+
+            // 6. 更新邮箱
+            user.setEmail(newEmail);
+            boolean updated = updateById(user);
+
+            if (updated) {
+                result.put("success", true);
+                result.put("message", "邮箱修改成功");
+                result.put("email", user.getEmail());
+                log.info("用户邮箱修改成功, userId: {}, newEmail: {}", userId, newEmail);
+            } else {
+                result.put("success", false);
+                result.put("message", "邮箱修改失败，请稍后重试");
+            }
+
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "邮箱修改失败: " + e.getMessage());
+            log.error("修改邮箱异常", e);
+        }
+
+        return result;
+    }
 }

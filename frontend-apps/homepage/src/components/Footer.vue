@@ -3,7 +3,7 @@
     <div class="footer-content">
       <!-- 关于环球探索 -->
       <div class="footer-section">
-        <h3 class="footer-title">关于环球探索</h3>
+        <h3 class="footer-title">关于我们</h3>
         <p class="footer-description">
           我们致力于通过专业旅行顾问团队，为您提供独特、深度、难忘的旅行体验。让您用全新的视角认识这个世界。
         </p>

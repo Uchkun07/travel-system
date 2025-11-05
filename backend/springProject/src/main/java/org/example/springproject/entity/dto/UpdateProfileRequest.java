@@ -11,11 +11,6 @@ import java.util.Date;
 @Data
 public class UpdateProfileRequest {
     /**
-     * 用户名
-     */
-    private String username;
-
-    /**
      * 全名
      */
     private String fullName;

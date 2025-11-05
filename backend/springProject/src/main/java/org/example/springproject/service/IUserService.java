@@ -40,4 +40,33 @@ public interface IUserService extends IService<User> {
      * @return 用户信息
      */
     User getUserByEmail(String email);
+
+    /**
+     * 修改密码
+     *
+     * @param userId 用户ID
+     * @param oldPassword 旧密码
+     * @param newPassword 新密码
+     * @return 修改结果
+     */
+    Map<String, Object> changePassword(Long userId, String oldPassword, String newPassword);
+
+    /**
+     * 修改用户名
+     *
+     * @param userId 用户ID
+     * @param newUsername 新用户名
+     * @return 修改结果（包含新token）
+     */
+    Map<String, Object> changeUsername(Long userId, String newUsername);
+
+    /**
+     * 修改邮箱
+     *
+     * @param userId 用户ID
+     * @param newEmail 新邮箱
+     * @param captcha 验证码
+     * @return 修改结果
+     */
+    Map<String, Object> changeEmail(Long userId, String newEmail, String captcha);
 }
