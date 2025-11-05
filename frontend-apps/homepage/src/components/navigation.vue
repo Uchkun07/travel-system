@@ -88,8 +88,8 @@ const handleCommand = async (command: string) => {
       router.push("/profile");
       break;
     case "settings":
-      // 跳转到账号设置
-      router.push("/settings");
+      // 跳转到账号设置（安全设置）
+      router.push("/profile?menu=security");
       break;
     case "logout":
       await userStore.logout();

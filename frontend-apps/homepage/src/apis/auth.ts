@@ -137,3 +137,75 @@ export function checkEmail(email: string) {
 export function updateUserProfile(data: UpdateProfileRequest) {
   return put<UpdateProfileResponse>("/v1/users/profile", data);
 }
+
+/**
+ * 修改密码请求接口
+ */
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+/**
+ * 修改密码响应接口
+ */
+export interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * 修改密码（需要JWT认证）
+ */
+export function changePassword(data: ChangePasswordRequest) {
+  return put<ChangePasswordResponse>("/v1/users/password", data);
+}
+
+/**
+ * 修改用户名请求接口
+ */
+export interface ChangeUsernameRequest {
+  username: string;
+}
+
+/**
+ * 修改用户名响应接口
+ */
+export interface ChangeUsernameResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+  username?: string;
+}
+
+/**
+ * 修改用户名（需要JWT认证）
+ */
+export function changeUsername(data: ChangeUsernameRequest) {
+  return put<ChangeUsernameResponse>("/v1/users/username", data);
+}
+
+/**
+ * 修改邮箱请求接口
+ */
+export interface ChangeEmailRequest {
+  email: string;
+  captcha: string;
+}
+
+/**
+ * 修改邮箱响应接口
+ */
+export interface ChangeEmailResponse {
+  success: boolean;
+  message: string;
+  email?: string;
+}
+
+/**
+ * 修改邮箱（需要JWT认证）
+ */
+export function changeEmail(data: ChangeEmailRequest) {
+  return put<ChangeEmailResponse>("/v1/users/email", data);
+}

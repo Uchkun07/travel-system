@@ -5,8 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.springproject.entity.User;
-import org.example.springproject.entity.dto.UpdateProfileRequest;
-import org.example.springproject.entity.dto.UpdateProfileResponse;
+import org.example.springproject.entity.dto.*;
 import org.example.springproject.service.IUserService;
 import org.example.springproject.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 /**
  * 用户资料管理控制器
@@ -75,17 +75,6 @@ public class UserProfileController {
 
             // 4. 更新允许修改的字段
             boolean hasChanges = false;
-            
-            if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
-                // 检查用户名是否已被使用
-                User existingUser = userService.getUserByUsername(request.getUsername());
-                if (existingUser != null && !existingUser.getUserId().equals(user.getUserId())) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(UpdateProfileResponse.error("用户名已被使用"));
-                }
-                user.setUsername(request.getUsername());
-                hasChanges = true;
-            }
             
             if (request.getFullName() != null && !request.getFullName().equals(user.getFullName())) {
                 user.setFullName(request.getFullName());
@@ -170,6 +159,188 @@ public class UserProfileController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(UpdateProfileResponse.error("系统错误: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 修改密码
+     * @param authorization JWT令牌（格式：Bearer {token}）
+     * @param request 修改密码请求
+     * @return 修改结果
+     */
+    @Operation(summary = "修改密码", description = "修改当前登录用户的密码，需要JWT认证")
+    @PutMapping("/password")
+    public ResponseEntity<ChangePasswordResponse> changePassword(
+            @Parameter(description = "JWT令牌", required = true)
+            @RequestHeader("Authorization") String authorization,
+            @Parameter(description = "修改密码请求", required = true)
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        try {
+            // 1. 验证并解析 JWT 令牌
+            if (authorization == null || !authorization.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ChangePasswordResponse.error("无效的令牌格式"));
+            }
+
+            String token = authorization.substring(7);
+
+            if (!jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ChangePasswordResponse.error("令牌无效或已过期"));
+            }
+
+            // 2. 从令牌中获取用户ID
+            Long userId = jwtUtil.getUserIdFromToken(token);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ChangePasswordResponse.error("无法获取用户信息"));
+            }
+
+            // 3. 验证两次密码是否一致
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ChangePasswordResponse.error("两次输入的密码不一致"));
+            }
+
+            // 4. 调用服务层修改密码
+            Map<String, Object> result = userService.changePassword(
+                    userId,
+                    request.getOldPassword(),
+                    request.getNewPassword()
+            );
+
+            boolean success = (boolean) result.get("success");
+            String message = (String) result.get("message");
+
+            if (success) {
+                return ResponseEntity.ok(ChangePasswordResponse.success(message));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ChangePasswordResponse.error(message));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ChangePasswordResponse.error("系统错误: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 修改用户名
+     * @param authorization JWT令牌（格式：Bearer {token}）
+     * @param request 修改用户名请求
+     * @return 修改结果和新的token
+     */
+    @Operation(summary = "修改用户名", description = "修改当前登录用户的用户名，需要JWT认证")
+    @PutMapping("/username")
+    public ResponseEntity<ChangeUsernameResponse> changeUsername(
+            @Parameter(description = "JWT令牌", required = true)
+            @RequestHeader("Authorization") String authorization,
+            @Parameter(description = "修改用户名请求", required = true)
+            @Valid @RequestBody ChangeUsernameRequest request) {
+
+        try {
+            // 1. 验证并解析 JWT 令牌
+            if (authorization == null || !authorization.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ChangeUsernameResponse.error("无效的令牌格式"));
+            }
+
+            String token = authorization.substring(7);
+
+            if (!jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ChangeUsernameResponse.error("令牌无效或已过期"));
+            }
+
+            // 2. 从令牌中获取用户ID
+            Long userId = jwtUtil.getUserIdFromToken(token);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ChangeUsernameResponse.error("无法获取用户信息"));
+            }
+
+            // 3. 调用服务层修改用户名
+            Map<String, Object> result = userService.changeUsername(userId, request.getUsername());
+
+            boolean success = (boolean) result.get("success");
+            String message = (String) result.get("message");
+
+            if (success) {
+                String newToken = (String) result.get("token");
+                String newUsername = (String) result.get("username");
+                return ResponseEntity.ok(ChangeUsernameResponse.success(message, newToken, newUsername));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ChangeUsernameResponse.error(message));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ChangeUsernameResponse.error("系统错误: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 修改邮箱
+     * @param authorization JWT令牌（格式：Bearer {token}）
+     * @param request 修改邮箱请求
+     * @return 修改结果
+     */
+    @Operation(summary = "修改邮箱", description = "修改当前登录用户的邮箱，需要JWT认证和邮箱验证码")
+    @PutMapping("/email")
+    public ResponseEntity<ChangeEmailResponse> changeEmail(
+            @Parameter(description = "JWT令牌", required = true)
+            @RequestHeader("Authorization") String authorization,
+            @Parameter(description = "修改邮箱请求", required = true)
+            @Valid @RequestBody ChangeEmailRequest request) {
+
+        try {
+            // 1. 验证并解析 JWT 令牌
+            if (authorization == null || !authorization.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ChangeEmailResponse.error("无效的令牌格式"));
+            }
+
+            String token = authorization.substring(7);
+
+            if (!jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ChangeEmailResponse.error("令牌无效或已过期"));
+            }
+
+            // 2. 从令牌中获取用户ID
+            Long userId = jwtUtil.getUserIdFromToken(token);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ChangeEmailResponse.error("无法获取用户信息"));
+            }
+
+            // 3. 调用服务层修改邮箱
+            Map<String, Object> result = userService.changeEmail(
+                    userId,
+                    request.getEmail(),
+                    request.getCaptcha()
+            );
+
+            boolean success = (boolean) result.get("success");
+            String message = (String) result.get("message");
+
+            if (success) {
+                String newEmail = (String) result.get("email");
+                return ResponseEntity.ok(ChangeEmailResponse.success(message, newEmail));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ChangeEmailResponse.error(message));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ChangeEmailResponse.error("系统错误: " + e.getMessage()));
         }
     }
 }

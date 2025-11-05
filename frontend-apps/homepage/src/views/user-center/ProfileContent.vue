@@ -40,11 +40,11 @@
     <div class="profile-form">
       <h3 class="form-section-title">基本信息</h3>
 
-      <ElForm :model="profileForm" label-width="120px" label-position="left">
+      <ElForm :model="profileForm" label-width="85px" label-position="left">
         <ElRow :gutter="20">
           <ElCol :xs="24" :sm="12">
             <ElFormItem label="用户名">
-              <ElInput v-model="profileForm.username" :disabled="!isEditing" />
+              <ElInput v-model="profileForm.username" :disabled="true" />
             </ElFormItem>
           </ElCol>
           <ElCol :xs="24" :sm="12">
@@ -54,11 +54,12 @@
           </ElCol>
         </ElRow>
 
-        <ElFormItem label="手机号码">
-          <ElInput v-model="profileForm.phone" :disabled="!isEditing" />
-        </ElFormItem>
-
         <ElRow :gutter="20">
+          <ElCol :xs="24" :sm="12">
+            <ElFormItem label="手机号码">
+              <ElInput v-model="profileForm.phone" :disabled="!isEditing" />
+            </ElFormItem>
+          </ElCol>
           <ElCol :xs="24" :sm="12">
             <ElFormItem label="性别">
               <ElSelect
@@ -72,6 +73,8 @@
               </ElSelect>
             </ElFormItem>
           </ElCol>
+        </ElRow>
+        <ElRow :gutter="20">
           <ElCol :xs="24" :sm="12">
             <ElFormItem label="出生日期">
               <ElDatePicker
@@ -84,7 +87,6 @@
             </ElFormItem>
           </ElCol>
         </ElRow>
-
         <ElFormItem v-if="isEditing">
           <ElButton type="primary" @click="handleSave">保存修改</ElButton>
           <ElButton @click="handleCancel">取消</ElButton>
@@ -339,9 +341,10 @@ const handleCancel = () => {
 
 :deep(.el-input__wrapper) {
   font-size: 16px;
-  padding: 2px 5px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  padding: 2px 15px;
+  box-shadow: none !important;
+  background-color: #3498db1a;
+  border-radius: 50px;
   transition: all 0.3s ease;
 }
 
@@ -375,7 +378,16 @@ const handleCancel = () => {
 :deep(.el-select) {
   width: 100%;
 }
-
+:deep(.el-select__wrapper) {
+  height: 34px;
+  box-shadow: none !important;
+  background-color: #3498db1a;
+  border-radius: 50px;
+  padding: 2px 15px;
+}
+:deep(.el-select__wrapper.is-disabled) {
+  background-color: #f5f7fa;
+}
 :deep(.el-button) {
   font-size: 15px;
   padding: 12px 25px;
