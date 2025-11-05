@@ -12,3 +12,6 @@ export type { ApiResponse } from "./request";
 
 // 导出认证相关API
 export * from "./auth";
+
+// 导出景点相关API
+export * from "./attraction";
