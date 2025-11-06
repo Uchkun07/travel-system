@@ -1,4 +1,5 @@
 import { post, get, put } from "./request";
+import type { ApiResponse } from "./request";
 
 // 请求接口类型定义
 export interface SendCodeRequest {
@@ -209,3 +210,18 @@ export interface ChangeEmailResponse {
 export function changeEmail(data: ChangeEmailRequest) {
   return put<ChangeEmailResponse>("/v1/users/email", data);
 }
+
+/**
+ * 上传头像
+ * @param file 头像文件
+ * @returns 返回头像URL和新token
+ */
+export const uploadAvatar = async (
+  file: File
+): Promise<ApiResponse<{ avatarUrl: string; token: string }>> => {
+  const { upload } = await import("./request");
+  return upload<ApiResponse<{ avatarUrl: string; token: string }>>(
+    "/v1/upload/avatar",
+    file
+  );
+};

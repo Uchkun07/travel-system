@@ -42,9 +42,26 @@ export const useUserStore = defineStore("user", () => {
   // 计算属性 - isLoggedIn 基于 token 和 userInfo 的存在性
   const isLoggedIn = computed(() => !!token.value && !!userInfo.value);
   const username = computed(() => userInfo.value?.username || "");
-  const avatar = computed(
-    () => userInfo.value?.avatar || "/img/defaultavatar.png"
-  );
+
+  // 头像URL - 如果是相对路径则拼接API地址
+  const avatar = computed(() => {
+    const avatarPath = userInfo.value?.avatar || "/img/defaultavatar.png";
+
+    // 如果是完整URL（http/https开头），直接返回
+    if (avatarPath.startsWith("http://") || avatarPath.startsWith("https://")) {
+      return avatarPath;
+    }
+
+    // 如果是相对路径，拼接API基础地址
+    const apiBaseUrl =
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+
+    // 确保路径以 / 开头
+    const path = avatarPath.startsWith("/") ? avatarPath : `/${avatarPath}`;
+
+    return `${apiBaseUrl}${path}`;
+  });
+
   const userId = computed(() => userInfo.value?.userId || 0);
 
   /**

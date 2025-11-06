@@ -118,7 +118,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             user.setRegisterSource("web");
             user.setRegisterTime(new Date());
             // 设置默认头像
-            user.setAvatar("/img/defaultavatar.png");
+            user.setAvatar("/img/avatars/defaultavatar.png");
 
             // 保存用户
             boolean saved = save(user);
