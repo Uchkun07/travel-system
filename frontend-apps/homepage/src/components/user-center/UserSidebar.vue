@@ -205,6 +205,9 @@ const handleFileChange = (file: UploadFile) => {
   ];
   if (!validTypes.includes(rawFile.type)) {
     ElMessage.error("只支持 JPG、PNG、GIF、WEBP 格式的图片");
+    uploadRef.value?.clearFiles?.();
+    selectedFile.value = null;
+    previewUrl.value = "";
     return;
   }
 
@@ -212,6 +215,9 @@ const handleFileChange = (file: UploadFile) => {
   const maxSize = 5 * 1024 * 1024;
   if (rawFile.size > maxSize) {
     ElMessage.error("文件大小不能超过 5MB");
+    uploadRef.value?.clearFiles?.();
+    selectedFile.value = null;
+    previewUrl.value = "";
     return;
   }
 

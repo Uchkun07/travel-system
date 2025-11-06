@@ -152,10 +152,15 @@ public class FileUploadController {
             // 删除旧头像文件（如果存在且不是默认头像）
             if (user.getAvatar() != null && !user.getAvatar().contains("default")) {
                 try {
-                    String oldAvatarPath = fileUploadProperties.getPath().replace("public", "") + user.getAvatar().replace("/img", "");
-                    Path oldFilePath = Paths.get(oldAvatarPath);
-                    Files.deleteIfExists(oldFilePath);
-                    logger.info("删除旧头像文件: {}", oldFilePath);
+                    String oldAvatarUrl = user.getAvatar();
+                    if (oldAvatarUrl.startsWith("/img/avatars/")) {
+                        String relativePath = oldAvatarUrl.substring("/img/avatars/".length());
+                        Path oldFilePath = Paths.get(fileUploadProperties.getPath(), relativePath);
+                        if (Files.exists(oldFilePath)) {
+                            Files.delete(oldFilePath);
+                            logger.info("删除旧头像文件: {}", oldFilePath);
+                        }
+                    }
                 } catch (Exception e) {
                     logger.warn("删除旧头像文件失败: {}", e.getMessage());
                 }

@@ -1,4 +1,5 @@
 import { post, get, put } from "./request";
+import type { ApiResponse } from "./request";
 
 // 请求接口类型定义
 export interface SendCodeRequest {
@@ -208,13 +209,6 @@ export interface ChangeEmailResponse {
  */
 export function changeEmail(data: ChangeEmailRequest) {
   return put<ChangeEmailResponse>("/v1/users/email", data);
-}
-
-// API 响应格式
-interface ApiResponse<T = any> {
-  code: number;
-  message: string;
-  data?: T;
 }
 
 /**
