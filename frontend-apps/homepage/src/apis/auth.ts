@@ -209,3 +209,25 @@ export interface ChangeEmailResponse {
 export function changeEmail(data: ChangeEmailRequest) {
   return put<ChangeEmailResponse>("/v1/users/email", data);
 }
+
+// API 响应格式
+interface ApiResponse<T = any> {
+  code: number;
+  message: string;
+  data?: T;
+}
+
+/**
+ * 上传头像
+ * @param file 头像文件
+ * @returns 返回头像URL和新token
+ */
+export const uploadAvatar = async (
+  file: File
+): Promise<ApiResponse<{ avatarUrl: string; token: string }>> => {
+  const { upload } = await import("./request");
+  return upload<ApiResponse<{ avatarUrl: string; token: string }>>(
+    "/v1/upload/avatar",
+    file
+  );
+};

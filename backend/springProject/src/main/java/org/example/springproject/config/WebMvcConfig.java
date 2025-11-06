@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -40,11 +41,23 @@ public class WebMvcConfig implements WebMvcConfigurer {
                             "/slideshow/active",     // 获取启用的轮播图(前台展示) - 允许匿名访问
                             "/attractions/list",     // 获取所有景点 - 允许匿名访问
                             "/email/sendCode",       // 发送验证码接口
+                            "/img/**",               // 静态资源 - 图片文件
                             "/swagger-ui/**",        // Swagger UI
                             "/v3/api-docs/**",       // Swagger API文档
                             "/error"                 // 错误页面
                     );
         }
+    }
+
+    @Override
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        // 配置静态资源访问路径
+        // 使用绝对路径，确保能正确访问到 public 目录下的文件
+        registry.addResourceHandler("/img/**")
+                .addResourceLocations(
+                    "classpath:/static/img/",
+                    "file:" + System.getProperty("user.dir") + "/public/img/"
+                );
     }
 }
 
