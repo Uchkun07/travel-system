@@ -11,7 +11,7 @@ target/
 
 ### PowerShell Scripts with Sensitive Data ###
 start.ps1
-
+public/
 ### STS ###
 .apt_generated
 .classpath
