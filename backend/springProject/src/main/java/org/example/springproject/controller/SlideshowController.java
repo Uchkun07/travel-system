@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.springproject.entity.Slideshow;
-import org.example.springproject.entity.dto.ApiResponse;
+import org.example.springproject.dto.ApiResponse;
 import org.example.springproject.service.ISlideshowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

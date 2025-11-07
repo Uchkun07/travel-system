@@ -1,4 +1,4 @@
-package org.example.springproject.entity.dto;
+package org.example.springproject.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

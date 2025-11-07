@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.springproject.entity.User;
-import org.example.springproject.entity.dto.*;
+import org.example.springproject.dto.*;
 import org.example.springproject.service.IUserService;
 import org.example.springproject.util.JwtUtil;
 import org.slf4j.Logger;

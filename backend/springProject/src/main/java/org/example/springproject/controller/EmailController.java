@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.example.springproject.entity.dto.SendCodeRequest;
+import org.example.springproject.dto.SendCodeRequest;
 import org.example.springproject.service.IEmailService;
 import org.example.springproject.util.IpUtil;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package org.example.springproject.entity.dto;
+package org.example.springproject.dto;
 
 import lombok.Data;
 import jakarta.validation.constraints.Email;

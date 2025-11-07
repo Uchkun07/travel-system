@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.springproject.config.FileUploadProperties;
 import org.example.springproject.entity.User;
-import org.example.springproject.entity.dto.ApiResponse;
+import org.example.springproject.dto.ApiResponse;
 import org.example.springproject.service.IUserService;
 import org.example.springproject.util.JwtUtil;
 import org.slf4j.Logger;

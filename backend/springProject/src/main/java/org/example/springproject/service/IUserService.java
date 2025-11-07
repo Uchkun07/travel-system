@@ -1,8 +1,8 @@
 package org.example.springproject.service;
 
 import org.example.springproject.entity.User;
-import org.example.springproject.entity.dto.LoginRequest;
-import org.example.springproject.entity.dto.RegisterRequest;
+import org.example.springproject.dto.LoginRequest;
+import org.example.springproject.dto.RegisterRequest;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.Map;
