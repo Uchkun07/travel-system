@@ -4,14 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### Environment Variables ###
-.env
-.env.local
-.env.*.local
-
-### PowerShell Scripts with Sensitive Data ###
-start.ps1
-public/
 ### STS ###
 .apt_generated
 .classpath
@@ -20,6 +12,7 @@ public/
 .settings
 .springBeans
 .sts4-cache
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
