@@ -55,6 +55,37 @@ public class JwtUtil {
     }
 
     /**
+     * 管理员登录JWT令牌
+     * @param adminId 管理员id
+     * @param username 管理员用户名
+     * @param fullname 管理员真实姓名
+     * @param phone 管理员手机号
+     * @param email 管理员邮箱
+     * @param rememberme 是否记住我
+     * @return JWT令牌
+     */
+    public String generateAdminToken(Long adminId, String username, String fullname, String phone, String email, boolean rememberme) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("adminId", adminId);
+        claims.put("username", username);
+        claims.put("fullName", fullname);
+        claims.put("phone", phone);
+        claims.put("email", email);
+
+        long expirationTime = rememberme ? jwtProperties.getExpiration() : jwtProperties.getExpirationShort();
+        Date expirationDate = new Date(System.currentTimeMillis() + expirationTime);
+
+        return Jwts.builder()
+                .claims(claims)
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(expirationDate)
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+
+    /**
      * 生成包含完整用户信息的JWT令牌
      * @param userId 用户ID
      * @param username 用户名

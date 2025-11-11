@@ -35,6 +35,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                     .addPathPatterns("/**") // 拦截所有路径
                     .excludePathPatterns(
                             "/api/admin/login",      //管理员登录
+                            "/api/admin/register",      //管理员注册
                             "/email/sendCode",       // 发送验证码接口
                             "/img/**",               // 静态资源 - 图片文件
                             "/swagger-ui/**",        // Swagger UI
