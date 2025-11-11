@@ -58,23 +58,28 @@ public class JwtUtil {
      * 管理员登录JWT令牌
      * @param adminId 管理员id
      * @param username 管理员用户名
-     * @param fullname 管理员真实姓名
+     * @param fullName 管理员真实姓名
      * @param phone 管理员手机号
      * @param email 管理员邮箱
-     * @param rememberme 是否记住我
+     * @param permissions 权限编码列表
+     * @param rememberMe 是否记住我
      * @return JWT令牌
      */
-    public String generateAdminToken(Long adminId, String username, String fullname, String phone, String email, boolean rememberme) {
+    public String generateAdminToken(Long adminId, String username, String fullName,
+                                    String phone, String email, java.util.List<String> permissions,
+                                    boolean rememberMe) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("adminId", adminId);
         claims.put("username", username);
-        claims.put("fullName", fullname);
+        claims.put("fullName", fullName);
         claims.put("phone", phone);
         claims.put("email", email);
-
-        long expirationTime = rememberme ? jwtProperties.getExpiration() : jwtProperties.getExpirationShort();
+        claims.put("permissions", permissions);
+        claims.put("userType", "admin"); // 标识为管理员类型
+        
+        long expirationTime = rememberMe ? jwtProperties.getExpiration() : jwtProperties.getExpirationShort();
         Date expirationDate = new Date(System.currentTimeMillis() + expirationTime);
-
+        
         return Jwts.builder()
                 .claims(claims)
                 .subject(username)
@@ -84,6 +89,40 @@ public class JwtUtil {
                 .compact();
     }
 
+    /**
+     * 从令牌中获取管理员ID
+     * @param token JWT令牌
+     * @return 管理员ID
+     */
+    public Long getAdminIdFromToken(String token) {
+        Claims claims = parseToken(token);
+        Object adminId = claims.get("adminId");
+        if (adminId instanceof Number) {
+            return ((Number) adminId).longValue();
+        }
+        return null;
+    }
+
+    /**
+     * 从令牌中获取权限列表
+     * @param token JWT令牌
+     * @return 权限编码列表
+     */
+    @SuppressWarnings("unchecked")
+    public java.util.List<String> getPermissionsFromToken(String token) {
+        Claims claims = parseToken(token);
+        return (java.util.List<String>) claims.get("permissions");
+    }
+
+    /**
+     * 从令牌中获取用户类型
+     * @param token JWT令牌
+     * @return 用户类型
+     */
+    public String getUserTypeFromToken(String token) {
+        Claims claims = parseToken(token);
+        return claims.get("userType", String.class);
+    }
 
     /**
      * 生成包含完整用户信息的JWT令牌

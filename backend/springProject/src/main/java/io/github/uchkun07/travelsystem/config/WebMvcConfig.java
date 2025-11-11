@@ -1,5 +1,6 @@
 package io.github.uchkun07.travelsystem.config;
 
+import io.github.uchkun07.travelsystem.interceptor.AdminPermissionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
@@ -18,6 +19,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private JwtInterceptor jwtInterceptor;
 
+    @Autowired
+    private AdminPermissionInterceptor adminPermissionInterceptor;
+
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")
@@ -30,18 +34,29 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
+        // 管理员权限拦截器 - 拦截所有/admin开头的接口
+        if (adminPermissionInterceptor != null) {
+            registry.addInterceptor(adminPermissionInterceptor)
+                    .addPathPatterns("/admin/**")  // 拦截所有管理端接口
+                    .excludePathPatterns(
+                            "/admin/login"           // 管理员登录接口不需要权限验证
+                    )
+                    .order(1);  // 设置拦截器优先级，越小越先执行
+        }
+
+        // 普通用户JWT拦截器
         if (jwtInterceptor != null) {
             registry.addInterceptor(jwtInterceptor)
                     .addPathPatterns("/**") // 拦截所有路径
                     .excludePathPatterns(
-                            "/api/admin/login",      //管理员登录
-                            "/api/admin/register",      //管理员注册
+                            "/admin/**",             // 管理端接口由AdminPermissionInterceptor处理
                             "/email/sendCode",       // 发送验证码接口
                             "/img/**",               // 静态资源 - 图片文件
                             "/swagger-ui/**",        // Swagger UI
                             "/v3/api-docs/**",       // Swagger API文档
                             "/error"                 // 错误页面
-                    );
+                    )
+                    .order(2);  // 设置优先级
         }
     }
 
