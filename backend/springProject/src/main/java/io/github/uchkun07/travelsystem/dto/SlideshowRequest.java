@@ -21,13 +21,13 @@ public class SlideshowRequest {
     @Schema(description = "轮播图ID(修改时必填)")
     private Integer slideshowId;
 
-    @Schema(description = "轮播图标题", required = true)
+    @Schema(description = "轮播图标题", requiredMode = Schema.RequiredMode.REQUIRED)
     private String title;
 
     @Schema(description = "副标题/描述")
     private String subtitle;
 
-    @Schema(description = "轮播图图片URL", required = true)
+    @Schema(description = "轮播图图片URL", requiredMode = Schema.RequiredMode.REQUIRED)
     private String imageUrl;
 
     @Schema(description = "关联的景点ID")

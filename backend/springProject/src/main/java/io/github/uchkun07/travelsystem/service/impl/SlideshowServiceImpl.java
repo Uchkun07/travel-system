@@ -60,7 +60,9 @@ public class SlideshowServiceImpl implements ISlideshowService {
         if (slideshowIds == null || slideshowIds.isEmpty()) {
             throw new IllegalArgumentException("轮播图ID列表不能为空");
         }
-        int count = slideshowMapper.deleteBatchIds(slideshowIds);
+        LambdaQueryWrapper<Slideshow> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Slideshow::getSlideshowId, slideshowIds);
+        int count = slideshowMapper.delete(wrapper);
         log.info("批量删除轮播图成功: 删除{}条", count);
     }
 

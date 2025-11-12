@@ -61,7 +61,9 @@ public class AttractionTagServiceImpl implements IAttractionTagService {
         if (tagIds == null || tagIds.isEmpty()) {
             throw new IllegalArgumentException("标签ID列表不能为空");
         }
-        int count = tagMapper.deleteBatchIds(tagIds);
+        LambdaQueryWrapper<AttractionTag> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(AttractionTag::getTagId, tagIds);
+        int count = tagMapper.delete(wrapper);
         log.info("批量删除标签成功: 删除{}条", count);
     }
 

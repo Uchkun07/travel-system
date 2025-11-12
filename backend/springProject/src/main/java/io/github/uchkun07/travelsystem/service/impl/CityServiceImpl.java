@@ -66,7 +66,9 @@ public class CityServiceImpl implements ICityService {
         if (cityIds == null || cityIds.isEmpty()) {
             throw new IllegalArgumentException("城市ID列表不能为空");
         }
-        int count = cityMapper.deleteBatchIds(cityIds);
+        LambdaQueryWrapper<City> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(City::getCityId, cityIds);
+        int count = cityMapper.delete(wrapper);
         log.info("批量删除城市成功: 删除{}条", count);
     }
 

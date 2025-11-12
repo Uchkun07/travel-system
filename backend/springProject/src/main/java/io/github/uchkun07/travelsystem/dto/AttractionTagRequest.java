@@ -19,7 +19,7 @@ public class AttractionTagRequest {
     @Schema(description = "标签ID(修改时必填)")
     private Integer tagId;
 
-    @Schema(description = "标签名称", required = true)
+    @Schema(description = "标签名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String tagName;
 
     @Schema(description = "标签描述")

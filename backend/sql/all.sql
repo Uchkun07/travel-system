@@ -181,6 +181,7 @@ CREATE TABLE `attraction` (
   `attraction_id` bigint NOT NULL AUTO_INCREMENT COMMENT '景点唯一标识',
   `name` varchar(100) NOT NULL COMMENT '景点名称（不可重复）',
   `subtitle` varchar(200) DEFAULT NULL COMMENT '景点副标题',
+  `description` text DEFAULT NULL COMMENT '景点详细描述',
   `type_id` int NOT NULL COMMENT '关联景点类型表',
   `city_id` int NOT NULL COMMENT '关联城市表',
   `address` varchar(255) NOT NULL COMMENT '详细地址',

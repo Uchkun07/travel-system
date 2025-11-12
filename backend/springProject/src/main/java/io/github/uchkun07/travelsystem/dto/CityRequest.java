@@ -21,7 +21,7 @@ public class CityRequest {
     @Schema(description = "城市ID(修改时必填)")
     private Integer cityId;
 
-    @Schema(description = "城市名称", required = true)
+    @Schema(description = "城市名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String cityName;
 
     @Schema(description = "所属国家")
