@@ -21,29 +21,33 @@
 
       <el-sub-menu index="1">
         <template #title>
-          <el-icon><User /></el-icon>
-          <span>用户管理</span>
+          <el-icon><Avatar /></el-icon>
+          <span>管理员管理</span>
         </template>
-        <el-menu-item index="/users/list">用户列表</el-menu-item>
-        <el-menu-item index="/users/roles">角色管理</el-menu-item>
+        <el-menu-item index="/admin/list">管理员列表</el-menu-item>
+        <el-menu-item index="/admin/roles">角色管理</el-menu-item>
+        <el-menu-item index="/admin/permissions">权限管理</el-menu-item>
       </el-sub-menu>
 
       <el-sub-menu index="2">
         <template #title>
-          <el-icon><LocationInformation /></el-icon>
-          <span>景点管理</span>
+          <el-icon><Avatar /></el-icon>
+          <span>用户管理</span>
         </template>
-        <el-menu-item index="/attractions/list">景点列表</el-menu-item>
-        <el-menu-item index="/attractions/categories">景点分类</el-menu-item>
+        <el-menu-item index="/users/">用户列表</el-menu-item>
+        <el-menu-item index="/users/">用户标签管理</el-menu-item>
       </el-sub-menu>
 
       <el-sub-menu index="3">
         <template #title>
-          <el-icon><Tickets /></el-icon>
-          <span>订单管理</span>
+          <el-icon><Avatar /></el-icon>
+          <span>景点管理</span>
         </template>
-        <el-menu-item index="/orders/list">订单列表</el-menu-item>
-        <el-menu-item index="/orders/statistics">订单统计</el-menu-item>
+        <el-menu-item index="/spots/">景点列表</el-menu-item>
+        <el-menu-item index="/spots/">景点类型管理</el-menu-item>
+        <el-menu-item index="/spots/">城市管理</el-menu-item>
+        <el-menu-item index="/spots/">景点标签管理</el-menu-item>
+        <el-menu-item index="/spots/">景点类型管理</el-menu-item>
       </el-sub-menu>
 
       <el-menu-item index="/settings">

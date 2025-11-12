@@ -22,19 +22,19 @@ export interface LoginResponse {
  * 管理员登录
  */
 export function adminLogin(data: LoginRequest) {
-  return post<LoginResponse>("/admin/login", data);
+  return post<LoginResponse>("/api/admin/login", data);
 }
 
 /**
  * 管理员登出
  */
 export function adminLogout() {
-  return post("/admin/logout");
+  return post("/api/admin/logout");
 }
 
 /**
  * 获取当前管理员权限列表
  */
 export function getPermissions() {
-  return post("/admin/permissions");
+  return post("/api/admin/permissions");
 }

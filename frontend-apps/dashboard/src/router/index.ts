@@ -62,6 +62,22 @@ const router = createRouter({
           name: "Settings",
           component: () => import("../views/Settings.vue"),
         },
+        // 管理员管理
+        {
+          path: "/admin/list",
+          name: "AdminList",
+          component: () => import("../views/admin/AdminList.vue"),
+        },
+        {
+          path: "/admin/roles",
+          name: "RoleManagement",
+          component: () => import("../views/admin/RoleManagement.vue"),
+        },
+        {
+          path: "/admin/permissions",
+          name: "PermissionManagement",
+          component: () => import("../views/admin/PermissionManagement.vue"),
+        },
       ],
     },
   ],

@@ -37,7 +37,7 @@ public class OperationLog {
     private String operationType;
 
     /**
-     * 操作对象（如"景点""类型""标签"）
+     * 操作对象（如"景点""用户""轮播图"）
      */
     @TableField("operation_object")
     private String operationObject;

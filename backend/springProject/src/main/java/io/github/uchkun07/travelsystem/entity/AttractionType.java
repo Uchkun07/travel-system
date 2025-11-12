@@ -31,12 +31,6 @@ public class AttractionType {
     private String typeName;
 
     /**
-     * 父类型ID（0=一级类型）
-     */
-    @TableField("parent_id")
-    private Integer parentId;
-
-    /**
      * 展示排序序号
      */
     @TableField("sort_order")

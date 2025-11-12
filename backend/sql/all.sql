@@ -38,14 +38,12 @@ CREATE TABLE `user_profile` (
 CREATE TABLE `attraction_type` (
   `type_id` int NOT NULL AUTO_INCREMENT COMMENT '类型唯一标识',
   `type_name` varchar(50) NOT NULL COMMENT '类型名称（不可重复）',
-  `parent_id` int NOT NULL DEFAULT 0 COMMENT '父类型ID（0=一级类型）',
   `sort_order` int NOT NULL DEFAULT 0 COMMENT '展示排序序号',
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态（1=启用，0=禁用）',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`type_id`),
   UNIQUE KEY `uk_type_name` (`type_name`),
-  KEY `idx_parent_id` (`parent_id`),
   KEY `idx_status` (`status`),
   KEY `idx_sort_order` (`sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='景点类型表';

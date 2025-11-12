@@ -19,7 +19,7 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "邮件管理", description = "邮件发送相关接口")
 @RestController
-@RequestMapping("/email")
+@RequestMapping("/api/email")
 public class EmailController {
 
     @Autowired

@@ -57,7 +57,7 @@ public class JwtInterceptor implements HandlerInterceptor {
             }
 
             // 2. 检查令牌是否在黑名单中(已登出)
-            String blacklistKey = "token_blacklist:" + token;
+            String blacklistKey = "token:blacklist:" + token;
             if (Boolean.TRUE.equals(redisUtil.hasKey(blacklistKey))) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=UTF-8");
