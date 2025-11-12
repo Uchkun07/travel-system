@@ -4,7 +4,7 @@
 -- ========================================
 
 -- ----------------------------------------
--- 1. 插入所有系统权限数据 (42个权限)
+-- 1. 插入所有系统权限数据 (46个权限)
 -- ----------------------------------------
 
 INSERT INTO `admin_permission` (`permission_code`, `permission_name`, `resource_type`, `resource_path`, `is_sensitive`, `sort_order`) VALUES
@@ -42,8 +42,12 @@ INSERT INTO `admin_permission` (`permission_code`, `permission_name`, `resource_
 ('ATTRACTION_TYPE:UPDATE', '修改景点类型', '景点管理', '/admin/attraction-type/update', 0, 170),
 ('ATTRACTION_TYPE:VIEW', '查看景点类型', '景点管理', '/admin/attraction-type/**', 0, 180),
 
--- 景点管理 (1个)
-('ATTRACTION:MANAGE', '景点管理', '景点管理', '/admin/attraction/**', 0, 190),
+-- 景点管理 (5个)
+('ATTRACTION:CREATE', '创建景点', '景点管理', '/admin/attraction/create', 0, 191),
+('ATTRACTION:DELETE', '删除景点', '景点管理', '/admin/attraction/delete/**', 0, 192),
+('ATTRACTION:UPDATE', '修改景点', '景点管理', '/admin/attraction/update', 0, 193),
+('ATTRACTION:LIST', '查看景点列表', '景点管理', '/admin/attraction/list', 0, 194),
+('ATTRACTION:DETAIL', '查看景点详情', '景点管理', '/admin/attraction/detail/**', 0, 195),
 
 -- 城市管理 (4个)
 ('CITY:CREATE', '创建城市', '城市管理', '/admin/city/create', 0, 200),
