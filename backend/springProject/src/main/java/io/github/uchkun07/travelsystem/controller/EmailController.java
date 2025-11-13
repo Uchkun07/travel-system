@@ -17,7 +17,7 @@ import java.util.Map;
  * 邮件控制器
  */
 @Slf4j
-@Tag(name = "邮件管理", description = "邮件发送相关接口")
+@Tag(name = "邮件", description = "邮件发送相关接口")
 @RestController
 @RequestMapping("/api/email")
 public class EmailController {
