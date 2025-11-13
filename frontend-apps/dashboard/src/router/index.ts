@@ -54,16 +54,11 @@ const router = createRouter({
           name: "AttractionTags",
           component: () => import("../views/attractions/AttractionTags.vue"),
         },
-        // 订单管理
+        // 轮播图管理
         {
-          path: "/orders/list",
-          name: "OrderList",
-          component: () => import("../views/orders/OrderList.vue"),
-        },
-        {
-          path: "/orders/statistics",
-          name: "OrderStatistics",
-          component: () => import("../views/orders/OrderStatistics.vue"),
+          path: "/slideshow/SlideshowManagement",
+          name: "SlideshowManagement",
+          component: () => import("../views/slideshow/SlideshowManagement.vue"),
         },
         // 系统设置
         {

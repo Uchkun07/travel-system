@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/attraction")
 @RequireAdminPermission
-public class AttractionController {
+public class AttractionAdminController {
 
     @Autowired
     private IAttractionService attractionService;
