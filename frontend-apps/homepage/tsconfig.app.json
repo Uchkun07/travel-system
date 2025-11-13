@@ -1,6 +1,6 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
- "compilerOptions": {
+  "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
     "strict": true,
@@ -16,12 +16,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
   "include": [
     "src/**/*.ts",
@@ -30,7 +25,5 @@
     "tests/**/*.ts",
     "tests/**/*.tsx"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

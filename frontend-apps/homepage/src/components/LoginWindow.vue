@@ -59,7 +59,6 @@
         </div>
       </div>
     </div>
-    <div class="registerWindow"></div>
   </div>
 </template>
 
@@ -68,7 +67,6 @@ import type { FormInstance, FormRules } from "element-plus";
 import { ref } from "vue";
 import { ElMessage, ElInput, ElCheckbox, ElLink, ElButton } from "element-plus";
 import { useUserStore } from "@/stores";
-import { useRouter } from "vue-router";
 
 const visible = defineModel<boolean>("visible", { default: false });
 const emit = defineEmits<{
@@ -76,7 +74,6 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-const router = useRouter();
 const userStore = useUserStore();
 const loginFormRef = ref<FormInstance>();
 const rememberMe = ref(false);
