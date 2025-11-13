@@ -24,14 +24,14 @@ const router = createRouter({
         },
         // 用户管理
         {
-          path: "/users/list",
+          path: "/users/UserList",
           name: "UserList",
           component: () => import("../views/users/UserList.vue"),
         },
         {
-          path: "/users/roles",
-          name: "RoleManagement",
-          component: () => import("../views/users/RoleManagement.vue"),
+          path: "/users/UserTags",
+          name: "UserTags",
+          component: () => import("../views/users/UserTags.vue"),
         },
         // 景点管理
         {
