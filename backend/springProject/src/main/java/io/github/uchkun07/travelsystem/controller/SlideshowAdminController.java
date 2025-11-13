@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/slideshow")
 @RequireAdminPermission
-public class SlideshowController {
+public class SlideshowAdminController {
 
     @Autowired
     private ISlideshowService slideshowService;

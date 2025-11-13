@@ -53,6 +53,11 @@
         >
       </el-sub-menu>
 
+      <el-menu-item index="/slideshow/SlideshowManagement">
+        <el-icon><Setting /></el-icon>
+        <template #title>轮播图管理</template>
+      </el-menu-item>
+
       <el-menu-item index="/settings">
         <el-icon><Setting /></el-icon>
         <template #title>系统设置</template>

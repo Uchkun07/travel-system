@@ -27,7 +27,7 @@ import java.util.Map;
 @Tag(name = "管理端综合管理", description = "管理员及相关资源的统一管理接口")
 @RestController
 @RequestMapping("/api/admin")
-public class AdminManageController {
+public class ManageAdminController {
 
     @Autowired
     private IAdminService adminService;
