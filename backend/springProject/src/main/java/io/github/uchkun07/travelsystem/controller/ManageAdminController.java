@@ -24,7 +24,7 @@ import java.util.Map;
  * 整合管理员、角色、权限、角色权限绑定、管理员角色绑定、操作日志等相关功能
  */
 @Slf4j
-@Tag(name = "管理端综合管理", description = "管理员及相关资源的统一管理接口")
+@Tag(name = "管理员管理", description = "管理员及相关资源的统一管理接口")
 @RestController
 @RequestMapping("/api/admin")
 public class ManageAdminController {
