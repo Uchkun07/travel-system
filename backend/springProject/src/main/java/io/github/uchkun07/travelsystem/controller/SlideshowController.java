@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "轮播图管理", description = "轮播图的增删改查接口")
 @RestController
-@RequestMapping("/admin/slideshow")
+@RequestMapping("/api/slideshow")
 @RequireAdminPermission
 public class SlideshowController {
 

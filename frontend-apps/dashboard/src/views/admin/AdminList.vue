@@ -200,12 +200,13 @@ import {
   updatePassword,
   getAdminRoles,
   bindRolesToAdmin,
+  getAllRoles,
   type Admin,
+  type AdminRole,
   type CreateAdminRequest,
   type UpdateAdminRequest,
   type UpdatePasswordRequest,
-} from "@/apis/admin";
-import { getAllRoles, type AdminRole } from "@/apis/role";
+} from "@/apis/auth";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 const admins = ref<Admin[]>([]);

@@ -25,8 +25,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // 1. 注册JWT拦截器 - 验证token有效性
         if (jwtInterceptor != null) {
             registry.addInterceptor(jwtInterceptor)
-                    .addPathPatterns("/admin/**") // 拦截所有管理端接口
-                    .excludePathPatterns("/admin/login", "/admin/register") // 排除登录和注册接口
+                    .addPathPatterns("/api/admin/**") // 拦截所有管理端接口
+                    .excludePathPatterns("/api/admin/login", "/api/admin/register") // 排除登录和注册接口
                     .order(1); // 优先级最高
         }
 

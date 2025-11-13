@@ -35,15 +35,24 @@ const router = createRouter({
         },
         // 景点管理
         {
-          path: "/attractions/list",
+          path: "/attraction/AttractionList",
           name: "AttractionList",
           component: () => import("../views/attractions/AttractionList.vue"),
         },
         {
-          path: "/attractions/categories",
-          name: "AttractionCategories",
-          component: () =>
-            import("../views/attractions/AttractionCategories.vue"),
+          path: "/attraction/AttractionTypes",
+          name: "AttractionTypes",
+          component: () => import("../views/attractions/AttractionTypes.vue"),
+        },
+        {
+          path: "/attraction/CityList",
+          name: "CityList",
+          component: () => import("../views/attractions/CityList.vue"),
+        },
+        {
+          path: "/attraction/AttractionTags",
+          name: "AttractionTags",
+          component: () => import("../views/attractions/AttractionTags.vue"),
         },
         // 订单管理
         {

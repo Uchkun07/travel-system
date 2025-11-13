@@ -166,7 +166,7 @@ import {
   type AdminPermission,
   type CreatePermissionRequest,
   type UpdatePermissionRequest,
-} from "@/apis/permission";
+} from "@/apis/auth";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 const permissions = ref<AdminPermission[]>([]);

@@ -137,16 +137,14 @@ import {
   createRole,
   updateRole,
   deleteRole,
-  type AdminRole,
-  type CreateRoleRequest,
-  type UpdateRoleRequest,
-} from "@/apis/role";
-import {
   getAllPermissions,
   getRolePermissions,
   bindPermissionsToRole,
+  type AdminRole,
+  type CreateRoleRequest,
+  type UpdateRoleRequest,
   type AdminPermission,
-} from "@/apis/permission";
+} from "@/apis/auth";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { ElTree } from "element-plus";
 

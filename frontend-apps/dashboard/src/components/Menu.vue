@@ -31,23 +31,26 @@
 
       <el-sub-menu index="2">
         <template #title>
-          <el-icon><Avatar /></el-icon>
+          <el-icon><User /></el-icon>
           <span>用户管理</span>
         </template>
-        <el-menu-item index="/users/">用户列表</el-menu-item>
-        <el-menu-item index="/users/">用户标签管理</el-menu-item>
+        <el-menu-item index="/users/UserList">用户列表</el-menu-item>
+        <el-menu-item index="/users/UserTags">用户标签管理</el-menu-item>
       </el-sub-menu>
 
       <el-sub-menu index="3">
         <template #title>
-          <el-icon><Avatar /></el-icon>
+          <el-icon><Collection /></el-icon>
           <span>景点管理</span>
         </template>
-        <el-menu-item index="/spots/">景点列表</el-menu-item>
-        <el-menu-item index="/spots/">景点类型管理</el-menu-item>
-        <el-menu-item index="/spots/">城市管理</el-menu-item>
-        <el-menu-item index="/spots/">景点标签管理</el-menu-item>
-        <el-menu-item index="/spots/">景点类型管理</el-menu-item>
+        <el-menu-item index="/attraction/AttractionList">景点列表</el-menu-item>
+        <el-menu-item index="/attraction/AttractionTypes"
+          >景点类型管理</el-menu-item
+        >
+        <el-menu-item index="/attraction/CityList">城市管理</el-menu-item>
+        <el-menu-item index="/attraction/AttractionTags"
+          >景点标签管理</el-menu-item
+        >
       </el-sub-menu>
 
       <el-menu-item index="/settings">
