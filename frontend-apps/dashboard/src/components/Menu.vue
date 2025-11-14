@@ -1,11 +1,9 @@
 <template>
   <!-- 左侧菜单 -->
-  <el-aside :width="isCollapse ? '64px' : '200px'" class="layout-aside">
+  <el-aside :width="isCollapse ? '64px' : '240px'" class="layout-aside">
     <div class="collapse-btn" @click="toggleCollapse">
-      <el-icon>
-        <Fold v-if="!isCollapse" />
-        <Expand v-else />
-      </el-icon>
+      <i v-if="!isCollapse" class="fa-solid fa-angle-left"></i>
+      <i v-else class="fa-solid fa-angle-right"></i>
     </div>
     <el-menu
       :default-active="activeMenu"
@@ -15,51 +13,67 @@
       router
     >
       <el-menu-item index="/dashboard">
-        <el-icon><HomeFilled /></el-icon>
-        <template #title>首页</template>
+        <i class="fa-solid fa-house-user"></i>
+        <template #title>
+          <span class="title">首页</span>
+        </template>
       </el-menu-item>
 
       <el-sub-menu index="1">
         <template #title>
-          <el-icon><Avatar /></el-icon>
-          <span>管理员管理</span>
+          <i class="fa-brands fa-black-tie" style="font-size: 20px"></i>
+          <span class="title">管理员管理</span>
         </template>
-        <el-menu-item index="/admin/list">管理员列表</el-menu-item>
-        <el-menu-item index="/admin/roles">角色管理</el-menu-item>
-        <el-menu-item index="/admin/permissions">权限管理</el-menu-item>
+        <el-menu-item index="/admin/list"
+          ><i class="fa-solid fa-list-ul"></i>管理员列表</el-menu-item
+        >
+        <el-menu-item index="/admin/roles"
+          ><i class="fa-solid fa-address-card"></i>角色管理</el-menu-item
+        >
+        <el-menu-item index="/admin/permissions"
+          ><i class="fa-solid fa-key"></i>权限管理</el-menu-item
+        >
       </el-sub-menu>
 
       <el-sub-menu index="2">
         <template #title>
-          <el-icon><User /></el-icon>
-          <span>用户管理</span>
+          <i class="fa-solid fa-user-group"></i>
+          <span class="title">用户管理</span>
         </template>
-        <el-menu-item index="/users/UserList">用户列表</el-menu-item>
-        <el-menu-item index="/users/UserTags">用户标签管理</el-menu-item>
+        <el-menu-item index="/users/UserList"
+          ><i class="fa-solid fa-list-ul"></i>用户列表</el-menu-item
+        >
+        <el-menu-item index="/users/UserTags"
+          ><i class="fa-solid fa-tags"></i>用户标签管理</el-menu-item
+        >
       </el-sub-menu>
 
       <el-sub-menu index="3">
         <template #title>
-          <el-icon><Collection /></el-icon>
-          <span>景点管理</span>
+          <i class="fa-solid fa-mountain-sun"></i>
+          <span class="title">景点管理</span>
         </template>
-        <el-menu-item index="/attraction/AttractionList">景点列表</el-menu-item>
-        <el-menu-item index="/attraction/AttractionTypes"
-          >景点类型管理</el-menu-item
+        <el-menu-item index="/attraction/AttractionList"
+          ><i class="fa-solid fa-list-ul"></i>景点列表</el-menu-item
         >
-        <el-menu-item index="/attraction/CityList">城市管理</el-menu-item>
+        <el-menu-item index="/attraction/AttractionTypes"
+          ><i class="fa-solid fa-font-awesome"></i>景点类型管理</el-menu-item
+        >
+        <el-menu-item index="/attraction/CityList"
+          ><i class="fa-solid fa-city"></i>城市管理</el-menu-item
+        >
         <el-menu-item index="/attraction/AttractionTags"
-          >景点标签管理</el-menu-item
+          ><i class="fa-solid fa-tags"></i>景点标签管理</el-menu-item
         >
       </el-sub-menu>
 
       <el-menu-item index="/slideshow/SlideshowManagement">
-        <el-icon><Setting /></el-icon>
+        <i class="fa-solid fa-arrows-turn-to-dots"></i>
         <template #title>轮播图管理</template>
       </el-menu-item>
 
       <el-menu-item index="/settings">
-        <el-icon><Setting /></el-icon>
+        <i class="fa-solid fa-gear"></i>
         <template #title>系统设置</template>
       </el-menu-item>
     </el-menu>
@@ -80,7 +94,6 @@ const toggleCollapse = () => {
 <style scoped>
 .layout-aside {
   background: #ffffff;
-  border-right: 1px solid #e4e7ed;
   transition: width 0.3s;
   position: relative;
   overflow: hidden;
@@ -94,7 +107,6 @@ const toggleCollapse = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-bottom: 1px solid #e4e7ed;
   transition: background-color 0.3s;
 }
 
@@ -106,15 +118,57 @@ const toggleCollapse = () => {
   border-right: none;
   height: calc(100% - 48px);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+  gap: 10px;
+}
+.title {
+  height: 40px;
+  line-height: 40px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+}
+.el-menu-item {
+  gap: 10px;
+  width: 90%;
+  height: 40px;
+  border-radius: 6px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+}
+:deep(.el-menu-item.is-active) {
+  background: linear-gradient(to right, #7468f0, #9c93f4);
+  color: white;
+  box-shadow: 0 0 10px rgba(208, 255, 0, 0.5);
+}
+.fa-solid {
+  font-size: 20px;
+}
+.el-sub-menu {
+  width: 90%;
+}
+:deep(.el-sub-menu__title) {
+  height: 40px;
+  gap: 10px;
+}
+
+:deep(.el-menu--collapse .el-sub-menu.is-active .el-sub-menu__title) {
+  background: linear-gradient(to right, #7468f0, #9c93f4);
+  color: white;
+  box-shadow: 0 0 10px rgba(229, 255, 0, 0.5);
+  border-radius: 6px;
+}
+:deep(.el-menu--inline) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .sidebar-menu:not(.el-menu--collapse) {
-  width: 200px;
-}
-
-.layout-content {
-  background: #f0f2f5;
-  padding: 20px;
-  overflow-y: auto;
+  width: 240px;
 }
 </style>

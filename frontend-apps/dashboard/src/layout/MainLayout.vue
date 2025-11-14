@@ -21,7 +21,13 @@ import MenuSidebar from "@/components/Menu.vue";
   display: flex;
   flex-direction: column;
 }
-
+.layout-content {
+  padding: 20px;
+  background: #f8f8f8;
+  overflow: auto;
+  box-shadow: inset 3px 3px 10px 0px rgb(45 51 54 / 3%);
+  border-radius: 30px 0 0 0;
+}
 .layout-main {
   flex: 1;
   overflow: hidden;

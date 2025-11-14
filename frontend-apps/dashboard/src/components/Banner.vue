@@ -63,9 +63,7 @@ const handleLogout = async () => {
   justify-content: space-between;
   align-items: center;
   background: #ffffff;
-  border-bottom: 1px solid #e4e7ed;
-  padding: 0 40px;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  padding: 0 20px;
 }
 .header-left {
   display: flex;
@@ -79,8 +77,9 @@ const handleLogout = async () => {
 }
 .system-title {
   font-size: 20px;
+  font-family: Microsoft YaHei, Arial, Helvetica, sans-serif;
   font-weight: 600;
-  color: #303133;
+  color: #807cb9;
 }
 
 .header-right {
