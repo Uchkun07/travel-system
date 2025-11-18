@@ -19,7 +19,7 @@ import java.util.List;
  * 整合景点、景点类型、城市、景点标签、景点标签关联等相关功能
  */
 @Slf4j
-@Tag(name = "景点综合管理", description = "景点及相关资源的统一管理接口")
+@Tag(name = "景点管理", description = "景点及相关资源的统一管理接口")
 @RestController
 @RequestMapping("/api/admin/attraction")
 @RequireAdminPermission

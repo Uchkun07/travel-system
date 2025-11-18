@@ -67,14 +67,17 @@
         >
       </el-sub-menu>
 
-      <el-menu-item index="/slideshow/SlideshowManagement">
+      <el-menu-item
+        class=".firist-level"
+        index="/slideshow/SlideshowManagement"
+      >
         <i class="fa-solid fa-arrows-turn-to-dots"></i>
-        <template #title>轮播图管理</template>
+        <span class="title">轮播图管理</span>
       </el-menu-item>
 
-      <el-menu-item index="/settings">
+      <el-menu-item class=".firist-level" index="/settings">
         <i class="fa-solid fa-gear"></i>
-        <template #title>系统设置</template>
+        <span class="title">系统设置</span>
       </el-menu-item>
     </el-menu>
   </el-aside>
