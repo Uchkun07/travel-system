@@ -13,7 +13,7 @@
       router
     >
       <el-menu-item index="/dashboard">
-        <i class="fa-solid fa-house-user"></i>
+        <i class="fa-solid fa-light fa-gauge"></i>
         <template #title>
           <span class="title">首页</span>
         </template>
@@ -146,7 +146,7 @@ const toggleCollapse = () => {
 :deep(.el-menu-item.is-active) {
   background: linear-gradient(to right, #7468f0, #9c93f4);
   color: white;
-  box-shadow: 0 0 10px rgba(208, 255, 0, 0.5);
+  /* box-shadow: 0 0 10px rgba(208, 255, 0, 0.5); */
 }
 .fa-solid {
   font-size: 20px;
@@ -162,7 +162,7 @@ const toggleCollapse = () => {
 :deep(.el-menu--collapse .el-sub-menu.is-active .el-sub-menu__title) {
   background: linear-gradient(to right, #7468f0, #9c93f4);
   color: white;
-  box-shadow: 0 0 10px rgba(229, 255, 0, 0.5);
+  /* box-shadow: 0 0 10px rgba(229, 255, 0, 0.5); */
   border-radius: 6px;
 }
 :deep(.el-menu--inline) {

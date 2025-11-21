@@ -56,7 +56,9 @@
           <el-button type="primary" @click="handleAdd">添加城市</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <el-card>
       <!-- 数据表格 -->
       <el-table :data="cities" border style="width: 100%">
         <el-table-column prop="cityId" label="城市ID" width="80" />
@@ -393,6 +395,9 @@ onMounted(() => {
 <style scoped>
 .city-list-container {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .header {

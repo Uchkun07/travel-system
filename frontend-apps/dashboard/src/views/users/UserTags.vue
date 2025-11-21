@@ -5,19 +5,42 @@
         <h2>用户标签管理</h2>
       </div>
 
-      <!-- 搜索表单 -->
       <el-form :inline="true" :model="searchForm" class="search-form">
+        <div class="search">
+          <el-form-item label-position="right" label="标签名称">
+            <el-input
+              v-model="searchForm.tagName"
+              placeholder="请输入标签名称"
+              style="width: 240px"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              class="blueButton buttonFont"
+              type="primary"
+              @click="handleSearch"
+              >查询</el-button
+            >
+            <el-button
+              class="whiteButton buttonFont"
+              style="color: #000"
+              @click="handleReset"
+              >重置</el-button
+            >
+            <el-button
+              class="blueButton buttonFont"
+              type="primary"
+              @click="handleAdd"
+              >添加标签</el-button
+            >
+          </el-form-item>
+        </div>
         <el-form-item label="标签ID">
           <el-input
             v-model.number="searchForm.tagDictId"
             placeholder="请输入标签ID"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="标签名称">
-          <el-input
-            v-model="searchForm.tagName"
-            placeholder="请输入标签名称"
+            style="width: 240px"
             clearable
           />
         </el-form-item>
@@ -25,6 +48,7 @@
           <el-input
             v-model="searchForm.tagCode"
             placeholder="请输入标签编码"
+            style="width: 240px"
             clearable
           />
         </el-form-item>
@@ -32,32 +56,29 @@
           <el-select
             v-model="searchForm.tagLevel"
             placeholder="请选择级别"
+            style="width: 240px"
             clearable
           >
             <el-option label="1级" :value="1" />
             <el-option label="2级" :value="2" />
             <el-option label="3级" :value="3" />
-            <el-option label="4级" :value="4" />
-            <el-option label="5级" :value="5" />
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
           <el-select
             v-model="searchForm.status"
             placeholder="请选择状态"
+            style="width: 240px"
             clearable
           >
             <el-option label="启用" :value="1" />
             <el-option label="禁用" :value="0" />
           </el-select>
         </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
-          <el-button type="primary" @click="handleAdd">添加标签</el-button>
-        </el-form-item>
       </el-form>
+    </el-card>
 
+    <el-card>
       <!-- 数据表格 -->
       <el-table :data="tagDicts" border style="width: 100%">
         <el-table-column prop="tagDictId" label="标签ID" width="100" />
@@ -434,16 +455,14 @@ onMounted(() => {
 <style scoped>
 .user-tags-container {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-}
-
-.search-form {
   margin-bottom: 20px;
 }
 </style>

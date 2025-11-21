@@ -46,7 +46,9 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <el-card>
       <!-- 表格 -->
       <el-table :data="admins" stripe style="width: 100%">
         <el-table-column prop="adminId" label="ID" width="80"></el-table-column>
@@ -423,14 +425,14 @@ onMounted(() => {
 <style scoped>
 .admin-list-container {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-}
-.search-form {
   margin-bottom: 20px;
 }
 .pagination-container {

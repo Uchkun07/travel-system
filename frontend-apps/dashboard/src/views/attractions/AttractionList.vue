@@ -66,7 +66,9 @@
           <el-button type="primary" @click="handleAdd">添加景点</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <el-card>
       <!-- 数据表格 -->
       <el-table :data="attractions" border style="width: 100%">
         <el-table-column prop="attractionId" label="景点ID" width="80" />
@@ -568,16 +570,15 @@ onMounted(() => {
 <style scoped>
 .attraction-list-container {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-}
-
-.search-form {
   margin-bottom: 20px;
 }
 

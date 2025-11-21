@@ -1,0 +1,32 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+.el-card {
+  border-radius: 20px;
+}
+.search-form {
+  .search {
+    display: flex;
+    align-items: center;
+  }
+  .el-form-item__label {
+    text-align: right;
+    min-width: 68px;
+    color: #000;
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  .el-select__wrapper {
+    border-radius: 10px;
+    width: 240px;
+  }
+
+  .el-input__wrapper {
+    border-radius: 10px;
+    width: 240px;
+  }
+}

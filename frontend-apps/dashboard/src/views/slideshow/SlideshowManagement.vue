@@ -45,7 +45,9 @@
           <el-button type="primary" @click="handleAdd">添加轮播图</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <el-card>
       <!-- 数据表格 -->
       <el-table :data="slideshows" border style="width: 100%">
         <el-table-column prop="slideshowId" label="ID" width="80" />
@@ -413,16 +415,15 @@ onMounted(() => {
 <style scoped>
 .slideshow-management-container {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-}
-
-.search-form {
   margin-bottom: 20px;
 }
 </style>
