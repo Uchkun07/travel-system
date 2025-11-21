@@ -46,7 +46,9 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <el-card>
       <!-- 表格 -->
       <el-table :data="permissions" stripe style="width: 100%">
         <el-table-column
@@ -298,6 +300,9 @@ onMounted(() => {
 <style scoped>
 .permission-management-container {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .header {
   display: flex;

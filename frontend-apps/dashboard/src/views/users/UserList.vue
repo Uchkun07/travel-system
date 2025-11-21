@@ -57,7 +57,9 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <el-card>
       <!-- 数据表格 -->
       <el-table :data="users" border style="width: 100%">
         <el-table-column prop="userId" label="用户ID" width="80" />
@@ -269,7 +271,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
-import { ElMessage, type FormInstance } from "element-plus";
+import filterFrame from "@/styles/style.css";
+import { ElCard, ElMessage, type FormInstance } from "element-plus";
 import {
   queryUsers,
   getUserDetail,
@@ -470,6 +473,9 @@ onMounted(() => {
 <style scoped>
 .user-list-container {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .header {
