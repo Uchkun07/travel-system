@@ -68,15 +68,13 @@
       </el-table>
 
       <!-- 分页 -->
-      <el-pagination
-        background
-        layout="prev, pager, next, total"
+      <Pagination
         :total="total"
-        :page-size="queryParams.pageSize"
-        :current-page="queryParams.pageNum"
-        @current-change="handlePageChange"
-        class="pagination-container"
-      ></el-pagination>
+        :current-page="pagination.pageNum"
+        :page-size="pagination.pageSize"
+        :total-pages="Math.ceil(total / pagination.pageSize)"
+        @page-change="handlePageChange"
+      />
     </el-card>
 
     <!-- 角色编辑/创建弹窗 -->
@@ -133,6 +131,7 @@
 </template>
 
 <script setup lang="ts">
+import Pagination from "@/components/common/Pagination.vue";
 import { ref, onMounted, reactive } from "vue";
 import {
   queryRoles,
@@ -152,7 +151,7 @@ import type { ElTree } from "element-plus";
 
 const roles = ref<AdminRole[]>([]);
 const total = ref(0);
-const queryParams = reactive({
+const pagination = reactive({
   pageNum: 1,
   pageSize: 10,
 });
@@ -181,7 +180,7 @@ const permissionTreeRef = ref<InstanceType<typeof ElTree>>();
 const fetchRoles = async () => {
   try {
     const params = {
-      ...queryParams,
+      ...pagination,
       ...searchForm,
     };
     const res = await queryRoles(params);
@@ -196,7 +195,7 @@ const fetchRoles = async () => {
 
 // 搜索
 const handleSearch = () => {
-  queryParams.pageNum = 1;
+  pagination.pageNum = 1;
   fetchRoles();
 };
 
@@ -206,13 +205,13 @@ const handleReset = () => {
     roleName: "",
     status: undefined,
   });
-  queryParams.pageNum = 1;
+  pagination.pageNum = 1;
   fetchRoles();
 };
 
 // 分页
 const handlePageChange = (page: number) => {
-  queryParams.pageNum = page;
+  pagination.pageNum = page;
   fetchRoles();
 };
 
@@ -331,10 +330,5 @@ onMounted(() => {
 }
 .search-form {
   margin-bottom: 20px;
-}
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
 }
 </style>
