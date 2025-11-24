@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "description": "JWT密钥,用于签名和验证JWT令牌"
+    },
+    {
+      "name": "jwt.expiration",
+      "type": "java.lang.Long",
+      "description": "JWT过期时间(毫秒),默认7天"
+    },
+    {
+      "name": "jwt.expiration-short",
+      "type": "java.lang.Long",
+      "description": "短期JWT过期时间(毫秒),默认1天"
+    }
+  ]
+}
