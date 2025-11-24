@@ -3,6 +3,7 @@
     <el-card>
       <div class="header">
         <h2>轮播图管理</h2>
+        <el-button type="primary" @click="handleAdd">添加轮播图</el-button>
       </div>
 
       <!-- 搜索表单 -->
@@ -42,7 +43,6 @@
         <el-form-item>
           <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
-          <el-button type="primary" @click="handleAdd">添加轮播图</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -118,16 +118,42 @@
         <el-form-item label="副标题" prop="subtitle">
           <el-input v-model="formData.subtitle" placeholder="请输入副标题" />
         </el-form-item>
-        <el-form-item label="图片URL" prop="imageUrl">
-          <el-input v-model="formData.imageUrl" placeholder="请输入图片URL" />
+        <el-form-item label="轮播图图片" prop="imageUrl">
+          <el-upload
+            class="upload-demo"
+            :auto-upload="false"
+            :on-change="handleImageChange"
+            :on-remove="handleImageRemove"
+            :limit="1"
+            :file-list="fileList"
+            list-type="picture-card"
+            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+          >
+            <el-icon><Plus /></el-icon>
+            <template #tip>
+              <div class="el-upload__tip">
+                支持 jpg/png/gif/webp 格式，文件大小不超过 5MB
+              </div>
+            </template>
+          </el-upload>
         </el-form-item>
-        <el-form-item label="图片预览">
+        <el-form-item
+          label="图片预览"
+          v-if="formData.imageUrl && !uploadedFile"
+        >
           <el-image
-            v-if="formData.imageUrl"
             :src="formData.imageUrl"
             fit="cover"
             style="width: 200px; height: 120px; border-radius: 4px"
           />
+          <el-button
+            type="danger"
+            size="small"
+            @click="handleClearImage"
+            style="margin-left: 10px"
+          >
+            清除图片
+          </el-button>
         </el-form-item>
         <el-form-item label="关联景点" prop="attractionId">
           <el-select
@@ -198,7 +224,10 @@ import {
   ElMessageBox,
   type FormInstance,
   type FormRules,
+  type UploadFile,
+  type UploadUserFile,
 } from "element-plus";
+import { Plus } from "@element-plus/icons-vue";
 import {
   querySlideshows,
   createSlideshow,
@@ -213,6 +242,7 @@ import {
   queryAttractions,
   type AttractionListResponse,
 } from "@/apis/attraction";
+import { uploadSlideshowImage } from "@/apis/upload";
 
 // 搜索表单
 const searchForm = reactive<QuerySlideshowsRequest>({
@@ -247,10 +277,16 @@ const formData = reactive<CreateSlideshowRequest & { slideshowId?: number }>({
   endTime: undefined,
 });
 
+// 文件上传
+const uploadedFile = ref<File | null>(null);
+const fileList = ref<UploadUserFile[]>([]);
+
 // 表单验证规则
 const formRules: FormRules = {
   title: [{ required: true, message: "请输入标题", trigger: "blur" }],
-  imageUrl: [{ required: true, message: "请输入图片URL", trigger: "blur" }],
+  imageUrl: [
+    { required: true, message: "请上传轮播图图片", trigger: "change" },
+  ],
 };
 
 // 加载景点列表（用于下拉选择）
@@ -298,6 +334,50 @@ const handleReset = () => {
   handleSearch();
 };
 
+// 处理图片变化
+const handleImageChange = (file: UploadFile) => {
+  if (file.raw) {
+    // 验证文件大小
+    const isLt5M = file.raw.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      ElMessage.error("图片大小不能超过 5MB!");
+      fileList.value = [];
+      return;
+    }
+
+    // 验证文件类型
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+    if (!allowedTypes.includes(file.raw.type)) {
+      ElMessage.error("只支持 jpg/png/gif/webp 格式的图片!");
+      fileList.value = [];
+      return;
+    }
+
+    uploadedFile.value = file.raw;
+    formData.imageUrl = "uploading"; // 标记为准备上传
+  }
+};
+
+// 处理图片移除
+const handleImageRemove = () => {
+  uploadedFile.value = null;
+  formData.imageUrl = "";
+  fileList.value = [];
+};
+
+// 清除已有图片
+const handleClearImage = () => {
+  formData.imageUrl = "";
+  uploadedFile.value = null;
+  fileList.value = [];
+};
+
 // 添加轮播图
 const handleAdd = () => {
   dialogTitle.value = "添加轮播图";
@@ -312,6 +392,8 @@ const handleAdd = () => {
     endTime: undefined,
     slideshowId: undefined,
   });
+  uploadedFile.value = null;
+  fileList.value = [];
   dialogVisible.value = true;
 };
 
@@ -329,6 +411,8 @@ const handleEdit = (row: Slideshow) => {
     startTime: row.startTime,
     endTime: row.endTime,
   });
+  uploadedFile.value = null;
+  fileList.value = [];
   dialogVisible.value = true;
 };
 
@@ -358,6 +442,23 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        // 如果有新上传的文件,先上传图片
+        if (uploadedFile.value) {
+          const uploadRes = await uploadSlideshowImage(uploadedFile.value);
+          if (uploadRes.data) {
+            formData.imageUrl = uploadRes.data.fileUrl;
+          } else {
+            ElMessage.error("图片上传失败");
+            return;
+          }
+        }
+
+        // 验证是否有图片URL
+        if (!formData.imageUrl || formData.imageUrl === "uploading") {
+          ElMessage.error("请上传轮播图图片");
+          return;
+        }
+
         if (formData.slideshowId) {
           // 编辑
           const params: UpdateSlideshowRequest = {
@@ -391,6 +492,8 @@ const handleSubmit = async () => {
 // 对话框关闭
 const handleDialogClose = () => {
   formRef.value?.resetFields();
+  uploadedFile.value = null;
+  fileList.value = [];
 };
 
 // 分页变化
@@ -420,5 +523,15 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.upload-demo {
+  width: 100%;
+}
+
+.el-upload__tip {
+  margin-top: 5px;
+  color: #999;
+  font-size: 12px;
 }
 </style>

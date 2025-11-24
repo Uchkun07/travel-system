@@ -63,37 +63,37 @@ export interface QuerySlideshowsRequest {
 
 // 创建轮播图
 export function createSlideshow(params: CreateSlideshowRequest) {
-  return post<Slideshow>("/api/admin/slideshow/create", params);
+  return post<Slideshow>("/api/slideshow/create", params);
 }
 
 // 更新轮播图
 export function updateSlideshow(params: UpdateSlideshowRequest) {
-  return put<Slideshow>("/api/admin/slideshow/update", params);
+  return put<Slideshow>("/api/slideshow/update", params);
 }
 
 // 删除轮播图
 export function deleteSlideshow(slideshowId: number) {
-  return del<void>(`/api/admin/slideshow/delete/${slideshowId}`);
+  return del<void>(`/api/slideshow/delete/${slideshowId}`);
 }
 
 // 批量删除轮播图
 export function batchDeleteSlideshows(slideshowIds: number[]) {
-  return del<void>("/api/admin/slideshow/batch-delete", {
+  return del<void>("/api/slideshow/batch-delete", {
     data: slideshowIds,
   });
 }
 
 // 分页查询轮播图
 export function querySlideshows(params?: QuerySlideshowsRequest) {
-  return get<PageResponse<Slideshow>>("/api/admin/slideshow/list", params);
+  return get<PageResponse<Slideshow>>("/api/slideshow/list", params);
 }
 
 // 查询轮播图详情
 export function getSlideshowById(slideshowId: number) {
-  return get<Slideshow>(`/api/admin/slideshow/detail/${slideshowId}`);
+  return get<Slideshow>(`/api/slideshow/detail/${slideshowId}`);
 }
 
 // 获取启用的轮播图
 export function getActiveSlideshows() {
-  return get<Slideshow[]>("/api/admin/slideshow/active");
+  return get<Slideshow[]>("/api/slideshow/active");
 }

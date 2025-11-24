@@ -3,6 +3,12 @@
     <el-card>
       <div class="header">
         <h2>用户标签管理</h2>
+        <el-button
+          class="blueButton buttonFont"
+          type="primary"
+          @click="handleAdd"
+          >添加标签</el-button
+        >
       </div>
 
       <el-form :inline="true" :model="searchForm" class="search-form">
@@ -27,12 +33,6 @@
               style="color: #000"
               @click="handleReset"
               >重置</el-button
-            >
-            <el-button
-              class="blueButton buttonFont"
-              type="primary"
-              @click="handleAdd"
-              >添加标签</el-button
             >
           </el-form-item>
         </div>
