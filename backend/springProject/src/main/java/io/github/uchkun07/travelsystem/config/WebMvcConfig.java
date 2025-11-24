@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -37,5 +38,21 @@ public class WebMvcConfig implements WebMvcConfigurer {
                     .excludePathPatterns("/admin/login", "/admin/register", "/admin/logout") // 排除登录、注册和登出接口
                     .order(2); // JWT验证之后执行
         }
+    }
+    
+    @Override
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        // 配置静态资源访问路径
+        registry.addResourceHandler("/avatars/**")
+                .addResourceLocations("classpath:/static/avatars/");
+        
+        registry.addResourceHandler("/cities/**")
+                .addResourceLocations("classpath:/static/cities/");
+        
+        registry.addResourceHandler("/attractions/**")
+                .addResourceLocations("classpath:/static/attractions/");
+        
+        registry.addResourceHandler("/slideshows/**")
+                .addResourceLocations("classpath:/static/slideshows/");
     }
 }

@@ -40,17 +40,16 @@ spring:
       enabled: true
       max-file-size: 5MB
       max-request-size: 5MB
+  web:
+    resources:
+      static-locations: classpath:/static/
+      add-mappings: true
 
 # JWT配置
 jwt:
   secret: ${JWT_SECRET:travel-system-secret-key-for-jwt-token-generation-and-validation-2024}
   expiration: 604800000 # 7天(毫秒)
   expiration-short: 86400000 # 1天(毫秒)
-
-# 文件上传配置
-file:
-  upload:
-    path: public/img/avatars
 
 # MyBatis-Plus 配置
 mybatis-plus:
