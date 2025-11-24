@@ -70,15 +70,13 @@
       </el-table>
 
       <!-- 分页 -->
-      <el-pagination
-        background
-        layout="prev, pager, next, total"
+      <Pagination
         :total="total"
-        :page-size="queryParams.pageSize"
-        :current-page="queryParams.pageNum"
-        @current-change="handlePageChange"
-        class="pagination-container"
-      ></el-pagination>
+        :current-page="pagination.pageNum"
+        :page-size="pagination.pageSize"
+        :total-pages="Math.ceil(total / pagination.pageSize)"
+        @page-change="handlePageChange"
+      />
     </el-card>
 
     <!-- 类型编辑/创建弹窗 -->
@@ -117,6 +115,7 @@
 </template>
 
 <script setup lang="ts">
+import Pagination from "@/components/common/Pagination.vue";
 import { ref, onMounted, reactive } from "vue";
 import {
   queryAttractionTypes,
@@ -131,7 +130,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 
 const types = ref<AttractionType[]>([]);
 const total = ref(0);
-const queryParams = reactive({
+const pagination = reactive({
   pageNum: 1,
   pageSize: 10,
 });
@@ -154,7 +153,7 @@ const typeForm = reactive<Partial<AttractionType>>({
 const fetchTypes = async () => {
   try {
     const params = {
-      ...queryParams,
+      ...pagination,
       ...searchForm,
     };
     const res = await queryAttractionTypes(params);
@@ -169,7 +168,7 @@ const fetchTypes = async () => {
 
 // 搜索
 const handleSearch = () => {
-  queryParams.pageNum = 1;
+  pagination.pageNum = 1;
   fetchTypes();
 };
 
@@ -179,13 +178,14 @@ const handleReset = () => {
     typeName: "",
     status: undefined,
   });
-  queryParams.pageNum = 1;
+  pagination.pageNum = 1;
   fetchTypes();
 };
 
 // 分页
-const handlePageChange = (page: number) => {
-  queryParams.pageNum = page;
+const handlePageChange = (page: number, pageSize: number) => {
+  pagination.pageNum = page;
+  pagination.pageSize = pageSize;
   fetchTypes();
 };
 
@@ -260,10 +260,5 @@ onMounted(() => {
 }
 .search-form {
   margin-bottom: 20px;
-}
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
 }
 </style>

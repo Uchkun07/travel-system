@@ -102,15 +102,12 @@
       </el-table>
 
       <!-- 分页 -->
-      <el-pagination
-        v-model:current-page="pagination.pageNum"
-        v-model:page-size="pagination.pageSize"
+      <Pagination
         :total="total"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        style="margin-top: 20px; justify-content: flex-end"
+        :current-page="pagination.pageNum"
+        :page-size="pagination.pageSize"
+        :total-pages="Math.ceil(total / pagination.pageSize)"
+        @page-change="handlePageChange"
       />
     </el-card>
 
@@ -244,6 +241,7 @@
 </template>
 
 <script setup lang="ts">
+import Pagination from "@/components/common/Pagination.vue";
 import { ref, reactive, onMounted } from "vue";
 import {
   ElMessage,
@@ -548,13 +546,10 @@ const handleDialogClose = () => {
   formRef.value?.resetFields();
 };
 
-// 分页大小改变
-const handleSizeChange = () => {
-  loadAttractions();
-};
-
-// 页码改变
-const handleCurrentChange = () => {
+// 分页变化
+const handlePageChange = (page: number, pageSize: number) => {
+  pagination.pageNum = page;
+  pagination.pageSize = pageSize;
   loadAttractions();
 };
 

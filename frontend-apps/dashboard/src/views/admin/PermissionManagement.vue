@@ -94,15 +94,13 @@
       </el-table>
 
       <!-- 分页 -->
-      <el-pagination
-        background
-        layout="prev, pager, next, total"
+      <Pagination
         :total="total"
-        :page-size="queryParams.pageSize"
-        :current-page="queryParams.pageNum"
-        @current-change="handlePageChange"
-        class="pagination-container"
-      ></el-pagination>
+        :current-page="pagination.pageNum"
+        :page-size="pagination.pageSize"
+        :total-pages="Math.ceil(total / pagination.pageSize)"
+        @page-change="handlePageChange"
+      />
     </el-card>
 
     <!-- 权限编辑/创建弹窗 -->
@@ -159,6 +157,7 @@
 </template>
 
 <script setup lang="ts">
+import Pagination from "@/components/common/Pagination.vue";
 import { ref, onMounted, reactive } from "vue";
 import {
   queryPermissions,
@@ -173,7 +172,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 
 const permissions = ref<AdminPermission[]>([]);
 const total = ref(0);
-const queryParams = reactive({
+const pagination = reactive({
   pageNum: 1,
   pageSize: 10,
 });
@@ -201,7 +200,7 @@ const permissionForm = reactive<Partial<AdminPermission>>({
 const fetchPermissions = async () => {
   try {
     const params = {
-      ...queryParams,
+      ...pagination,
       ...searchForm,
     };
     const res = await queryPermissions(params);
@@ -216,7 +215,7 @@ const fetchPermissions = async () => {
 
 // 搜索
 const handleSearch = () => {
-  queryParams.pageNum = 1;
+  pagination.pageNum = 1;
   fetchPermissions();
 };
 
@@ -228,13 +227,13 @@ const handleReset = () => {
     resourceType: "",
     isSensitive: undefined,
   });
-  queryParams.pageNum = 1;
+  pagination.pageNum = 1;
   fetchPermissions();
 };
 
 // 分页
 const handlePageChange = (page: number) => {
-  queryParams.pageNum = page;
+  pagination.pageNum = page;
   fetchPermissions();
 };
 
@@ -312,10 +311,5 @@ onMounted(() => {
 }
 .search-form {
   margin-bottom: 20px;
-}
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
 }
 </style>

@@ -93,15 +93,13 @@
       </el-table>
 
       <!-- 分页 -->
-      <el-pagination
-        background
-        layout="prev, pager, next, total"
+      <Pagination
         :total="total"
-        :page-size="queryParams.pageSize"
-        :current-page="queryParams.pageNum"
-        @current-change="handlePageChange"
-        class="pagination-container"
-      ></el-pagination>
+        :current-page="pagination.pageNum"
+        :page-size="pagination.pageSize"
+        :total-pages="Math.ceil(total / pagination.pageSize)"
+        @page-change="handlePageChange"
+      />
     </el-card>
 
     <!-- 管理员编辑/创建弹窗 -->
@@ -193,6 +191,7 @@
 </template>
 
 <script setup lang="ts">
+import Pagination from "@/components/common/Pagination.vue";
 import { ref, onMounted, reactive } from "vue";
 import {
   queryAdmins,
@@ -213,7 +212,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 
 const admins = ref<Admin[]>([]);
 const total = ref(0);
-const queryParams = reactive({
+const pagination = reactive({
   pageNum: 1,
   pageSize: 10,
 });
@@ -253,7 +252,7 @@ const currentAdminId = ref<number | null>(null);
 const fetchAdmins = async () => {
   try {
     const params = {
-      ...queryParams,
+      ...pagination,
       ...searchForm,
     };
     const res = await queryAdmins(params);
@@ -268,7 +267,7 @@ const fetchAdmins = async () => {
 
 // 搜索
 const handleSearch = () => {
-  queryParams.pageNum = 1;
+  pagination.pageNum = 1;
   fetchAdmins();
 };
 
@@ -281,13 +280,14 @@ const handleReset = () => {
     phone: "",
     status: undefined,
   });
-  queryParams.pageNum = 1;
+  pagination.pageNum = 1;
   fetchAdmins();
 };
 
 // 分页
-const handlePageChange = (page: number) => {
-  queryParams.pageNum = page;
+const handlePageChange = (page: number, pageSize: number) => {
+  pagination.pageNum = page;
+  pagination.pageSize = pageSize;
   fetchAdmins();
 };
 
@@ -434,10 +434,5 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-}
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
 }
 </style>
