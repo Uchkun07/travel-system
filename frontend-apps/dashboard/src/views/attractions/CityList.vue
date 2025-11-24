@@ -3,6 +3,7 @@
     <el-card>
       <div class="header">
         <h2>城市管理</h2>
+        <el-button type="primary" @click="handleAdd">添加城市</el-button>
       </div>
 
       <!-- 搜索表单 -->
@@ -53,7 +54,6 @@
         <el-form-item>
           <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
-          <el-button type="primary" @click="handleAdd">添加城市</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -156,6 +156,25 @@
             inactive-text="禁用"
           />
         </el-form-item>
+        <el-form-item label="城市图片">
+          <el-upload
+            class="upload-demo"
+            :auto-upload="false"
+            :on-change="handleImageChange"
+            :on-remove="handleImageRemove"
+            :limit="1"
+            :file-list="fileList"
+            list-type="picture-card"
+            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+          >
+            <el-icon><Plus /></el-icon>
+            <template #tip>
+              <div class="el-upload__tip">
+                支持 jpg/png/gif/webp 格式，文件大小不超过 5MB
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -173,7 +192,10 @@ import {
   ElMessageBox,
   type FormInstance,
   type FormRules,
+  type UploadFile,
+  type UploadUserFile,
 } from "element-plus";
+import { Plus } from "@element-plus/icons-vue";
 import {
   queryCities,
   createCity,
@@ -184,6 +206,7 @@ import {
   type UpdateCityRequest,
   type QueryCitiesRequest,
 } from "@/apis/attraction";
+import { uploadCityImage } from "@/apis/upload";
 
 // 搜索表单
 const searchForm = reactive<QueryCitiesRequest>({
@@ -216,6 +239,10 @@ const formData = reactive<CreateCityRequest & { cityId?: number }>({
   sortOrder: 0,
   status: 1,
 });
+
+// 文件上传
+const uploadedFile = ref<File | null>(null);
+const fileList = ref<UploadUserFile[]>([]);
 
 // 表单验证规则
 const formRules: FormRules = {
@@ -285,6 +312,41 @@ const handleReset = () => {
   handleSearch();
 };
 
+// 处理图片变化
+const handleImageChange = (file: UploadFile) => {
+  if (file.raw) {
+    // 验证文件大小
+    const isLt5M = file.raw.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      ElMessage.error("图片大小不能超过 5MB!");
+      fileList.value = [];
+      return;
+    }
+
+    // 验证文件类型
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+    if (!allowedTypes.includes(file.raw.type)) {
+      ElMessage.error("只支持 jpg/png/gif/webp 格式的图片!");
+      fileList.value = [];
+      return;
+    }
+
+    uploadedFile.value = file.raw;
+  }
+};
+
+// 处理图片移除
+const handleImageRemove = () => {
+  uploadedFile.value = null;
+  fileList.value = [];
+};
+
 // 添加城市
 const handleAdd = () => {
   dialogTitle.value = "添加城市";
@@ -297,6 +359,8 @@ const handleAdd = () => {
     status: 1,
     cityId: undefined,
   });
+  uploadedFile.value = null;
+  fileList.value = [];
   dialogVisible.value = true;
 };
 
@@ -312,6 +376,8 @@ const handleEdit = (row: City) => {
     sortOrder: row.sortOrder,
     status: row.status,
   });
+  uploadedFile.value = null;
+  fileList.value = [];
   dialogVisible.value = true;
 };
 
@@ -372,6 +438,8 @@ const handleSubmit = async () => {
 // 对话框关闭
 const handleDialogClose = () => {
   formRef.value?.resetFields();
+  uploadedFile.value = null;
+  fileList.value = [];
 };
 
 // 分页变化
@@ -404,5 +472,15 @@ onMounted(() => {
 
 .search-form {
   margin-bottom: 20px;
+}
+
+.upload-demo {
+  width: 100%;
+}
+
+.el-upload__tip {
+  margin-top: 5px;
+  color: #999;
+  font-size: 12px;
 }
 </style>
