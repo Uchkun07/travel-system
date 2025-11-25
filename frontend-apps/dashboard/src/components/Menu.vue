@@ -75,10 +75,15 @@
         <span class="title">轮播图管理</span>
       </el-menu-item>
 
-      <el-menu-item class=".firist-level" index="/settings">
-        <i class="fa-solid fa-gear"></i>
-        <span class="title">系统设置</span>
-      </el-menu-item>
+      <el-sub-menu index="4">
+        <template #title>
+          <i class="fa-solid fa-gear"></i>
+          <span class="title">系统设置</span>
+        </template>
+        <el-menu-item index="/system/logManage"
+          ><i class="fa-solid fa-clock-rotate-left"></i>操作日志</el-menu-item
+        >
+      </el-sub-menu>
     </el-menu>
   </el-aside>
 </template>
