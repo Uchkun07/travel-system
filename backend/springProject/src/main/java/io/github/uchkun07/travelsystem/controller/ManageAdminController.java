@@ -51,6 +51,7 @@ public class ManageAdminController {
     
     @Operation(summary = "管理员登录", description = "管理员使用用户名和密码登录,返回包含权限的JWT令牌")
     @PostMapping("/login")
+    @OperationLog(type = "登录", object = "管理员")
     public ApiResponse<AdminLoginResponse> login(@Validated @RequestBody AdminLoginRequest request) {
         try {
             AdminLoginResponse response = adminService.login(request);
@@ -67,6 +68,7 @@ public class ManageAdminController {
 
     @Operation(summary = "管理员登出", description = "管理员登出接口,将token加入黑名单")
     @PostMapping("/logout")
+    @OperationLog(type = "登出", object = "管理员")
     public ApiResponse<Void> logout(@RequestHeader("Authorization") String token) {
         try {
             if (token.startsWith("Bearer ")) {

@@ -64,7 +64,12 @@ const router = createRouter({
         {
           path: "/settings",
           name: "Settings",
-          component: () => import("../views/Settings.vue"),
+          component: () => import("../views/system/Settings.vue"),
+        },
+        {
+          path: "/system/logManage",
+          name: "LogManage",
+          component: () => import("../views/system/logManage.vue"),
         },
         // 管理员管理
         {
