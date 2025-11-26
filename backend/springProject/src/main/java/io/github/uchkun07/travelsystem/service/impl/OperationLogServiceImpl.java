@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.github.uchkun07.travelsystem.dto.OperationLogQueryRequest;
 import io.github.uchkun07.travelsystem.dto.PageResponse;
+import io.github.uchkun07.travelsystem.mapper.AdminMapper;
 import io.github.uchkun07.travelsystem.mapper.OperationLogMapper;
 import io.github.uchkun07.travelsystem.service.IOperationLogService;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,9 @@ public class OperationLogServiceImpl implements IOperationLogService {
 
     @Autowired
     private OperationLogMapper operationLogMapper;
+    
+    @Autowired
+    private AdminMapper adminMapper;
 
     @Override
     @Transactional
@@ -73,6 +77,32 @@ public class OperationLogServiceImpl implements IOperationLogService {
 
         if (request.getAdminId() != null) {
             wrapper.eq(io.github.uchkun07.travelsystem.entity.OperationLog::getAdminId, request.getAdminId());
+        }
+        // 如果提供了操作者姓名,需要通过admin表查询对应的adminId列表
+        if (request.getOperatorName() != null && !request.getOperatorName().trim().isEmpty()) {
+            LambdaQueryWrapper<io.github.uchkun07.travelsystem.entity.Admin> adminWrapper = 
+                new LambdaQueryWrapper<>();
+            adminWrapper.like(io.github.uchkun07.travelsystem.entity.Admin::getFullName, 
+                            request.getOperatorName().trim())
+                       .or()
+                       .like(io.github.uchkun07.travelsystem.entity.Admin::getUsername, 
+                            request.getOperatorName().trim());
+            List<io.github.uchkun07.travelsystem.entity.Admin> admins = 
+                adminMapper.selectList(adminWrapper);
+            if (admins.isEmpty()) {
+                // 如果没有匹配的管理员,返回空结果
+                return PageResponse.<io.github.uchkun07.travelsystem.entity.OperationLog>builder()
+                    .records(List.of())
+                    .total(0L)
+                    .pageNum(request.getPageNum())
+                    .pageSize(request.getPageSize())
+                    .totalPages(0L)
+                    .build();
+            }
+            List<Long> adminIds = admins.stream()
+                .map(io.github.uchkun07.travelsystem.entity.Admin::getAdminId)
+                .toList();
+            wrapper.in(io.github.uchkun07.travelsystem.entity.OperationLog::getAdminId, adminIds);
         }
         if (request.getOperationType() != null && !request.getOperationType().trim().isEmpty()) {
             wrapper.like(io.github.uchkun07.travelsystem.entity.OperationLog::getOperationType, 

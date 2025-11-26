@@ -7,6 +7,13 @@
 
       <!-- 搜索表单 -->
       <el-form :inline="true" :model="searchForm" class="search-form">
+        <el-form-item label="操作者">
+          <el-input
+            v-model="searchForm.operatorName"
+            placeholder="请输入操作者姓名或用户名"
+            clearable
+          />
+        </el-form-item>
         <el-form-item label="操作类型">
           <el-select
             v-model="searchForm.operationType"
@@ -14,19 +21,32 @@
             clearable
           >
             <el-option label="创建" value="创建" />
-            <el-option label="更新" value="更新" />
+            <el-option label="修改" value="修改" />
+            <el-option label="修改密码" value="修改密码" />
             <el-option label="删除" value="删除" />
-            <el-option label="查询" value="查询" />
+            <el-option label="批量删除" value="批量删除" />
+            <el-option label="绑定" value="绑定" />
+            <el-option label="解绑" value="解绑" />
             <el-option label="登录" value="登录" />
             <el-option label="登出" value="登出" />
           </el-select>
         </el-form-item>
         <el-form-item label="操作对象">
-          <el-input
+          <el-select
             v-model="searchForm.operationObject"
-            placeholder="请输入操作对象"
+            placeholder="请选择操作对象"
             clearable
-          />
+          >
+            <el-option label="管理员" value="管理员" />
+            <el-option label="角色" value="角色" />
+            <el-option label="权限" value="权限" />
+            <el-option label="角色权限" value="角色权限" />
+            <el-option label="管理员角色" value="管理员角色" />
+            <el-option label="操作日志" value="操作日志" />
+            <el-option label="城市" value="城市" />
+            <el-option label="景点" value="景点" />
+            <el-option label="轮播图" value="轮播图" />
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">查询</el-button>
@@ -182,6 +202,7 @@ import {
 
 // 搜索表单
 const searchForm = reactive<QueryOperationLogsRequest>({
+  operatorName: undefined,
   operationType: undefined,
   operationObject: undefined,
 });
@@ -229,6 +250,7 @@ const handleSearch = () => {
 // 重置
 const handleReset = () => {
   Object.assign(searchForm, {
+    operatorName: undefined,
     operationType: undefined,
     operationObject: undefined,
   });
@@ -312,9 +334,12 @@ const handlePageChange = (page: number, pageSize: number) => {
 const getOperationTypeTag = (type: string) => {
   const tagMap: Record<string, string> = {
     创建: "success",
-    更新: "warning",
+    修改: "warning",
+    修改密码: "warning",
     删除: "danger",
-    查询: "info",
+    批量删除: "danger",
+    绑定: "primary",
+    解绑: "info",
     登录: "primary",
     登出: "",
   };

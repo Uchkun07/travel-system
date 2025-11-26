@@ -12,30 +12,14 @@
       </div>
 
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <div class="search">
-          <el-form-item label-position="right" label="标签名称">
-            <el-input
-              v-model="searchForm.tagName"
-              placeholder="请输入标签名称"
-              style="width: 240px"
-              clearable
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button
-              class="blueButton buttonFont"
-              type="primary"
-              @click="handleSearch"
-              >查询</el-button
-            >
-            <el-button
-              class="whiteButton buttonFont"
-              style="color: #000"
-              @click="handleReset"
-              >重置</el-button
-            >
-          </el-form-item>
-        </div>
+        <el-form-item label-position="right" label="标签名称">
+          <el-input
+            v-model="searchForm.tagName"
+            placeholder="请输入标签名称"
+            style="width: 240px"
+            clearable
+          />
+        </el-form-item>
         <el-form-item label="标签ID">
           <el-input
             v-model.number="searchForm.tagDictId"
@@ -74,6 +58,20 @@
             <el-option label="启用" :value="1" />
             <el-option label="禁用" :value="0" />
           </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            class="blueButton buttonFont"
+            type="primary"
+            @click="handleSearch"
+            >查询</el-button
+          >
+          <el-button
+            class="whiteButton buttonFont"
+            style="color: #000"
+            @click="handleReset"
+            >重置</el-button
+          >
         </el-form-item>
       </el-form>
     </el-card>

@@ -408,6 +408,7 @@ export interface QueryOperationLogsRequest {
   pageNum?: number;
   pageSize?: number;
   adminId?: number;
+  operatorName?: string;
   operationType?: string;
   operationObject?: string;
   startTime?: string;

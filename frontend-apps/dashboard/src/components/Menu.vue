@@ -153,6 +153,9 @@ const toggleCollapse = () => {
   color: white;
   /* box-shadow: 0 0 10px rgba(208, 255, 0, 0.5); */
 }
+.el-sub-menu .el-menu-item {
+  height: 40px;
+}
 .fa-solid {
   font-size: 20px;
 }

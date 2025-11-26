@@ -60,6 +60,9 @@ public class OperationLogAspect {
                 String operationIp = null;
                 
                 if (request != null) {
+                    // 获取IP地址
+                    operationIp = getIpAddress(request);
+                    
                     // 从token获取管理员ID
                     String token = request.getHeader("Authorization");
                     if (token != null && token.startsWith("Bearer ")) {
@@ -67,12 +70,14 @@ public class OperationLogAspect {
                         try {
                             adminId = jwtUtil.getAdminIdFromToken(token);
                         } catch (Exception e) {
-                            log.warn("从token获取管理员ID失败", e);
+                            log.debug("从token获取管理员ID失败", e);
                         }
                     }
-                    
-                    // 获取IP地址
-                    operationIp = getIpAddress(request);
+                }
+                
+                // 如果从token中获取不到adminId（如登录操作），尝试从返回值中提取
+                if (adminId == null) {
+                    adminId = extractAdminId(result);
                 }
                 
                 // 获取操作对象ID（从方法参数或返回值中提取）
@@ -92,14 +97,48 @@ public class OperationLogAspect {
                 );
                 
                 long endTime = System.currentTimeMillis();
-                log.debug("操作日志记录完成: type={}, object={}, time={}ms", 
-                         operationLog.type(), operationLog.object(), (endTime - startTime));
+                log.debug("操作日志记录完成: type={}, object={}, adminId={}, time={}ms", 
+                         operationLog.type(), operationLog.object(), adminId, (endTime - startTime));
             } catch (Exception e) {
                 log.error("记录操作日志失败", e);
             }
         }
         
         return result;
+    }
+
+    /**
+     * 从登录响应中提取管理员ID
+     */
+    private Long extractAdminId(Object result) {
+        if (result == null) {
+            return null;
+        }
+        
+        try {
+            // 检查是否是ApiResponse类型
+            Method getDataMethod = result.getClass().getMethod("getData");
+            Object data = getDataMethod.invoke(result);
+            
+            if (data != null) {
+                // 尝试从AdminLoginResponse中获取adminId
+                try {
+                    Method getAdminIdMethod = data.getClass().getMethod("getAdminId");
+                    Object adminId = getAdminIdMethod.invoke(data);
+                    if (adminId instanceof Long) {
+                        return (Long) adminId;
+                    } else if (adminId instanceof Integer) {
+                        return ((Integer) adminId).longValue();
+                    }
+                } catch (NoSuchMethodException e) {
+                    // 忽略，可能不是登录响应
+                }
+            }
+        } catch (Exception e) {
+            log.debug("从返回值提取管理员ID失败", e);
+        }
+        
+        return null;
     }
 
     /**
