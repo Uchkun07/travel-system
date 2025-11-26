@@ -34,8 +34,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // 2. 注册权限拦截器 - 验证用户权限
         if (adminPermissionInterceptor != null) {
             registry.addInterceptor(adminPermissionInterceptor)
-                    .addPathPatterns("/admin/**") // 拦截所有管理端接口
-                    .excludePathPatterns("/admin/login", "/admin/register", "/admin/logout") // 排除登录、注册和登出接口
+                    .addPathPatterns("/api/admin/**", "/api/slideshow/**", "/api/upload/**") // 拦截所有管理端接口
+                    .excludePathPatterns("/api/admin/login", "/api/slideshow/active") // 排除登录和公开接口
                     .order(2); // JWT验证之后执行
         }
     }

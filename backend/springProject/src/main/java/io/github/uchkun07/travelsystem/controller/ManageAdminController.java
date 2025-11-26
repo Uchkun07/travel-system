@@ -489,6 +489,7 @@ public class ManageAdminController {
     @Operation(summary = "角色解绑所有权限")
     @PostMapping("/role-permission/unbind-all/{roleId}")
     @RequireAdminPermission(value = {"ROLE_PERMISSION:UNBIND", "SYSTEM:MANAGE"})
+    @OperationLog(type = "解绑", object = "角色权限")
     public ApiResponse<Void> unbindAllPermissionsFromRole(@PathVariable Integer roleId) {
         try {
             rolePermissionService.unbindAllPermissionsFromRole(roleId);
@@ -549,6 +550,7 @@ public class ManageAdminController {
     @Operation(summary = "管理员解绑所有角色")
     @PostMapping("/admin-role/unbind-all/{adminId}")
     @RequireAdminPermission(value = {"ADMIN_ROLE:UNBIND", "SYSTEM:MANAGE"})
+    @OperationLog(type = "解绑", object = "管理员角色")
     public ApiResponse<Void> unbindAllRolesFromAdmin(@PathVariable Long adminId) {
         try {
             adminRoleRelationService.unbindAllRolesFromAdmin(adminId);

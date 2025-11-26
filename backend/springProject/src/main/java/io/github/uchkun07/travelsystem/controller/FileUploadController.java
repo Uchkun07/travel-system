@@ -1,5 +1,6 @@
 package io.github.uchkun07.travelsystem.controller;
 
+import io.github.uchkun07.travelsystem.annotation.RequireAdminPermission;
 import io.github.uchkun07.travelsystem.dto.ApiResponse;
 import io.github.uchkun07.travelsystem.dto.FileUploadResponse;
 import io.github.uchkun07.travelsystem.enums.FileCategory;
@@ -30,6 +31,7 @@ public class FileUploadController {
      */
     @Operation(summary = "上传头像", description = "上传用户头像图片")
     @PostMapping("/avatar")
+    @RequireAdminPermission(value = {"FILE:UPLOAD", "SYSTEM:MANAGE"})
     public ApiResponse<FileUploadResponse> uploadAvatar(
             @Parameter(description = "头像文件") @RequestParam("file") MultipartFile file) {
         try {
@@ -47,6 +49,7 @@ public class FileUploadController {
      */
     @Operation(summary = "上传城市图片", description = "上传城市相关图片")
     @PostMapping("/city")
+    @RequireAdminPermission(value = {"FILE:UPLOAD", "CITY:UPDATE", "SYSTEM:MANAGE"})
     public ApiResponse<FileUploadResponse> uploadCityImage(
             @Parameter(description = "城市图片文件") @RequestParam("file") MultipartFile file) {
         try {
@@ -64,6 +67,7 @@ public class FileUploadController {
      */
     @Operation(summary = "上传景点图片", description = "上传景点相关图片")
     @PostMapping("/attraction")
+    @RequireAdminPermission(value = {"FILE:UPLOAD", "ATTRACTION:UPDATE", "SYSTEM:MANAGE"})
     public ApiResponse<FileUploadResponse> uploadAttractionImage(
             @Parameter(description = "景点图片文件") @RequestParam("file") MultipartFile file) {
         try {
@@ -81,6 +85,7 @@ public class FileUploadController {
      */
     @Operation(summary = "上传轮播图", description = "上传轮播图图片")
     @PostMapping("/slideshow")
+    @RequireAdminPermission(value = {"FILE:UPLOAD", "SLIDESHOW:UPDATE", "SYSTEM:MANAGE"})
     public ApiResponse<FileUploadResponse> uploadSlideshowImage(
             @Parameter(description = "轮播图文件") @RequestParam("file") MultipartFile file) {
         try {
@@ -98,6 +103,7 @@ public class FileUploadController {
      */
     @Operation(summary = "批量上传景点图片", description = "批量上传景点相关图片")
     @PostMapping("/attraction/batch")
+    @RequireAdminPermission(value = {"FILE:UPLOAD", "ATTRACTION:UPDATE", "SYSTEM:MANAGE"})
     public ApiResponse<List<FileUploadResponse>> uploadAttractionImages(
             @Parameter(description = "景点图片文件数组") @RequestParam("files") MultipartFile[] files) {
         try {
@@ -117,6 +123,7 @@ public class FileUploadController {
      */
     @Operation(summary = "批量上传轮播图", description = "批量上传轮播图图片")
     @PostMapping("/slideshow/batch")
+    @RequireAdminPermission(value = {"FILE:UPLOAD", "SLIDESHOW:UPDATE", "SYSTEM:MANAGE"})
     public ApiResponse<List<FileUploadResponse>> uploadSlideshowImages(
             @Parameter(description = "轮播图文件数组") @RequestParam("files") MultipartFile[] files) {
         try {
@@ -136,6 +143,7 @@ public class FileUploadController {
      */
     @Operation(summary = "删除文件", description = "根据URL删除文件")
     @DeleteMapping
+    @RequireAdminPermission(value = {"FILE:DELETE", "SYSTEM:MANAGE"})
     public ApiResponse<Boolean> deleteFile(
             @Parameter(description = "文件URL") @RequestParam("fileUrl") String fileUrl,
             @Parameter(description = "文件分类") @RequestParam("category") String category) {

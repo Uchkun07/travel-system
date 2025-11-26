@@ -27,6 +27,8 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
+        log.debug("AdminPermissionInterceptor被调用: URI={}", request.getRequestURI());
+        
         // 如果不是方法处理器，直接放行
         if (!(handler instanceof HandlerMethod)) {
             return true;
@@ -40,12 +42,14 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
         
         // 如果没有权限注解，直接放行
         if (methodAnnotation == null && classAnnotation == null) {
+            log.debug("接口无需权限验证,放行: URI={}", request.getRequestURI());
             return true;
         }
 
         // 获取token
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.warn("权限验证失败: 未提供token, URI={}", request.getRequestURI());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"success\":false,\"message\":\"未登录或登录已过期\"}");
@@ -57,6 +61,7 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
         try {
             // 验证token有效性
             if (!jwtUtil.validateToken(token)) {
+                log.warn("权限验证失败: token无效或已过期, URI={}", request.getRequestURI());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"success\":false,\"message\":\"登录已过期，请重新登录\"}");
@@ -66,6 +71,7 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
             // 验证是否为管理员token
             String userType = jwtUtil.getUserTypeFromToken(token);
             if (!"admin".equals(userType)) {
+                log.warn("权限验证失败: 非管理员token, userType={}, URI={}", userType, request.getRequestURI());
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"success\":false,\"message\":\"无权访问管理端接口\"}");
@@ -74,13 +80,17 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
 
             // 获取token中的权限列表
             List<String> userPermissions = jwtUtil.getPermissionsFromToken(token);
+            log.debug("用户权限列表: {}, URI={}", userPermissions, request.getRequestURI());
             
             // 优先使用方法上的注解
             RequireAdminPermission annotation = methodAnnotation != null ? methodAnnotation : classAnnotation;
             String[] requiredPermissions = annotation.value();
             
+            log.debug("需要的权限: {}, URI={}", Arrays.toString(requiredPermissions), request.getRequestURI());
+            
             // 如果没有指定具体权限，只要是管理员就可以访问
             if (requiredPermissions.length == 0) {
+                log.debug("接口无需特定权限,仅需管理员身份,放行: URI={}", request.getRequestURI());
                 return true;
             }
 
@@ -91,11 +101,13 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"success\":false,\"message\":\"权限不足，无法访问该接口\"}");
-                log.warn("权限不足: adminId={}, requiredPermissions={}, userPermissions={}", 
-                        jwtUtil.getAdminIdFromToken(token), Arrays.toString(requiredPermissions), userPermissions);
+                log.warn("权限不足: adminId={}, requiredPermissions={}, userPermissions={}, URI={}", 
+                        jwtUtil.getAdminIdFromToken(token), Arrays.toString(requiredPermissions), userPermissions, request.getRequestURI());
                 return false;
             }
 
+            log.debug("权限验证通过: adminId={}, URI={}", jwtUtil.getAdminIdFromToken(token), request.getRequestURI());
+            
             // 权限验证通过，将管理员信息存入request属性
             request.setAttribute("adminId", jwtUtil.getAdminIdFromToken(token));
             request.setAttribute("username", jwtUtil.getUsernameFromToken(token));
@@ -104,7 +116,7 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
             return true;
 
         } catch (Exception e) {
-            log.error("权限验证失败", e);
+            log.error("权限验证失败: URI=" + request.getRequestURI(), e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"success\":false,\"message\":\"身份验证失败\"}");
