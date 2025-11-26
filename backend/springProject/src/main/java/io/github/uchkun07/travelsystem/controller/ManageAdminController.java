@@ -613,6 +613,7 @@ public class ManageAdminController {
             @RequestParam(defaultValue = "1") Long pageNum,
             @RequestParam(defaultValue = "10") Long pageSize,
             @RequestParam(required = false) Long adminId,
+            @RequestParam(required = false) String operatorName,
             @RequestParam(required = false) String operationType,
             @RequestParam(required = false) String operationObject,
             @RequestParam(required = false) Long objectId,
@@ -620,8 +621,9 @@ public class ManageAdminController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endTime) {
         try {
             OperationLogQueryRequest request = OperationLogQueryRequest.builder()
-                    .pageNum(pageNum).pageSize(pageSize).adminId(adminId).operationType(operationType)
-                    .operationObject(operationObject).objectId(objectId).startTime(startTime).endTime(endTime).build();
+                    .pageNum(pageNum).pageSize(pageSize).adminId(adminId).operatorName(operatorName)
+                    .operationType(operationType).operationObject(operationObject).objectId(objectId)
+                    .startTime(startTime).endTime(endTime).build();
             PageResponse<io.github.uchkun07.travelsystem.entity.OperationLog> result = operationLogService.queryLogs(request);
             return ApiResponse.success("查询成功", result);
         } catch (Exception e) {

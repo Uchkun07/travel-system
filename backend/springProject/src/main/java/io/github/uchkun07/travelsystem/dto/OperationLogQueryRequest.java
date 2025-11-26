@@ -26,6 +26,9 @@ public class OperationLogQueryRequest {
     @Schema(description = "操作人ID", example = "1")
     private Long adminId;
 
+    @Schema(description = "操作者姓名", example = "张三")
+    private String operatorName;
+
     @Schema(description = "操作类型", example = "创建")
     private String operationType;
 
