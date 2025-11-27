@@ -75,7 +75,7 @@ const router = createRouter({
         {
           path: "/system/logManage",
           name: "LogManage",
-          component: () => import("../views/system/logManage.vue"),
+          component: () => import("../views/system/LogManage.vue"),
         },
         // 管理员管理
         {

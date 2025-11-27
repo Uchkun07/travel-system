@@ -2,8 +2,8 @@
   <!-- 顶部横幅 -->
   <el-header class="layout-header">
     <div class="header-left">
-      <img src="@/assets/imgs/logo.png" alt="悦旅 Logo" class="logo" />
-      <span class="system-title">旅游管理系统</span>
+      <img src="@/assets/imgs/logo.png" alt="Logo" class="logo" />
+      <span class="system-title">WayStar</span>
     </div>
     <div class="header-right">
       <el-dropdown>
@@ -72,7 +72,7 @@ const handleLogout = async () => {
   justify-content: space-between;
   align-items: center;
   background: #ffffff;
-  padding: 0 20px;
+  padding: 0 40px;
 }
 .header-left {
   display: flex;
@@ -81,8 +81,8 @@ const handleLogout = async () => {
 }
 
 .logo {
-  height: 70px;
-  width: auto;
+  height: 50px;
+  width: 50px;
 }
 .system-title {
   font-size: 20px;
