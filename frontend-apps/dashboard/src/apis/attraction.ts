@@ -289,34 +289,50 @@ export interface AttractionDetailResponse {
 // 创建景点请求
 export interface CreateAttractionRequest {
   name: string;
+  subtitle?: string;
   typeId: number;
   cityId: number;
   address?: string;
-  description?: string;
-  openingHours?: string;
-  ticketPrice?: number;
-  contact?: string;
-  imageUrls?: string[];
-  longitude?: number;
   latitude?: number;
+  longitude?: number;
+  mainImageUrl?: string;
+  multiImageUrls?: string;
+  estimatedPlayTime?: number;
+  ticketPrice?: number;
+  ticketDescription?: string;
+  openingHours?: string;
+  bestSeason?: string;
+  historicalContext?: string;
+  safetyTips?: string;
+  officialWebsite?: string;
+  nearbyFood?: string;
   status?: number;
+  auditStatus?: number;
 }
 
 // 更新景点请求
 export interface UpdateAttractionRequest {
   attractionId: number;
   name?: string;
+  subtitle?: string;
   typeId?: number;
   cityId?: number;
   address?: string;
-  description?: string;
-  openingHours?: string;
-  ticketPrice?: number;
-  contact?: string;
-  imageUrls?: string[];
-  longitude?: number;
   latitude?: number;
+  longitude?: number;
+  mainImageUrl?: string;
+  multiImageUrls?: string;
+  estimatedPlayTime?: number;
+  ticketPrice?: number;
+  ticketDescription?: string;
+  openingHours?: string;
+  bestSeason?: string;
+  historicalContext?: string;
+  safetyTips?: string;
+  officialWebsite?: string;
+  nearbyFood?: string;
   status?: number;
+  auditStatus?: number;
 }
 
 // 分页查询景点请求

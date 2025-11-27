@@ -127,6 +127,9 @@
         <el-form-item label="景点名称" prop="name">
           <el-input v-model="formData.name" placeholder="请输入景点名称" />
         </el-form-item>
+        <el-form-item label="副标题" prop="subtitle">
+          <el-input v-model="formData.subtitle" placeholder="请输入副标题" />
+        </el-form-item>
         <el-form-item label="景点类型" prop="typeId">
           <el-select
             v-model="formData.typeId"
@@ -156,33 +159,8 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="地址" prop="address">
-          <el-input v-model="formData.address" placeholder="请输入地址" />
-        </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input
-            v-model="formData.description"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入描述"
-          />
-        </el-form-item>
-        <el-form-item label="开放时间" prop="openingHours">
-          <el-input
-            v-model="formData.openingHours"
-            placeholder="例如：09:00-18:00"
-          />
-        </el-form-item>
-        <el-form-item label="门票价格" prop="ticketPrice">
-          <el-input-number
-            v-model="formData.ticketPrice"
-            :min="0"
-            :precision="2"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="联系方式" prop="contact">
-          <el-input v-model="formData.contact" placeholder="请输入联系方式" />
+        <el-form-item label="详细地址" prop="address">
+          <el-input v-model="formData.address" placeholder="请输入详细地址" />
         </el-form-item>
         <el-form-item label="经度" prop="longitude">
           <el-input-number
@@ -190,6 +168,7 @@
             :precision="6"
             :min="-180"
             :max="180"
+            placeholder="范围：-180~180"
             style="width: 100%"
           />
         </el-form-item>
@@ -199,36 +178,129 @@
             :precision="6"
             :min="-90"
             :max="90"
+            placeholder="范围：-90~90"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-switch
-            v-model="formData.status"
-            :active-value="1"
-            :inactive-value="0"
-            active-text="启用"
-            inactive-text="禁用"
-          />
-        </el-form-item>
-        <el-form-item label="景点图片">
+        <el-form-item label="主图">
           <el-upload
             class="upload-demo"
             :auto-upload="false"
-            :on-change="handleImageChange"
-            :on-remove="handleImageRemove"
+            :on-change="handleMainImageChange"
+            :on-remove="handleMainImageRemove"
             :limit="1"
-            :file-list="fileList"
+            :file-list="mainImageFileList"
             list-type="picture-card"
             accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
           >
             <el-icon><Plus /></el-icon>
             <template #tip>
               <div class="el-upload__tip">
-                支持 jpg/png/gif/webp 格式，文件大小不超过 5MB
+                上传景点主图，支持 jpg/png/gif/webp 格式，文件大小不超过 5MB
               </div>
             </template>
           </el-upload>
+        </el-form-item>
+        <el-form-item label="多图展示">
+          <el-upload
+            class="upload-demo"
+            :auto-upload="false"
+            :on-change="handleMultiImageChange"
+            :on-remove="handleMultiImageRemove"
+            :limit="9"
+            :file-list="multiImageFileList"
+            list-type="picture-card"
+            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+            multiple
+          >
+            <el-icon><Plus /></el-icon>
+            <template #tip>
+              <div class="el-upload__tip">
+                上传景点多图，最多9张，支持 jpg/png/gif/webp
+                格式，文件大小不超过 5MB
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="建议游览时间" prop="estimatedPlayTime">
+          <el-input-number
+            v-model="formData.estimatedPlayTime"
+            :min="0"
+            placeholder="单位：分钟"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="门票价格" prop="ticketPrice">
+          <el-input-number
+            v-model="formData.ticketPrice"
+            :min="0"
+            :precision="2"
+            placeholder="单位：元"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="门票说明" prop="ticketDescription">
+          <el-input
+            v-model="formData.ticketDescription"
+            type="textarea"
+            :rows="2"
+            placeholder="请输入门票说明"
+          />
+        </el-form-item>
+        <el-form-item label="开放时间" prop="openingHours">
+          <el-input
+            v-model="formData.openingHours"
+            placeholder="例如：09:00-18:00"
+          />
+        </el-form-item>
+        <el-form-item label="最佳观光季节" prop="bestSeason">
+          <el-input
+            v-model="formData.bestSeason"
+            placeholder="例如：春季、秋季"
+          />
+        </el-form-item>
+        <el-form-item label="历史底蕴" prop="historicalContext">
+          <el-input
+            v-model="formData.historicalContext"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入历史底蕴介绍"
+          />
+        </el-form-item>
+        <el-form-item label="安全提示" prop="safetyTips">
+          <el-input
+            v-model="formData.safetyTips"
+            type="textarea"
+            :rows="2"
+            placeholder="请输入安全提示"
+          />
+        </el-form-item>
+        <el-form-item label="官方网站" prop="officialWebsite">
+          <el-input
+            v-model="formData.officialWebsite"
+            placeholder="请输入官方网站URL"
+          />
+        </el-form-item>
+        <el-form-item label="附近美食" prop="nearbyFood">
+          <el-input
+            v-model="formData.nearbyFood"
+            type="textarea"
+            :rows="2"
+            placeholder="请输入附近美食信息（JSON格式）"
+          />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="formData.status">
+            <el-radio :label="1">正常</el-radio>
+            <el-radio :label="0">下架</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="审核状态" prop="auditStatus">
+          <el-radio-group v-model="formData.auditStatus">
+            <el-radio :label="1">待审核</el-radio>
+            <el-radio :label="2">已通过</el-radio>
+            <el-radio :label="3">已驳回</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -319,22 +391,34 @@ const dialogVisible = ref(false);
 const dialogTitle = ref("");
 const formRef = ref<FormInstance>();
 const formData = reactive<CreateAttractionRequest & { attractionId?: number }>({
+  attractionId: undefined,
   name: "",
+  subtitle: "",
   typeId: undefined as any,
   cityId: undefined as any,
   address: "",
-  description: "",
-  openingHours: "",
-  ticketPrice: 0,
-  contact: "",
-  longitude: undefined,
   latitude: undefined,
+  longitude: undefined,
+  mainImageUrl: "",
+  multiImageUrls: "",
+  estimatedPlayTime: undefined,
+  ticketPrice: undefined,
+  ticketDescription: "",
+  openingHours: "",
+  bestSeason: "",
+  historicalContext: "",
+  safetyTips: "",
+  officialWebsite: "",
+  nearbyFood: "",
   status: 1,
+  auditStatus: 1,
 });
 
 // 文件上传
-const uploadedFile = ref<File | null>(null);
-const fileList = ref<UploadUserFile[]>([]);
+const mainImageFile = ref<File | null>(null);
+const mainImageFileList = ref<UploadUserFile[]>([]);
+const multiImageFiles = ref<File[]>([]);
+const multiImageFileList = ref<UploadUserFile[]>([]);
 
 // 标签管理对话框
 const tagDialogVisible = ref(false);
@@ -346,6 +430,38 @@ const formRules: FormRules = {
   name: [{ required: true, message: "请输入景点名称", trigger: "blur" }],
   typeId: [{ required: true, message: "请选择景点类型", trigger: "change" }],
   cityId: [{ required: true, message: "请选择城市", trigger: "change" }],
+  latitude: [
+    {
+      validator: (rule, value, callback) => {
+        if (
+          value !== undefined &&
+          value !== null &&
+          (value < -90 || value > 90)
+        ) {
+          callback(new Error("纬度范围：-90~90"));
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur",
+    },
+  ],
+  longitude: [
+    {
+      validator: (rule, value, callback) => {
+        if (
+          value !== undefined &&
+          value !== null &&
+          (value < -180 || value > 180)
+        ) {
+          callback(new Error("经度范围：-180~180"));
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur",
+    },
+  ],
 };
 
 // 加载景点类型列表
@@ -416,14 +532,14 @@ const handleReset = () => {
   handleSearch();
 };
 
-// 处理图片变化
-const handleImageChange = (file: UploadFile) => {
+// 处理主图变化
+const handleMainImageChange = (file: UploadFile) => {
   if (file.raw) {
     // 验证文件大小
     const isLt5M = file.raw.size / 1024 / 1024 < 5;
     if (!isLt5M) {
       ElMessage.error("图片大小不能超过 5MB!");
-      fileList.value = [];
+      mainImageFileList.value = [];
       return;
     }
 
@@ -437,39 +553,85 @@ const handleImageChange = (file: UploadFile) => {
     ];
     if (!allowedTypes.includes(file.raw.type)) {
       ElMessage.error("只支持 jpg/png/gif/webp 格式的图片!");
-      fileList.value = [];
+      mainImageFileList.value = [];
       return;
     }
 
-    uploadedFile.value = file.raw;
+    mainImageFile.value = file.raw;
   }
 };
 
-// 处理图片移除
-const handleImageRemove = () => {
-  uploadedFile.value = null;
-  fileList.value = [];
+// 处理主图移除
+const handleMainImageRemove = () => {
+  mainImageFile.value = null;
+  mainImageFileList.value = [];
+};
+
+// 处理多图变化
+const handleMultiImageChange = (file: UploadFile) => {
+  if (file.raw) {
+    // 验证文件大小
+    const isLt5M = file.raw.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      ElMessage.error("图片大小不能超过 5MB!");
+      return;
+    }
+
+    // 验证文件类型
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+    if (!allowedTypes.includes(file.raw.type)) {
+      ElMessage.error("只支持 jpg/png/gif/webp 格式的图片!");
+      return;
+    }
+
+    multiImageFiles.value.push(file.raw);
+  }
+};
+
+// 处理多图移除
+const handleMultiImageRemove = (file: UploadFile) => {
+  const index = multiImageFileList.value.findIndex((f) => f.uid === file.uid);
+  if (index > -1) {
+    multiImageFiles.value.splice(index, 1);
+  }
 };
 
 // 添加景点
 const handleAdd = () => {
   dialogTitle.value = "添加景点";
   Object.assign(formData, {
+    attractionId: undefined,
     name: "",
+    subtitle: "",
     typeId: undefined,
     cityId: undefined,
     address: "",
-    description: "",
-    openingHours: "",
-    ticketPrice: 0,
-    contact: "",
-    longitude: undefined,
     latitude: undefined,
+    longitude: undefined,
+    mainImageUrl: "",
+    multiImageUrls: "",
+    estimatedPlayTime: undefined,
+    ticketPrice: undefined,
+    ticketDescription: "",
+    openingHours: "",
+    bestSeason: "",
+    historicalContext: "",
+    safetyTips: "",
+    officialWebsite: "",
+    nearbyFood: "",
     status: 1,
-    attractionId: undefined,
+    auditStatus: 1,
   });
-  uploadedFile.value = null;
-  fileList.value = [];
+  mainImageFile.value = null;
+  mainImageFileList.value = [];
+  multiImageFiles.value = [];
+  multiImageFileList.value = [];
   dialogVisible.value = true;
 };
 
@@ -479,19 +641,30 @@ const handleEdit = (row: AttractionListResponse) => {
   Object.assign(formData, {
     attractionId: row.attractionId,
     name: row.name,
+    subtitle: "",
     typeId: row.typeId,
     cityId: row.cityId,
-    status: row.status,
     address: "",
-    description: "",
-    openingHours: "",
-    ticketPrice: 0,
-    contact: "",
-    longitude: undefined,
     latitude: undefined,
+    longitude: undefined,
+    mainImageUrl: "",
+    multiImageUrls: "",
+    estimatedPlayTime: undefined,
+    ticketPrice: undefined,
+    ticketDescription: "",
+    openingHours: "",
+    bestSeason: "",
+    historicalContext: "",
+    safetyTips: "",
+    officialWebsite: "",
+    nearbyFood: "",
+    status: row.status,
+    auditStatus: 1,
   });
-  uploadedFile.value = null;
-  fileList.value = [];
+  mainImageFile.value = null;
+  mainImageFileList.value = [];
+  multiImageFiles.value = [];
+  multiImageFileList.value = [];
   dialogVisible.value = true;
 };
 
@@ -574,23 +747,28 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        // 1. 先上传主图
+        if (mainImageFile.value) {
+          const mainImageRes = await uploadAttractionImage(mainImageFile.value);
+          formData.mainImageUrl = mainImageRes?.data?.fileUrl || "";
+        }
+
+        // 2. 上传多图
+        if (multiImageFiles.value.length > 0) {
+          const uploadPromises = multiImageFiles.value.map((file) =>
+            uploadAttractionImage(file)
+          );
+          const results = await Promise.all(uploadPromises);
+          const urls = results
+            .map((res) => res?.data?.fileUrl)
+            .filter((url) => url);
+          formData.multiImageUrls = JSON.stringify(urls);
+        }
+
+        // 3. 提交表单数据
         if (formData.attractionId) {
           // 编辑
-          const params: UpdateAttractionRequest = {
-            attractionId: formData.attractionId,
-            name: formData.name,
-            typeId: formData.typeId,
-            cityId: formData.cityId,
-            address: formData.address,
-            description: formData.description,
-            openingHours: formData.openingHours,
-            ticketPrice: formData.ticketPrice,
-            contact: formData.contact,
-            longitude: formData.longitude,
-            latitude: formData.latitude,
-            status: formData.status,
-          };
-          await updateAttraction(params);
+          await updateAttraction(formData as UpdateAttractionRequest);
           ElMessage.success("更新成功");
         } else {
           // 添加
@@ -610,8 +788,10 @@ const handleSubmit = async () => {
 // 对话框关闭
 const handleDialogClose = () => {
   formRef.value?.resetFields();
-  uploadedFile.value = null;
-  fileList.value = [];
+  mainImageFile.value = null;
+  mainImageFileList.value = [];
+  multiImageFiles.value = [];
+  multiImageFileList.value = [];
 };
 
 // 分页变化
