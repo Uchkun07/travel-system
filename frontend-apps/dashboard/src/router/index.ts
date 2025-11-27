@@ -22,6 +22,12 @@ const router = createRouter({
           name: "Dashboard",
           component: Dashboard,
         },
+        // 个人中心
+        {
+          path: "/profile",
+          name: "Profile",
+          component: () => import("../views/profile/Profile.vue"),
+        },
         // 用户管理
         {
           path: "/users/UserList",

@@ -345,12 +345,22 @@ public class AdminServiceImpl implements IAdminService {
             throw new IllegalArgumentException("管理员不存在");
         }
 
-        // 2. 生成新的盐值和加密密码
+        // 2. 验证旧密码
+        String encryptedOldPassword = encryptPassword(
+            request.getOldPassword(), 
+            admin.getPasswordSalt(), 
+            admin.getPbkdf2Iterations()
+        );
+        if (!encryptedOldPassword.equals(admin.getPassword())) {
+            throw new IllegalArgumentException("旧密码错误");
+        }
+
+        // 3. 生成新的盐值和加密密码
         String salt = generateSalt();
         int iterations = 65536;
         String encryptedPassword = encryptPassword(request.getNewPassword(), salt, iterations);
 
-        // 3. 更新密码
+        // 4. 更新密码
         admin.setPassword(encryptedPassword);
         admin.setPasswordSalt(salt);
         admin.setPbkdf2Iterations(iterations);

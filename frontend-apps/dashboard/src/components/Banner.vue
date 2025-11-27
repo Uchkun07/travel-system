@@ -16,8 +16,12 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item>个人中心</el-dropdown-item>
-            <el-dropdown-item>修改密码</el-dropdown-item>
+            <el-dropdown-item @click="router.push('/profile')"
+              >个人中心</el-dropdown-item
+            >
+            <el-dropdown-item @click="showPasswordDialog = true"
+              >修改密码</el-dropdown-item
+            >
             <el-dropdown-item divided @click="handleLogout"
               >退出登录</el-dropdown-item
             >
@@ -25,17 +29,22 @@
         </template>
       </el-dropdown>
     </div>
+
+    <ChangePasswordDialog v-model="showPasswordDialog" />
   </el-header>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from "vue-router";
 import { ElMessageBox } from "element-plus";
+import ChangePasswordDialog from "./ChangePasswordDialog.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
+const showPasswordDialog = ref(false);
 
 const handleLogout = async () => {
   try {

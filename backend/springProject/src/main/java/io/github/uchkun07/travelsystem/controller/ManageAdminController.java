@@ -47,6 +47,9 @@ public class ManageAdminController {
     @Autowired
     private IOperationLogService operationLogService;
     
+    @Autowired
+    private io.github.uchkun07.travelsystem.util.JwtUtil jwtUtil;
+    
     // ==================== 管理员登录登出 ====================
     
     @Operation(summary = "管理员登录", description = "管理员使用用户名和密码登录,返回包含权限的JWT令牌")
@@ -91,6 +94,55 @@ public class ManageAdminController {
             return ApiResponse.success("获取权限成功", data);
         } catch (Exception e) {
             return ApiResponse.error(500, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "获取当前登录管理员信息")
+    @GetMapping("/profile")
+    public ApiResponse<Admin> getCurrentAdminProfile(@RequestHeader("Authorization") String token) {
+        try {
+            // 从token中获取管理员ID
+            String jwt = token.replace("Bearer ", "");
+            Long adminId = jwtUtil.getAdminIdFromToken(jwt);
+            
+            Admin admin = adminService.getAdminById(adminId);
+            // 移除敏感信息
+            admin.setPassword(null);
+            admin.setPasswordSalt(null);
+            admin.setPbkdf2Iterations(null);
+            
+            return ApiResponse.success("获取成功", admin);
+        } catch (Exception e) {
+            log.error("获取当前管理员信息失败", e);
+            return ApiResponse.error(500, "获取失败");
+        }
+    }
+
+    @Operation(summary = "更新当前登录管理员的个人信息")
+    @PutMapping("/profile")
+    @OperationLog(type = "修改个人信息", object = "管理员")
+    public ApiResponse<Admin> updateCurrentAdminProfile(
+            @RequestHeader("Authorization") String token,
+            @Validated @RequestBody AdminUpdateRequest request) {
+        try {
+            // 从token中获取管理员ID
+            String jwt = token.replace("Bearer ", "");
+            Long adminId = jwtUtil.getAdminIdFromToken(jwt);
+            
+            // 确保只能修改自己的信息
+            request.setAdminId(adminId);
+            
+            Admin admin = adminService.updateAdmin(request);
+            admin.setPassword(null);
+            admin.setPasswordSalt(null);
+            admin.setPbkdf2Iterations(null);
+            
+            return ApiResponse.success("更新成功", admin);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(400, e.getMessage());
+        } catch (Exception e) {
+            log.error("更新个人信息失败", e);
+            return ApiResponse.error(500, "更新失败");
         }
     }
     
@@ -307,6 +359,8 @@ public class ManageAdminController {
             return ApiResponse.error(500, "查询失败");
         }
     }
+
+    
 
     @Operation(summary = "查询角色详情")
     @GetMapping("/role/detail/{roleId}")
