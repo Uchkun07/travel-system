@@ -39,6 +39,20 @@ export function getPermissions() {
   return get("/api/admin/permissions");
 }
 
+/**
+ * 获取当前登录管理员信息（不需要特殊权限）
+ */
+export function getCurrentAdminProfile() {
+  return get<Admin>("/api/admin/profile");
+}
+
+/**
+ * 更新当前登录管理员的个人信息（不需要特殊权限）
+ */
+export function updateCurrentAdminProfile(params: UpdateAdminRequest) {
+  return put<Admin>("/api/admin/profile", params);
+}
+
 // ==================== 类型定义 ====================
 
 // 管理员接口定义
@@ -70,7 +84,7 @@ export interface CreateAdminRequest {
 
 // 更新管理员请求
 export interface UpdateAdminRequest {
-  adminId: number;
+  adminId?: number; // 可选，用于个人信息更新时不需要传adminId
   fullName?: string;
   phone?: string;
   email?: string;
@@ -78,8 +92,10 @@ export interface UpdateAdminRequest {
 }
 
 // 修改密码请求
+// 修改密码请求
 export interface UpdatePasswordRequest {
   adminId: number;
+  oldPassword: string;
   newPassword: string;
 }
 
