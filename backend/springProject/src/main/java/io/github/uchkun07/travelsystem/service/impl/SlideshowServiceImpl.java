@@ -133,4 +133,15 @@ public class SlideshowServiceImpl implements ISlideshowService {
                .orderByAsc(Slideshow::getDisplayOrder);
         return slideshowMapper.selectList(wrapper);
     }
+
+    @Override
+    @Transactional
+    public void incrementClickCount(Integer slideshowId) {
+        Slideshow slideshow = slideshowMapper.selectById(slideshowId);
+        if (slideshow == null) {
+            throw new IllegalArgumentException("轮播图不存在");
+        }
+        slideshow.setClickCount(slideshow.getClickCount() + 1);
+        slideshowMapper.updateById(slideshow);
+    }
 }

@@ -61,7 +61,15 @@
 	<dependency>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-aop</artifactId>
-	</dependency>		<!-- Configuration Processor for custom properties -->
+	</dependency>
+
+	<!-- Spring Validation -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-validation</artifactId>
+	</dependency>
+
+		<!-- Configuration Processor for custom properties -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>

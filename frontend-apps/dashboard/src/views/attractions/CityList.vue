@@ -8,13 +8,6 @@
 
       <!-- 搜索表单 -->
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="城市ID">
-          <el-input
-            v-model.number="searchForm.cityId"
-            placeholder="请输入城市ID"
-            clearable
-          />
-        </el-form-item>
         <el-form-item label="城市名称">
           <el-input
             v-model="searchForm.cityName"
@@ -22,24 +15,12 @@
             clearable
           />
         </el-form-item>
-        <el-form-item label="省份代码">
+        <el-form-item label="所属国家">
           <el-input
-            v-model="searchForm.provinceCode"
-            placeholder="请输入省份代码"
+            v-model="searchForm.country"
+            placeholder="请输入国家名称"
             clearable
           />
-        </el-form-item>
-        <el-form-item label="级别">
-          <el-select
-            v-model="searchForm.level"
-            placeholder="请选择级别"
-            clearable
-          >
-            <el-option label="一线城市" :value="1" />
-            <el-option label="二线城市" :value="2" />
-            <el-option label="三线城市" :value="3" />
-            <el-option label="四线城市" :value="4" />
-          </el-select>
         </el-form-item>
         <el-form-item label="状态">
           <el-select
@@ -63,17 +44,27 @@
       <el-table :data="cities" border style="width: 100%">
         <el-table-column prop="cityId" label="城市ID" width="80" />
         <el-table-column prop="cityName" label="城市名称" width="150" />
-        <el-table-column prop="provinceCode" label="省份代码" width="120" />
-        <el-table-column prop="cityCode" label="城市代码" width="120" />
-        <el-table-column prop="level" label="级别" width="100">
+        <el-table-column prop="country" label="所属国家" width="120" />
+        <el-table-column prop="cityUrl" label="城市图片" width="120">
           <template #default="{ row }">
-            <el-tag :type="getLevelType(row.level)">
-              {{ getLevelText(row.level) }}
-            </el-tag>
+            <el-image
+              v-if="row.cityUrl"
+              :src="getImageUrl(row.cityUrl)"
+              :preview-src-list="[getImageUrl(row.cityUrl)]"
+              fit="cover"
+              style="width: 60px; height: 60px"
+            />
+            <span v-else>无图片</span>
           </template>
         </el-table-column>
+        <el-table-column
+          prop="description"
+          label="城市简介"
+          width="200"
+          show-overflow-tooltip
+        />
         <el-table-column prop="sortOrder" label="排序" width="80" />
-        <el-table-column prop="status" label="状态" width="80">
+        <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">
               {{ row.status === 1 ? "启用" : "禁用" }}
@@ -119,42 +110,8 @@
         <el-form-item label="城市名称" prop="cityName">
           <el-input v-model="formData.cityName" placeholder="请输入城市名称" />
         </el-form-item>
-        <el-form-item label="省份代码" prop="provinceCode">
-          <el-input
-            v-model="formData.provinceCode"
-            placeholder="请输入省份代码"
-          />
-        </el-form-item>
-        <el-form-item label="城市代码" prop="cityCode">
-          <el-input v-model="formData.cityCode" placeholder="请输入城市代码" />
-        </el-form-item>
-        <el-form-item label="级别" prop="level">
-          <el-select
-            v-model="formData.level"
-            placeholder="请选择级别"
-            style="width: 100%"
-          >
-            <el-option label="一线城市" :value="1" />
-            <el-option label="二线城市" :value="2" />
-            <el-option label="三线城市" :value="3" />
-            <el-option label="四线城市" :value="4" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="排序" prop="sortOrder">
-          <el-input-number
-            v-model="formData.sortOrder"
-            :min="0"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-switch
-            v-model="formData.status"
-            :active-value="1"
-            :inactive-value="0"
-            active-text="启用"
-            inactive-text="禁用"
-          />
+        <el-form-item label="所属国家" prop="country">
+          <el-input v-model="formData.country" placeholder="请输入国家名称" />
         </el-form-item>
         <el-form-item label="城市图片">
           <el-upload
@@ -174,6 +131,30 @@
               </div>
             </template>
           </el-upload>
+        </el-form-item>
+        <el-form-item label="城市简介" prop="description">
+          <el-input
+            v-model="formData.description"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入城市简介"
+          />
+        </el-form-item>
+        <el-form-item label="排序" prop="sortOrder">
+          <el-input-number
+            v-model="formData.sortOrder"
+            :min="0"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-switch
+            v-model="formData.status"
+            :active-value="1"
+            :inactive-value="0"
+            active-text="启用"
+            inactive-text="禁用"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -208,12 +189,22 @@ import {
 } from "@/apis/attraction";
 import { uploadCityImage } from "@/apis/upload";
 
+// 图片URL转换工具函数
+const getImageUrl = (url?: string): string => {
+  if (!url) return "";
+  // 如果已经是完整URL，直接返回
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  // 否则拼接baseURL
+  const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+  return `${baseURL}${url.startsWith("/") ? url : "/" + url}`;
+};
+
 // 搜索表单
 const searchForm = reactive<QueryCitiesRequest>({
-  cityId: undefined,
   cityName: "",
-  provinceCode: "",
-  level: undefined,
+  country: "",
   status: undefined,
 });
 
@@ -233,9 +224,9 @@ const dialogTitle = ref("");
 const formRef = ref<FormInstance>();
 const formData = reactive<CreateCityRequest & { cityId?: number }>({
   cityName: "",
-  provinceCode: "",
-  cityCode: "",
-  level: 3,
+  country: "",
+  cityUrl: "",
+  description: "",
   sortOrder: 0,
   status: 1,
 });
@@ -247,33 +238,7 @@ const fileList = ref<UploadUserFile[]>([]);
 // 表单验证规则
 const formRules: FormRules = {
   cityName: [{ required: true, message: "请输入城市名称", trigger: "blur" }],
-  provinceCode: [
-    { required: true, message: "请输入省份代码", trigger: "blur" },
-  ],
-  cityCode: [{ required: true, message: "请输入城市代码", trigger: "blur" }],
-  level: [{ required: true, message: "请选择级别", trigger: "change" }],
-};
-
-// 获取级别文本
-const getLevelText = (level: number) => {
-  const levelMap: Record<number, string> = {
-    1: "一线城市",
-    2: "二线城市",
-    3: "三线城市",
-    4: "四线城市",
-  };
-  return levelMap[level] || "未知";
-};
-
-// 获取级别标签类型
-const getLevelType = (level: number) => {
-  const typeMap: Record<number, string> = {
-    1: "danger",
-    2: "warning",
-    3: "success",
-    4: "info",
-  };
-  return typeMap[level] || "";
+  country: [{ required: true, message: "请输入所属国家", trigger: "blur" }],
 };
 
 // 加载城市列表
@@ -303,17 +268,15 @@ const handleSearch = () => {
 // 重置
 const handleReset = () => {
   Object.assign(searchForm, {
-    cityId: undefined,
     cityName: "",
-    provinceCode: "",
-    level: undefined,
+    country: "",
     status: undefined,
   });
   handleSearch();
 };
 
 // 处理图片变化
-const handleImageChange = (file: UploadFile) => {
+const handleImageChange = async (file: UploadFile) => {
   if (file.raw) {
     // 验证文件大小
     const isLt5M = file.raw.size / 1024 / 1024 < 5;
@@ -338,6 +301,20 @@ const handleImageChange = (file: UploadFile) => {
     }
 
     uploadedFile.value = file.raw;
+
+    // 立即上传图片
+    try {
+      const res = await uploadCityImage(file.raw);
+      if (res?.data?.fileUrl) {
+        formData.cityUrl = res.data.fileUrl;
+        ElMessage.success("图片上传成功");
+      }
+    } catch (error) {
+      console.error("图片上传失败:", error);
+      ElMessage.error("图片上传失败");
+      fileList.value = [];
+      uploadedFile.value = null;
+    }
   }
 };
 
@@ -345,6 +322,7 @@ const handleImageChange = (file: UploadFile) => {
 const handleImageRemove = () => {
   uploadedFile.value = null;
   fileList.value = [];
+  formData.cityUrl = "";
 };
 
 // 添加城市
@@ -352,9 +330,9 @@ const handleAdd = () => {
   dialogTitle.value = "添加城市";
   Object.assign(formData, {
     cityName: "",
-    provinceCode: "",
-    cityCode: "",
-    level: 3,
+    country: "",
+    cityUrl: "",
+    description: "",
     sortOrder: 0,
     status: 1,
     cityId: undefined,
@@ -370,14 +348,23 @@ const handleEdit = (row: City) => {
   Object.assign(formData, {
     cityId: row.cityId,
     cityName: row.cityName,
-    provinceCode: row.provinceCode,
-    cityCode: row.cityCode,
-    level: row.level,
+    country: row.country,
+    cityUrl: row.cityUrl,
+    description: row.description,
     sortOrder: row.sortOrder,
     status: row.status,
   });
   uploadedFile.value = null;
   fileList.value = [];
+  // 如果有图片URL，显示在上传列表中
+  if (row.cityUrl) {
+    fileList.value = [
+      {
+        name: "city-image",
+        url: getImageUrl(row.cityUrl),
+      },
+    ];
+  }
   dialogVisible.value = true;
 };
 
@@ -412,9 +399,9 @@ const handleSubmit = async () => {
           const params: UpdateCityRequest = {
             cityId: formData.cityId,
             cityName: formData.cityName,
-            provinceCode: formData.provinceCode,
-            cityCode: formData.cityCode,
-            level: formData.level,
+            country: formData.country,
+            cityUrl: formData.cityUrl,
+            description: formData.description,
             sortOrder: formData.sortOrder,
             status: formData.status,
           };

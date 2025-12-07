@@ -51,9 +51,10 @@ import { Search, Star, Loading } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 import attractionCard from "@/components/recommend-attraction/attractionCard.vue";
 import {
-  getAllAttractions,
+  getAttractionCards,
   getCollectedAttractionIds,
-  type Attraction as ApiAttraction,
+  type AttractionCard,
+  type AttractionQueryRequest,
 } from "@/apis/attraction";
 
 // 组件所需的景点数据格式（与 attractionCard 组件匹配）
@@ -75,11 +76,11 @@ const loading = ref(false);
 // 收藏的景点ID列表
 const collectedIds = ref<number[]>([]);
 // 所有景点列表
-const allAttractions = ref<ApiAttraction[]>([]);
+const allAttractions = ref<AttractionCard[]>([]);
 
 // 数据转换：将后端数据转换为组件需要的格式
 const transformAttraction = (
-  attraction: ApiAttraction
+  attraction: AttractionCard
 ): AttractionCardData => ({
   id: attraction.attractionId,
   title: attraction.name,
@@ -116,10 +117,14 @@ const filteredFavorites = computed(() => {
 const loadFavorites = async () => {
   loading.value = true;
   try {
-    // 1. 获取所有景点
-    const attractionsResponse = await getAllAttractions();
-    if (Array.isArray(attractionsResponse)) {
-      allAttractions.value = attractionsResponse;
+    // 1. 获取所有景点（使用分页，获取大量数据）
+    const params: AttractionQueryRequest = {
+      pageNum: 1,
+      pageSize: 1000, // 获取足够多的数据
+    };
+    const attractionsResponse = await getAttractionCards(params);
+    if (attractionsResponse.code === 200 && attractionsResponse.data) {
+      allAttractions.value = attractionsResponse.data.records;
     }
 
     // 2. 获取收藏的景点ID列表

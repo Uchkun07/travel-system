@@ -119,22 +119,23 @@ export const useUserStore = defineStore("user", () => {
    */
   async function login(loginData: LoginRequest) {
     try {
-      const res = await apiLogin(loginData);
+      const res: any = await apiLogin(loginData);
 
-      if (res.success && res.token) {
+      // 后端返回 ApiResponse<UserLoginResponse> 格式: {code, message, data: {token, userId, ...}}
+      if (res.code === 200 && res.data?.token) {
         // 保存 token 到 Cookie (传递 rememberMe 参数)
-        setToken(res.token, loginData.rememberMe || false);
+        setToken(res.data.token, loginData.rememberMe || false);
 
         // 保存用户信息到 localStorage
         setUserInfo({
-          userId: res.userId!,
-          username: res.username!,
-          email: res.email!,
-          fullName: res.fullName,
-          avatar: res.avatar,
-          phone: res.phone,
-          gender: res.gender,
-          birthday: res.birthday,
+          userId: res.data.userId!,
+          username: res.data.username!,
+          email: res.data.email!,
+          fullName: res.data.fullName,
+          avatar: res.data.avatar,
+          phone: res.data.phone,
+          gender: res.data.gender,
+          birthday: res.data.birthday,
         });
 
         // 登录后初始化收藏列表

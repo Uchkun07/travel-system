@@ -44,6 +44,9 @@ spring:
     resources:
       static-locations: classpath:/static/
       add-mappings: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
 
 # JWT配置
 jwt:

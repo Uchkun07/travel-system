@@ -19,7 +19,9 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         this.strictInsertFill(metaObject, "registerTime", LocalDateTime.class, LocalDateTime.now());
         this.strictInsertFill(metaObject, "lastLoginTime",LocalDateTime.class, LocalDateTime.now());
         this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
-        this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now()); 
+        this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+        // BCrypt 已包含盐值，此字段填充空字符串以兼容数据库
+        this.strictInsertFill(metaObject, "passwordSalt", String.class, "");
     }
 
     @Override

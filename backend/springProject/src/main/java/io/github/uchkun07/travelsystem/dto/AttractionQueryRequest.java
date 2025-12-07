@@ -11,10 +11,13 @@ import lombok.Data;
 public class AttractionQueryRequest {
 
     @Schema(description = "当前页码", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer current = 1;
+    private Integer pageNum = 1;
 
     @Schema(description = "每页大小", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer size = 10;
+    private Integer pageSize = 10;
+
+    @Schema(description = "景点ID")
+    private Long attractionId;
 
     @Schema(description = "景点名称（模糊查询）")
     private String name;

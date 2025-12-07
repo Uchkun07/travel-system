@@ -38,8 +38,9 @@ import { ElMessage } from "element-plus";
 import Slideshow from "@/components/recommend-attraction/slideshow.vue";
 import attractionCard from "@/components/recommend-attraction/attractionCard.vue";
 import {
-  getAllAttractions,
-  type Attraction as ApiAttraction,
+  getAttractionCards,
+  type AttractionCard,
+  type AttractionQueryRequest,
 } from "@/apis/attraction";
 import { useCollectionStore } from "@/stores/collection";
 import { useUserStore } from "@/stores/user"; // 改为使用 userStore
@@ -59,6 +60,9 @@ interface AttractionCardData {
 // 景点数据
 const attractions = ref<AttractionCardData[]>([]);
 const loading = ref(false);
+const currentPage = ref(1);
+const pageSize = ref(20);
+const total = ref(0);
 
 // Store
 const collectionStore = useCollectionStore();
@@ -66,7 +70,7 @@ const userStore = useUserStore(); // 使用 userStore
 
 // 数据转换：将后端数据转换为组件需要的格式
 const transformAttraction = (
-  attraction: ApiAttraction
+  attraction: AttractionCard
 ): AttractionCardData => ({
   id: attraction.attractionId,
   title: attraction.name,
@@ -82,8 +86,15 @@ const transformAttraction = (
 const loadAttractions = async () => {
   loading.value = true;
   try {
-    const data = await getAllAttractions();
-    attractions.value = data.map(transformAttraction);
+    const params: AttractionQueryRequest = {
+      pageNum: currentPage.value,
+      pageSize: pageSize.value,
+    };
+    const response = await getAttractionCards(params);
+    if (response.code === 200 && response.data) {
+      attractions.value = response.data.records.map(transformAttraction);
+      total.value = response.data.total;
+    }
 
     // 如果用户已登录，初始化收藏列表
     if (userStore.isLoggedIn && !collectionStore.initialized) {

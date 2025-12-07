@@ -46,4 +46,9 @@ public interface ISlideshowService {
      * 获取所有启用的轮播图
      */
     List<Slideshow> getActiveSlideshows();
+
+    /**
+     * 增加点击次数
+     */
+    void incrementClickCount(Integer slideshowId);
 }

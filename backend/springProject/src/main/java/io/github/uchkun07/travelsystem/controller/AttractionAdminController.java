@@ -294,13 +294,11 @@ public class AttractionAdminController {
             @RequestParam(defaultValue = "10") Long pageSize,
             @RequestParam(required = false) String cityName,
             @RequestParam(required = false) String country,
-            @RequestParam(required = false) Integer status,
-            @RequestParam(required = false) Integer minPopularity,
-            @RequestParam(required = false) Integer maxPopularity) {
+            @RequestParam(required = false) Integer status) {
         try {
             CityQueryRequest request = CityQueryRequest.builder()
                     .pageNum(pageNum).pageSize(pageSize).cityName(cityName).country(country)
-                    .status(status).minPopularity(minPopularity).maxPopularity(maxPopularity).build();
+                    .status(status).build();
             PageResponse<City> result = cityService.queryCities(request);
             return ApiResponse.success("查询成功", result);
         } catch (Exception e) {

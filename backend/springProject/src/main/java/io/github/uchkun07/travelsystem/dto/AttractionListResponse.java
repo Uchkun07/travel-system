@@ -22,20 +22,26 @@ public class AttractionListResponse {
     @Schema(description = "景点名称")
     private String name;
 
+    @Schema(description = "景点类型ID")
+    private Integer typeId;
+
     @Schema(description = "景点类型名称")
     private String typeName;
+
+    @Schema(description = "城市ID")
+    private Integer cityId;
 
     @Schema(description = "城市名称")
     private String cityName;
 
     @Schema(description = "浏览量")
-    private Integer browseCount;
+    private Integer viewCount;
 
     @Schema(description = "收藏数")
     private Integer favoriteCount;
 
     @Schema(description = "人气指数")
-    private Integer popularity;
+    private Integer popularityScore;
 
     @Schema(description = "主图URL")
     private String mainImageUrl;

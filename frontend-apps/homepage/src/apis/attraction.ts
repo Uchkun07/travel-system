@@ -7,24 +7,75 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-// 景点信息接口
-export interface Attraction {
+// 分页响应接口
+export interface PageResponse<T> {
+  records: T[];
+  total: number;
+  pageNum: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+
+// 景点卡片信息接口(C端列表展示)
+export interface AttractionCard {
   attractionId: number;
   name: string;
-  description: string;
+  description: string; // 对应后端的subtitle
   type: string;
   location: string;
-  latitude: number;
-  longitude: number;
   imageUrl: string;
-  averageRating: number;
+  averageRating?: number;
   viewCount: number;
   popularity: number;
-  estimatedTime: number;
-  ticketPrice: number;
-  openingHours: string;
-  createTime?: string;
-  updateTime?: string;
+  ticketPrice?: number;
+}
+
+// 景点详情信息接口(C端详情页)
+export interface AttractionDetail {
+  attractionId: number;
+  name: string;
+  subtitle?: string;
+  typeId?: number;
+  typeName?: string;
+  cityId?: number;
+  cityName?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  mainImageUrl?: string;
+  multiImageUrls?: string;
+  estimatedTime?: number;
+  ticketPrice?: number;
+  ticketDescription?: string;
+  openingHours?: string;
+  bestSeason?: string;
+  historicalContext?: string;
+  culturalSignificance?: string;
+  safetyTips?: string;
+  accessibilityInfo?: string;
+  nearbyFood?: string;
+  nearbyAccommodation?: string;
+  transportationGuide?: string;
+  officialWebsite?: string;
+  contactPhone?: string;
+  averageRating?: number;
+  browseCount?: number;
+  popularity?: number;
+  tags?: Array<{ tagId: number; tagName: string }>;
+}
+
+// 景点查询请求接口
+export interface AttractionQueryRequest {
+  pageNum: number;
+  pageSize: number;
+  attractionId?: number;
+  name?: string;
+  cityId?: number;
+  typeId?: number;
+  auditStatus?: number;
+  status?: number;
 }
 
 // 收藏操作响应接口
@@ -39,11 +90,34 @@ export interface CollectionStatusResponseData {
 }
 
 /**
- * 获取所有景点
- * @returns 景点列表
+ * 分页获取景点卡片列表(C端)
+ * @param params 查询参数
+ * @returns 分页景点列表
  */
-export function getAllAttractions() {
-  return get<Attraction[]>("/attractions/list");
+export function getAttractionCards(params: AttractionQueryRequest) {
+  return post<ApiResponse<PageResponse<AttractionCard>>>(
+    "/api/attraction/list",
+    params
+  );
+}
+
+/**
+ * 获取景点详情(C端)
+ * @param attractionId 景点ID
+ * @returns 景点详情
+ */
+export function getAttractionDetail(attractionId: number) {
+  return get<ApiResponse<AttractionDetail>>(
+    `/api/attraction/detail/${attractionId}`
+  );
+}
+
+/**
+ * 增加景点浏览量
+ * @param attractionId 景点ID
+ */
+export function incrementViewCount(attractionId: number) {
+  return post<ApiResponse<null>>(`/api/attraction/view/${attractionId}`);
 }
 
 /**

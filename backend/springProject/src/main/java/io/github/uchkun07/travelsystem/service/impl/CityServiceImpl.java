@@ -36,9 +36,6 @@ public class CityServiceImpl implements ICityService {
                 .cityName(request.getCityName())
                 .country(request.getCountry())
                 .cityUrl(request.getCityUrl())
-                .averageTemperature(request.getAverageTemperature())
-                .attractionCount(request.getAttractionCount() != null ? request.getAttractionCount() : 0)
-                .popularity(request.getPopularity() != null ? request.getPopularity() : 0)
                 .description(request.getDescription())
                 .sortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0)
                 .status(request.getStatus() != null ? request.getStatus() : 1)
@@ -93,9 +90,6 @@ public class CityServiceImpl implements ICityService {
 
         if (request.getCountry() != null) city.setCountry(request.getCountry());
         if (request.getCityUrl() != null) city.setCityUrl(request.getCityUrl());
-        if (request.getAverageTemperature() != null) city.setAverageTemperature(request.getAverageTemperature());
-        if (request.getAttractionCount() != null) city.setAttractionCount(request.getAttractionCount());
-        if (request.getPopularity() != null) city.setPopularity(request.getPopularity());
         if (request.getDescription() != null) city.setDescription(request.getDescription());
         if (request.getSortOrder() != null) city.setSortOrder(request.getSortOrder());
         if (request.getStatus() != null) city.setStatus(request.getStatus());
@@ -118,15 +112,8 @@ public class CityServiceImpl implements ICityService {
         if (request.getStatus() != null) {
             wrapper.eq(City::getStatus, request.getStatus());
         }
-        if (request.getMinPopularity() != null) {
-            wrapper.ge(City::getPopularity, request.getMinPopularity());
-        }
-        if (request.getMaxPopularity() != null) {
-            wrapper.le(City::getPopularity, request.getMaxPopularity());
-        }
 
         wrapper.orderByAsc(City::getSortOrder)
-               .orderByDesc(City::getPopularity)
                .orderByDesc(City::getCreateTime);
 
         Page<City> page = new Page<>(request.getPageNum(), request.getPageSize());
@@ -148,7 +135,7 @@ public class CityServiceImpl implements ICityService {
         LambdaQueryWrapper<City> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(City::getStatus, 1)
                .orderByAsc(City::getSortOrder)
-               .orderByDesc(City::getPopularity);
+               .orderByDesc(City::getCreateTime);
         return cityMapper.selectList(wrapper);
     }
 }

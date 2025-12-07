@@ -367,7 +367,7 @@ import { uploadAttractionImage } from "@/apis/upload";
 // 搜索表单
 const searchForm = reactive<QueryAttractionsRequest>({
   attractionId: undefined,
-  name: "",
+  name: undefined,
   typeId: undefined,
   cityId: undefined,
   status: undefined,

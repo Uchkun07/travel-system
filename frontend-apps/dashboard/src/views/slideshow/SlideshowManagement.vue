@@ -446,7 +446,11 @@ const handleSubmit = async () => {
         if (uploadedFile.value) {
           const uploadRes = await uploadSlideshowImage(uploadedFile.value);
           if (uploadRes.data) {
-            formData.imageUrl = uploadRes.data.fileUrl;
+            // 如果返回的是相对路径，添加服务器地址前缀
+            const fileUrl = uploadRes.data.fileUrl;
+            formData.imageUrl = fileUrl.startsWith("http")
+              ? fileUrl
+              : `http://localhost:8080${fileUrl}`;
           } else {
             ElMessage.error("图片上传失败");
             return;
