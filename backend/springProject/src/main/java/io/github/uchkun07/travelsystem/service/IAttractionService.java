@@ -46,4 +46,27 @@ public interface IAttractionService extends IService<Attraction> {
      * @return 景点详情
      */
     AttractionDetailResponse getAttractionDetail(Long attractionId);
+
+    /**
+     * 分页获取景点卡片数据(C端)
+     *
+     * @param request 查询条件
+     * @return 分页结果
+     */
+    PageResponse<AttractionCardResponse> getAttractionCards(AttractionQueryRequest request);
+
+    /**
+     * 根据ID获取景点详情数据(C端)
+     *
+     * @param attractionId 景点ID
+     * @return 景点详情
+     */
+    AttractionDetailResponse getAttractionCardById(Long attractionId);
+
+    /**
+     * 增加景点浏览量
+     *
+     * @param attractionId 景点ID
+     */
+    void incrementBrowseCount(Long attractionId);
 }

@@ -37,9 +37,15 @@ public class User {
     private String password;
 
     /**
-     * 用户昵称
+     * 密码盐值（BCrypt 已包含盐值，此字段保留以兼容数据库结构）
      */
-    @TableField("nickname")
+    @TableField(value = "password_salt", fill = FieldFill.INSERT)
+    private String passwordSalt;
+
+    /**
+     * 用户昵称（数据库无此字段，仅用于应用层，不插入数据库）
+     */
+    @TableField(exist = false)
     private String nickname;
 
     /**

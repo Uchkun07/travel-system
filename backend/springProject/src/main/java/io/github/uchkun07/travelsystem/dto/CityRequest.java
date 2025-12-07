@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
  * 城市请求DTO
  */
@@ -24,20 +22,11 @@ public class CityRequest {
     @Schema(description = "城市名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String cityName;
 
-    @Schema(description = "所属国家")
+    @Schema(description = "所属国家", requiredMode = Schema.RequiredMode.REQUIRED)
     private String country;
 
     @Schema(description = "城市图片URL")
     private String cityUrl;
-
-    @Schema(description = "平均气温(℃)")
-    private BigDecimal averageTemperature;
-
-    @Schema(description = "景点数量")
-    private Integer attractionCount;
-
-    @Schema(description = "热度值")
-    private Integer popularity;
 
     @Schema(description = "城市简介")
     private String description;

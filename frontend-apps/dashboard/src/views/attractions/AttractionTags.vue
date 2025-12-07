@@ -43,7 +43,14 @@
       <!-- 数据表格 -->
       <el-table :data="tags" border style="width: 100%">
         <el-table-column prop="tagId" label="标签ID" width="100" />
-        <el-table-column prop="tagName" label="标签名称" width="200" />
+        <el-table-column prop="tagName" label="标签名称" width="180" />
+        <el-table-column
+          prop="description"
+          label="标签描述"
+          width="250"
+          show-overflow-tooltip
+        />
+        <el-table-column prop="sortOrder" label="排序" width="80" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">
@@ -79,7 +86,7 @@
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="400px"
+      width="500px"
       @close="handleDialogClose"
     >
       <el-form
@@ -90,6 +97,21 @@
       >
         <el-form-item label="标签名称" prop="tagName">
           <el-input v-model="formData.tagName" placeholder="请输入标签名称" />
+        </el-form-item>
+        <el-form-item label="标签描述" prop="description">
+          <el-input
+            v-model="formData.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入标签描述"
+          />
+        </el-form-item>
+        <el-form-item label="排序" prop="sortOrder">
+          <el-input-number
+            v-model="formData.sortOrder"
+            :min="0"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-switch
@@ -152,6 +174,8 @@ const dialogTitle = ref("");
 const formRef = ref<FormInstance>();
 const formData = reactive<CreateTagRequest & { tagId?: number }>({
   tagName: "",
+  description: "",
+  sortOrder: 0,
   status: 1,
 });
 
@@ -199,6 +223,8 @@ const handleAdd = () => {
   dialogTitle.value = "添加标签";
   Object.assign(formData, {
     tagName: "",
+    description: "",
+    sortOrder: 0,
     status: 1,
     tagId: undefined,
   });
@@ -211,6 +237,8 @@ const handleEdit = (row: AttractionTag) => {
   Object.assign(formData, {
     tagId: row.tagId,
     tagName: row.tagName,
+    description: row.description,
+    sortOrder: row.sortOrder,
     status: row.status,
   });
   dialogVisible.value = true;
@@ -247,6 +275,8 @@ const handleSubmit = async () => {
           const params: UpdateTagRequest = {
             tagId: formData.tagId,
             tagName: formData.tagName,
+            description: formData.description,
+            sortOrder: formData.sortOrder,
             status: formData.status,
           };
           await updateTag(params);

@@ -135,11 +135,18 @@ const handleLogin = async () => {
     });
 
     if (success) {
-      ElMessage.success("登录成功!");
+      // userStore.login 已经显示了成功提示，这里不需要重复显示
       loginAttempts.value = 0; // 重置失败次数
       handleClose();
       // 可选：跳转到首页或其他页面
       // router.push('/');
+    } else {
+      // 登录失败，增加失败次数
+      loginAttempts.value++;
+      const remainingAttempts = maxAttempts - loginAttempts.value;
+      if (remainingAttempts > 0 && remainingAttempts < maxAttempts) {
+        ElMessage.warning(`剩余尝试次数: ${remainingAttempts}`);
+      }
     }
   } catch (error: any) {
     console.error("登录失败:", error);

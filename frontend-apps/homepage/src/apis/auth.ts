@@ -49,10 +49,11 @@ export interface UserInfoResponse {
   status?: number;
 }
 
+// 后端返回 ApiResponse<Boolean>，data 字段直接表示是否可用
 export interface CheckResponse {
-  success: boolean;
-  available: boolean;
+  code: number;
   message: string;
+  data: boolean;  // true 表示可用，false 表示已存在
 }
 
 // 更新用户资料请求接口
@@ -87,49 +88,49 @@ export interface UpdateProfileResponse {
  * 发送邮箱验证码
  */
 export function sendVerificationCode(data: SendCodeRequest) {
-  return post<{ success: boolean; message: string }>("/email/sendCode", data);
+  return post<{ success: boolean; message: string }>("/api/email/sendCode", data);
 }
 
 /**
  * 用户注册
  */
 export function register(data: RegisterRequest) {
-  return post<LoginResponse>("/auth/register", data);
+  return post<LoginResponse>("/api/user/register", data);
 }
 
 /**
  * 用户登录
  */
 export function login(data: LoginRequest) {
-  return post<LoginResponse>("/auth/login", data);
+  return post<LoginResponse>("/api/user/login", data);
 }
 
 /**
  * 用户登出
  */
 export function logout() {
-  return post<{ success: boolean; message: string }>("/auth/logout");
+  return post<{ success: boolean; message: string }>("/api/user/logout");
 }
 
 /**
  * 获取当前用户信息
  */
 export function getUserInfo() {
-  return get<UserInfoResponse>("/auth/userInfo");
+  return get<UserInfoResponse>("/api/user/info");
 }
 
 /**
  * 检查用户名是否可用
  */
 export function checkUsername(username: string) {
-  return get<CheckResponse>("/auth/checkUsername", { username });
+  return get<CheckResponse>("/api/user/check/username", { username });
 }
 
 /**
  * 检查邮箱是否可用
  */
 export function checkEmail(email: string) {
-  return get<CheckResponse>("/auth/checkEmail", { email });
+  return get<CheckResponse>("/api/user/check/email", { email });
 }
 
 /**

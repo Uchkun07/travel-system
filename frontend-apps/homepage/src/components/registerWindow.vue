@@ -108,6 +108,8 @@
 import type { FormInstance, FormRules } from "element-plus";
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
+import Cookies from "js-cookie";
+import { useUserStore } from "@/stores/user";
 import {
   sendVerificationCode,
   register,
@@ -141,7 +143,8 @@ const validateUsername = async (_rule: any, value: string, callback: any) => {
   }
   try {
     const res = await checkUsername(value);
-    if (!res.available) {
+    // 后端返回 ApiResponse<Boolean>，data 字段是 true(可用) 或 false(不可用)
+    if (res.code === 200 && res.data === false) {
       callback(new Error("用户名已存在"));
     } else {
       callback();
@@ -159,7 +162,8 @@ const validateEmail = async (_rule: any, value: string, callback: any) => {
   }
   try {
     const res = await checkEmail(value);
-    if (!res.available) {
+    // 后端返回 ApiResponse<Boolean>，data 字段是 true(可用) 或 false(不可用)
+    if (res.code === 200 && res.data === false) {
       callback(new Error("该邮箱已被注册"));
     } else {
       callback();
@@ -236,10 +240,15 @@ const sendCaptcha = async () => {
     await registerFormRef.value?.validateField("email");
 
     // 发送验证码
-    const res = await sendVerificationCode({ email: registerForm.value.email });
-    if (res.success) {
-      ElMessage.success(res.message);
+    const res: any = await sendVerificationCode({
+      email: registerForm.value.email,
+    });
+    // 后端返回 ApiResponse 格式: {code, message, data}
+    if (res.code === 200) {
+      ElMessage.success(res.message || "验证码发送成功");
       startCountdown();
+    } else {
+      ElMessage.error(res.message || "验证码发送失败");
     }
   } catch (error) {
     ElMessage.error("发送验证码失败，请稍后重试");
@@ -269,15 +278,29 @@ const handleRegister = async () => {
     if (!valid) return;
 
     loading.value = true;
-    const res = await register(registerForm.value);
+    const res: any = await register(registerForm.value);
 
-    if (res.success) {
-      ElMessage.success("注册成功!请登录");
+    // 后端返回 ApiResponse<UserLoginResponse> 格式: {code, message, data: {token, userId, ...}}
+    if (res.code === 200 && res.data?.token) {
+      // 保存用户信息到 store（这会自动保存 token 到 Cookie）
+      const userStore = useUserStore();
+      userStore.setToken(res.data.token, false);
+      userStore.setUserInfo({
+        userId: res.data.userId!,
+        username: res.data.username!,
+        email: res.data.email,
+        fullName: res.data.fullName,
+        avatar: res.data.avatar,
+      });
+
+      ElMessage.success("注册成功！欢迎加入");
       handleClose();
-      emit("show-login");
+    } else {
+      ElMessage.error(res.message || "注册失败，请检查输入信息");
     }
-  } catch (error) {
-    ElMessage.error("注册失败，请检查输入信息或稍后重试");
+  } catch (error: any) {
+    console.error("注册错误:", error);
+    ElMessage.error(error?.message || "注册失败，请稍后重试");
   } finally {
     loading.value = false;
   }

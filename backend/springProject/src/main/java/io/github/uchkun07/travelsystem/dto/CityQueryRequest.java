@@ -30,10 +30,4 @@ public class CityQueryRequest {
 
     @Schema(description = "状态(1=启用,0=禁用)")
     private Integer status;
-
-    @Schema(description = "最小热度值")
-    private Integer minPopularity;
-
-    @Schema(description = "最大热度值")
-    private Integer maxPopularity;
 }

@@ -151,10 +151,15 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
     @Override
     public PageResponse<AttractionListResponse> listAttractions(AttractionQueryRequest request) {
         // 构建分页对象
-        Page<Attraction> page = new Page<>(request.getCurrent(), request.getSize());
+        Page<Attraction> page = new Page<>(request.getPageNum(), request.getPageSize());
 
         // 构建查询条件
         LambdaQueryWrapper<Attraction> wrapper = new LambdaQueryWrapper<>();
+        
+        // 景点ID精确查询
+        if (request.getAttractionId() != null) {
+            wrapper.eq(Attraction::getAttractionId, request.getAttractionId());
+        }
         
         // 景点名称模糊查询
         if (StringUtils.hasText(request.getName())) {
@@ -229,11 +234,13 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
                 .map(attraction -> AttractionListResponse.builder()
                         .attractionId(attraction.getAttractionId())
                         .name(attraction.getName())
+                        .typeId(attraction.getTypeId())
                         .typeName(typeMap.get(attraction.getTypeId()))
+                        .cityId(attraction.getCityId())
                         .cityName(cityMap.get(attraction.getCityId()))
-                        .browseCount(attraction.getBrowseCount())
+                        .viewCount(attraction.getBrowseCount())
                         .favoriteCount(attraction.getFavoriteCount())
-                        .popularity(attraction.getPopularity())
+                        .popularityScore(attraction.getPopularity())
                         .mainImageUrl(attraction.getMainImageUrl())
                         .status(attraction.getStatus())
                         .auditStatus(attraction.getAuditStatus())
@@ -313,5 +320,82 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         response.setTags(tags);
 
         return response;
+    }
+
+    @Override
+    public PageResponse<AttractionCardResponse> getAttractionCards(AttractionQueryRequest request) {
+        // 创建分页对象
+        Page<Attraction> page = new Page<>(request.getPageNum(), request.getPageSize());
+        
+        // 查询条件：只查询已审核通过且启用的景点
+        LambdaQueryWrapper<Attraction> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Attraction::getAuditStatus, 2); // 已审核
+        wrapper.eq(Attraction::getStatus, 1); // 启用
+        wrapper.orderByDesc(Attraction::getPopularity); // 按热度排序
+        
+        Page<Attraction> attractionPage = attractionMapper.selectPage(page, wrapper);
+        
+        // 转换为响应DTO
+        List<AttractionCardResponse> cardList = attractionPage.getRecords().stream()
+                .map(attraction -> {
+                    // 查询城市信息
+                    City city = cityMapper.selectById(attraction.getCityId());
+                    String cityName = city != null ? city.getCityName() : "";
+                    
+                    // 查询类型信息
+                    AttractionType type = attractionTypeMapper.selectById(attraction.getTypeId());
+                    String typeName = type != null ? type.getTypeName() : "";
+                    
+                    // 处理图片URL - 如果是相对路径则添加前缀
+                    String imageUrl = attraction.getMainImageUrl();
+                    if (imageUrl != null && !imageUrl.startsWith("http")) {
+                        // TODO: 从配置文件读取域名
+                        imageUrl = "http://localhost:8080" + imageUrl;
+                    }
+                    
+                    // 手动构建响应对象，只包含卡片所需字段
+                    return AttractionCardResponse.builder()
+                            .attractionId(attraction.getAttractionId())
+                            .name(attraction.getName())
+                            .description(attraction.getSubtitle() != null ? attraction.getSubtitle() : "")
+                            .type(typeName)
+                            .location(cityName)
+                            .imageUrl(imageUrl)
+                            .averageRating(attraction.getAverageRating())
+                            .viewCount(attraction.getBrowseCount())
+                            .popularity(attraction.getPopularity())
+                            .ticketPrice(attraction.getTicketPrice())
+                            .build();
+                })
+                .collect(Collectors.toList());
+        
+        return PageResponse.<AttractionCardResponse>builder()
+                .records(cardList)
+                .total(attractionPage.getTotal())
+                .pageNum(attractionPage.getCurrent())
+                .pageSize(attractionPage.getSize())
+                .totalPages(attractionPage.getPages())
+                .hasPrevious(attractionPage.getCurrent() > 1)
+                .hasNext(attractionPage.getCurrent() < attractionPage.getPages())
+                .build();
+    }
+
+    @Override
+    public AttractionDetailResponse getAttractionCardById(Long attractionId) {
+        // 直接使用已有的getAttractionDetail方法，它返回完整的详情数据
+        return getAttractionDetail(attractionId);
+    }
+
+    @Override
+    @Transactional
+    public void incrementBrowseCount(Long attractionId) {
+        Attraction attraction = attractionMapper.selectById(attractionId);
+        if (attraction == null) {
+            throw new IllegalArgumentException("景点不存在");
+        }
+        
+        // 增加浏览量
+        attraction.setBrowseCount(attraction.getBrowseCount() + 1);
+        attractionMapper.updateById(attraction);
     }
 }

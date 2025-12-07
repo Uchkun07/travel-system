@@ -87,10 +87,10 @@ export function getAttractionTypeById(typeId: number) {
 export interface City {
   cityId: number;
   cityName: string;
-  provinceCode: string;
-  cityCode: string;
-  level: number;
-  sortOrder: number;
+  country: string;
+  cityUrl?: string;
+  description?: string;
+  sortOrder?: number;
   status: number;
   createTime: string;
   updateTime: string;
@@ -99,10 +99,10 @@ export interface City {
 // 创建城市请求
 export interface CreateCityRequest {
   cityName: string;
-  provinceCode: string;
-  cityCode: string;
-  level: number;
-  sortOrder: number;
+  country: string;
+  cityUrl?: string;
+  description?: string;
+  sortOrder?: number;
   status: number;
 }
 
@@ -110,9 +110,9 @@ export interface CreateCityRequest {
 export interface UpdateCityRequest {
   cityId: number;
   cityName?: string;
-  provinceCode?: string;
-  cityCode?: string;
-  level?: number;
+  country?: string;
+  cityUrl?: string;
+  description?: string;
   sortOrder?: number;
   status?: number;
 }
@@ -121,10 +121,8 @@ export interface UpdateCityRequest {
 export interface QueryCitiesRequest {
   pageNum?: number;
   pageSize?: number;
-  cityId?: number;
   cityName?: string;
-  provinceCode?: string;
-  level?: number;
+  country?: string;
   status?: number;
 }
 
@@ -170,6 +168,8 @@ export function getAllCities() {
 export interface AttractionTag {
   tagId: number;
   tagName: string;
+  description?: string;
+  sortOrder?: number;
   status: number;
   createTime: string;
   updateTime: string;
@@ -178,6 +178,8 @@ export interface AttractionTag {
 // 创建景点标签请求
 export interface CreateTagRequest {
   tagName: string;
+  description?: string;
+  sortOrder?: number;
   status: number;
 }
 
@@ -185,6 +187,8 @@ export interface CreateTagRequest {
 export interface UpdateTagRequest {
   tagId: number;
   tagName?: string;
+  description?: string;
+  sortOrder?: number;
   status?: number;
 }
 
@@ -256,9 +260,11 @@ export interface AttractionListResponse {
   viewCount: number;
   favoriteCount: number;
   popularityScore: number;
+  mainImageUrl?: string;
   status: number;
-  createTime: string;
-  updateTime: string;
+  auditStatus: number;
+  createTime?: string;
+  updateTime?: string;
 }
 
 // 景点详情响应
@@ -343,8 +349,6 @@ export interface QueryAttractionsRequest {
   name?: string;
   typeId?: number;
   cityId?: number;
-  minPopularityScore?: number;
-  maxPopularityScore?: number;
   status?: number;
 }
 

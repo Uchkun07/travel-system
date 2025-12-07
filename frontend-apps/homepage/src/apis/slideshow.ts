@@ -27,14 +27,14 @@ export interface ApiResponse<T> {
  * 获取启用的轮播图(前台展示)
  */
 export function getActiveSlideshow() {
-  return get<ApiResponse<Slideshow[]>>("/slideshow/active");
+  return get<ApiResponse<Slideshow[]>>("/api/home/slideshow/list");
 }
 
 /**
  * 记录轮播图点击
  */
 export function recordClick(slideshowId: number) {
-  return post<ApiResponse<string>>(`/slideshow/click/${slideshowId}`);
+  return post<ApiResponse<null>>(`/api/home/slideshow/click/${slideshowId}`);
 }
 
 /**
