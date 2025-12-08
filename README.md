@@ -8,7 +8,7 @@
 - **后端**: Spring Boot 3.5.7 + MyBatis-Plus + Redis + JWT
 - **数据库**: MySQL 8.0+
 - **算法支持**:
-  - Fun-rec 模型：用于景点推荐
+  - CB 模型：用于景点推荐
   - 模拟退火算法：用于最优路线规划
   - LSTM 模型：用于景点人流量预测
 
