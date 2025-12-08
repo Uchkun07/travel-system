@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import io.github.uchkun07.travelsystem.dto.*;
 import io.github.uchkun07.travelsystem.entity.Attraction;
 
+import java.util.List;
+
 /**
  * 景点服务接口
  */
@@ -69,4 +71,12 @@ public interface IAttractionService extends IService<Attraction> {
      * @param attractionId 景点ID
      */
     void incrementBrowseCount(Long attractionId);
+
+    /**
+     * 根据ID列表批量获取景点卡片数据
+     *
+     * @param attractionIds 景点ID列表
+     * @return 景点卡片列表
+     */
+    List<AttractionCardResponse> getAttractionCardsByIds(List<Long> attractionIds);
 }

@@ -126,7 +126,7 @@ export function incrementViewCount(attractionId: number) {
  */
 export function collectAttraction(attractionId: number) {
   return post<ApiResponse<CollectResponseData>>(
-    `/collections/attractions/${attractionId}`
+    `/api/attraction/collection/${attractionId}`
   );
 }
 
@@ -136,7 +136,7 @@ export function collectAttraction(attractionId: number) {
  */
 export function uncollectAttraction(attractionId: number) {
   return del<ApiResponse<CollectResponseData>>(
-    `/collections/attractions/${attractionId}`
+    `/api/attraction/collection/${attractionId}`
   );
 }
 
@@ -145,7 +145,7 @@ export function uncollectAttraction(attractionId: number) {
  * @returns 景点ID数组
  */
 export function getCollectedAttractionIds() {
-  return get<ApiResponse<number[]>>("/collections/attractions/ids");
+  return get<ApiResponse<number[]>>("/api/attraction/collection/ids");
 }
 
 /**
@@ -155,6 +155,18 @@ export function getCollectedAttractionIds() {
  */
 export function checkCollectionStatus(attractionId: number) {
   return get<ApiResponse<CollectionStatusResponseData>>(
-    `/collections/attractions/${attractionId}/status`
+    `/api/attraction/collection/${attractionId}/status`
+  );
+}
+
+/**
+ * 批量获取景点卡片信息(根据ID列表)
+ * @param attractionIds 景点ID数组
+ * @returns 景点卡片列表
+ */
+export function getAttractionsByIds(attractionIds: number[]) {
+  return post<ApiResponse<AttractionCard[]>>(
+    "/api/attraction/batch",
+    attractionIds
   );
 }

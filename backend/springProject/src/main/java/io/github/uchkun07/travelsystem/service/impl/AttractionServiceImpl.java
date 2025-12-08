@@ -349,7 +349,6 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
                     // 处理图片URL - 如果是相对路径则添加前缀
                     String imageUrl = attraction.getMainImageUrl();
                     if (imageUrl != null && !imageUrl.startsWith("http")) {
-                        // TODO: 从配置文件读取域名
                         imageUrl = "http://localhost:8080" + imageUrl;
                     }
                     
@@ -398,4 +397,46 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         attraction.setBrowseCount(attraction.getBrowseCount() + 1);
         attractionMapper.updateById(attraction);
     }
+
+    @Override
+    public List<AttractionCardResponse> getAttractionCardsByIds(List<Long> attractionIds) {
+        if (attractionIds == null || attractionIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 批量查询景点
+        List<Attraction> attractions = listByIds(attractionIds);
+        
+        // 转换为卡片响应
+        return attractions.stream().map(attraction -> {
+            AttractionCardResponse card = new AttractionCardResponse();
+            card.setAttractionId(attraction.getAttractionId());
+            card.setName(attraction.getName());
+            card.setDescription(attraction.getSubtitle());
+            card.setImageUrl(attraction.getMainImageUrl());
+            card.setAverageRating(attraction.getAverageRating());
+            card.setViewCount(attraction.getBrowseCount());
+            card.setPopularity(attraction.getPopularity());
+            card.setTicketPrice(attraction.getTicketPrice());
+            
+            // 获取城市信息
+            if (attraction.getCityId() != null) {
+                City city = cityMapper.selectById(attraction.getCityId());
+                if (city != null) {
+                    card.setLocation(city.getCityName());
+                }
+            }
+            
+            // 获取类型信息
+            if (attraction.getTypeId() != null) {
+                AttractionType type = attractionTypeMapper.selectById(attraction.getTypeId());
+                if (type != null) {
+                    card.setType(type.getTypeName());
+                }
+            }
+            
+            return card;
+        }).collect(Collectors.toList());
+    }
 }
+

@@ -51,10 +51,9 @@ import { Search, Star, Loading } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 import attractionCard from "@/components/recommend-attraction/attractionCard.vue";
 import {
-  getAttractionCards,
+  getAttractionsByIds,
   getCollectedAttractionIds,
   type AttractionCard,
-  type AttractionQueryRequest,
 } from "@/apis/attraction";
 
 // 组件所需的景点数据格式（与 attractionCard 组件匹配）
@@ -117,23 +116,25 @@ const filteredFavorites = computed(() => {
 const loadFavorites = async () => {
   loading.value = true;
   try {
-    // 1. 获取所有景点（使用分页，获取大量数据）
-    const params: AttractionQueryRequest = {
-      pageNum: 1,
-      pageSize: 1000, // 获取足够多的数据
-    };
-    const attractionsResponse = await getAttractionCards(params);
-    if (attractionsResponse.code === 200 && attractionsResponse.data) {
-      allAttractions.value = attractionsResponse.data.records;
-    }
-
-    // 2. 获取收藏的景点ID列表
+    // 1. 获取收藏的景点ID列表
     const collectedResponse = await getCollectedAttractionIds();
     if (
       collectedResponse.code === 200 &&
       Array.isArray(collectedResponse.data)
     ) {
       collectedIds.value = collectedResponse.data;
+
+      // 2. 如果有收藏的景点，批量获取景点详情
+      if (collectedIds.value.length > 0) {
+        const attractionsResponse = await getAttractionsByIds(
+          collectedIds.value
+        );
+        if (attractionsResponse.code === 200 && attractionsResponse.data) {
+          allAttractions.value = attractionsResponse.data;
+        }
+      } else {
+        allAttractions.value = [];
+      }
     }
   } catch (error: any) {
     console.error("加载收藏数据失败:", error);

@@ -144,9 +144,6 @@ const handleLogin = async () => {
       // 登录失败，增加失败次数
       loginAttempts.value++;
       const remainingAttempts = maxAttempts - loginAttempts.value;
-      if (remainingAttempts > 0 && remainingAttempts < maxAttempts) {
-        ElMessage.warning(`剩余尝试次数: ${remainingAttempts}`);
-      }
     }
   } catch (error: any) {
     console.error("登录失败:", error);
