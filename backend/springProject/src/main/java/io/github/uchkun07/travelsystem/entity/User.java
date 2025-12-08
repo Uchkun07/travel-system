@@ -37,9 +37,9 @@ public class User {
     private String password;
 
     /**
-     * 密码盐值（BCrypt 已包含盐值，此字段保留以兼容数据库结构）
+     * 密码盐值（PBKDF2 加密使用的盐值）
      */
-    @TableField(value = "password_salt", fill = FieldFill.INSERT)
+    @TableField(value = "password_salt")
     private String passwordSalt;
 
     /**

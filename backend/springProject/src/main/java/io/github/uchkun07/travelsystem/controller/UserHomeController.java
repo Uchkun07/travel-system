@@ -26,7 +26,13 @@ public class UserHomeController {
     public ApiResponse<UserLoginResponse> register(@Validated @RequestBody UserRegisterRequest request) {
         try {
             UserLoginResponse response = userService.register(request);
-            return ApiResponse.success("注册成功", response);
+            
+            // 检查 Service 返回的 success 字段
+            if (response.getSuccess()) {
+                return ApiResponse.success(response.getMessage(), response);
+            } else {
+                return ApiResponse.error(400, response.getMessage());
+            }
         } catch (IllegalArgumentException e) {
             return ApiResponse.error(400, e.getMessage());
         } catch (Exception e) {
@@ -40,7 +46,13 @@ public class UserHomeController {
     public ApiResponse<UserLoginResponse> login(@Validated @RequestBody UserLoginRequest request) {
         try {
             UserLoginResponse response = userService.login(request);
-            return ApiResponse.success("登录成功", response);
+            
+            // 检查 Service 返回的 success 字段
+            if (response.getSuccess()) {
+                return ApiResponse.success(response.getMessage(), response);
+            } else {
+                return ApiResponse.error(401, response.getMessage());
+            }
         } catch (IllegalArgumentException e) {
             return ApiResponse.error(401, e.getMessage());
         } catch (Exception e) {
