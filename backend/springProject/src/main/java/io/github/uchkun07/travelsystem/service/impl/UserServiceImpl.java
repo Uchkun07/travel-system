@@ -8,9 +8,11 @@ import io.github.uchkun07.travelsystem.dto.UserLoginResponse;
 import io.github.uchkun07.travelsystem.entity.User;
 import io.github.uchkun07.travelsystem.mapper.UserMapper;
 import io.github.uchkun07.travelsystem.service.IUserService;
+import io.github.uchkun07.travelsystem.service.IEmailService;
 import io.github.uchkun07.travelsystem.util.JwtUtil;
+import io.github.uchkun07.travelsystem.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,18 +21,27 @@ import java.time.LocalDateTime;
 /**
  * 用户服务实现类(C端)
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements IUserService {
 
     private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final IEmailService emailService;
 
     @Override
     @Transactional
     public UserLoginResponse register(UserRegisterRequest request) {
-        // 验证两次密码是否一致
+        // 1. 验证邮箱验证码
+        if (!emailService.verifyCode(request.getEmail(), request.getCaptcha())) {
+            return UserLoginResponse.builder()
+                    .success(false)
+                    .message("验证码错误或已过期")
+                    .build();
+        }
+
+        // 2. 验证两次密码是否一致
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             return UserLoginResponse.builder()
                     .success(false)
@@ -38,7 +49,7 @@ public class UserServiceImpl implements IUserService {
                     .build();
         }
 
-        // 检查用户名是否已存在
+        // 3. 检查用户名是否已存在
         LambdaQueryWrapper<User> usernameWrapper = new LambdaQueryWrapper<>();
         usernameWrapper.eq(User::getUsername, request.getUsername());
         if (userMapper.selectCount(usernameWrapper) > 0) {
@@ -48,7 +59,7 @@ public class UserServiceImpl implements IUserService {
                     .build();
         }
 
-        // 检查邮箱是否已存在
+        // 4. 检查邮箱是否已存在
         LambdaQueryWrapper<User> emailWrapper = new LambdaQueryWrapper<>();
         emailWrapper.eq(User::getEmail, request.getEmail());
         if (userMapper.selectCount(emailWrapper) > 0) {
@@ -58,13 +69,27 @@ public class UserServiceImpl implements IUserService {
                     .build();
         }
 
-        // 创建新用户
+        // 5. 创建新用户
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
         user.setNickname(request.getUsername()); // 默认昵称为用户名
         user.setStatus(1); // 默认启用
+
+        // 使用 PBKDF2 加密密码
+        try {
+            String salt = PasswordUtil.generateSalt();
+            user.setPasswordSalt(salt);
+            
+            String passwordHash = PasswordUtil.hashPassword(request.getPassword(), salt);
+            user.setPassword(passwordHash);
+        } catch (Exception e) {
+            log.error("密码加密失败", e);
+            return UserLoginResponse.builder()
+                    .success(false)
+                    .message("密码加密失败")
+                    .build();
+        }
 
         userMapper.insert(user);
 
@@ -97,8 +122,8 @@ public class UserServiceImpl implements IUserService {
                     .build();
         }
 
-        // 验证密码
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        // 验证密码 (使用 PBKDF2)
+        if (!PasswordUtil.verifyPassword(request.getPassword(), user.getPasswordSalt(), user.getPassword())) {
             return UserLoginResponse.builder()
                     .success(false)
                     .message("用户名或密码错误")

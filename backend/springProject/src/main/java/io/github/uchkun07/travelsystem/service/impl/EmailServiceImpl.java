@@ -254,10 +254,21 @@ public class EmailServiceImpl implements IEmailService {
      * 递增并设置过期时间
      */
     private void incrementAndExpire(String key, long seconds) {
-        if (!redisUtil.hasKey(key)) {
-            redisUtil.set(key, "1", seconds);
-        } else {
-            redisUtil.incr(key, 1);
+        try {
+            if (!redisUtil.hasKey(key)) {
+                redisUtil.set(key, 1L, seconds);  // 使用 Long 类型而不是字符串
+            } else {
+                redisUtil.incr(key, 1);
+            }
+        } catch (Exception e) {
+            log.error("Redis计数器操作失败, key: {}, error: {}", key, e.getMessage());
+            // 尝试重置计数器
+            try {
+                redisUtil.del(key);
+                redisUtil.set(key, 1L, seconds);
+            } catch (Exception ex) {
+                log.error("Redis计数器重置失败, key: {}", key, ex);
+            }
         }
     }
 

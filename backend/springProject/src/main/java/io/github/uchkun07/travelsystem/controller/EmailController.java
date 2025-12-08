@@ -1,5 +1,6 @@
 package io.github.uchkun07.travelsystem.controller;
 
+import io.github.uchkun07.travelsystem.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,9 +10,6 @@ import io.github.uchkun07.travelsystem.service.IEmailService;
 import io.github.uchkun07.travelsystem.util.IpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 邮件控制器
@@ -30,41 +28,37 @@ public class EmailController {
      */
     @Operation(summary = "发送验证码", description = "发送邮箱验证码")
     @PostMapping("/sendCode")
-    public Map<String, Object> sendVerificationCode(
+    public ApiResponse<String> sendVerificationCode(
             @RequestBody SendCodeRequest request,
             HttpServletRequest httpRequest) {
-        Map<String, Object> result = new HashMap<>();
 
         try {
             String email = request.getEmail();
+            log.info("收到验证码发送请求,邮箱:{}", email);
 
             // 验证邮箱格式
             if (!isValidEmail(email)) {
-                result.put("success", false);
-                result.put("message", "邮箱格式不正确");
-                return result;
+                log.warn("邮箱格式不正确:{}", email);
+                return ApiResponse.error(400, "邮箱格式不正确");
             }
 
             // 获取客户端IP
             String ip = IpUtil.getClientIp(httpRequest);
+            log.info("客户端IP:{}", ip);
 
             // 发送验证码(包含IP和邮箱限制检查)
             emailService.sendVerificationCode(email, ip);
 
-            result.put("success", true);
-            result.put("message", "验证码已发送,请查收邮件");
+            log.info("验证码发送成功,邮箱:{}", email);
+            return ApiResponse.success("验证码已发送,请查收邮件", null);
 
         } catch (RuntimeException e) {
-            result.put("success", false);
-            result.put("message", e.getMessage());
-            log.warn("验证码发送被限制:{}", e.getMessage());
+            log.error("验证码发送被限制,RuntimeException: {}", e.getMessage(), e);
+            return ApiResponse.error(429, e.getMessage());
         } catch (Exception e) {
-            result.put("success", false);
-            result.put("message", "验证码发送失败,请稍后重试");
-            log.error("验证码发送异常", e);
+            log.error("验证码发送异常,Exception: {}", e.getMessage(), e);
+            return ApiResponse.error(500, "验证码发送失败: " + e.getMessage());
         }
-
-        return result;
     }
 
     /**
