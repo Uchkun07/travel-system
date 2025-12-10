@@ -69,7 +69,7 @@
 
     <!-- 底部版权信息 -->
     <div class="footer-bottom">
-      <p>© 2023 悦旅旅游 | 新ICP备12345678号 | 旅行社业经营许可证：L-SH-9999</p>
+      <p>© 2023 WayStar | 新ICP备12345678号 | 旅行社业经营许可证：L-SH-9999</p>
     </div>
   </footer>
 </template>

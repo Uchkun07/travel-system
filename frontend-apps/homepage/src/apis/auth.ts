@@ -47,48 +47,46 @@ export interface UserInfoResponse {
   gender?: number;
   birthday?: string;
   status?: number;
+  residentAddress?: string;
 }
 
 // 后端返回 ApiResponse<Boolean>，data 字段直接表示是否可用
 export interface CheckResponse {
   code: number;
   message: string;
-  data: boolean;  // true 表示可用，false 表示已存在
+  data: boolean; // true 表示可用，false 表示已存在
 }
 
 // 更新用户资料请求接口
 export interface UpdateProfileRequest {
-  username?: string;
   fullName?: string;
-  email?: string;
   phone?: string;
   gender?: number; // 0=保密, 1=男, 2=女
   birthday?: string; // YYYY-MM-DD 格式
-  avatar?: string;
+  residentAddress?: string;
 }
 
 // 更新用户资料响应接口
 export interface UpdateProfileResponse {
-  success: boolean;
-  message: string;
-  token?: string;
-  userInfo?: {
-    userId: number;
-    username: string;
-    fullName?: string;
-    email?: string;
-    phone?: string;
-    gender?: number;
-    birthday?: string;
-    avatar?: string;
-  };
+  userId: number;
+  username: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  gender?: number;
+  birthday?: string;
+  avatar?: string;
+  residentAddress?: string;
 }
 
 /**
  * 发送邮箱验证码
  */
 export function sendVerificationCode(data: SendCodeRequest) {
-  return post<{ success: boolean; message: string }>("/api/email/sendCode", data);
+  return post<{ success: boolean; message: string }>(
+    "/api/email/sendCode",
+    data
+  );
 }
 
 /**
@@ -113,10 +111,10 @@ export function logout() {
 }
 
 /**
- * 获取当前用户信息
+ * 获取当前用户基本信息
  */
-export function getUserInfo() {
-  return get<UserInfoResponse>("/api/user/info");
+export function getUserProfile() {
+  return get<ApiResponse<UpdateProfileResponse>>("/api/user/profile");
 }
 
 /**
@@ -134,10 +132,10 @@ export function checkEmail(email: string) {
 }
 
 /**
- * 更新用户资料（需要JWT认证）
+ * 更新用户基本信息（需要JWT认证）
  */
 export function updateUserProfile(data: UpdateProfileRequest) {
-  return put<UpdateProfileResponse>("/v1/users/profile", data);
+  return put<ApiResponse<UpdateProfileResponse>>("/api/user/profile", data);
 }
 
 /**
@@ -222,7 +220,7 @@ export const uploadAvatar = async (
 ): Promise<ApiResponse<{ avatarUrl: string; token: string }>> => {
   const { upload } = await import("./request");
   return upload<ApiResponse<{ avatarUrl: string; token: string }>>(
-    "/v1/upload/avatar",
+    "/api/user/avatar",
     file
   );
 };

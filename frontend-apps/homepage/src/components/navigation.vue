@@ -1,8 +1,8 @@
 <template>
   <nav class="navbar">
     <div class="logo">
-      <img src="@/assets/imgs/logo.png" alt="悦旅 Logo" />
-      <h1>悦旅</h1>
+      <img src="@/assets/imgs/logo.png" alt="WayStar Logo" />
+      <h1>WayStar</h1>
     </div>
     <div class="menu">
       <ul>

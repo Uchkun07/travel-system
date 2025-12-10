@@ -304,7 +304,7 @@ public class EmailServiceImpl implements IEmailService {
                 "<body>" +
                 "    <div class='container'>" +
                 "        <div class='header'>" +
-                "            <h1>🌏 悦旅</h1>" +
+                "            <h1>🌏 WayStar</h1>" +
                 "            <p>邮箱验证码</p>" +
                 "        </div>" +
                 "        <div class='content'>" +

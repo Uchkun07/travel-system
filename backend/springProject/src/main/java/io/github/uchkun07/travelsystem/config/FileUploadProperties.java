@@ -1,13 +1,13 @@
 package io.github.uchkun07.travelsystem.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import lombok.Data;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * 文件上传配置属性
  */
+@Data
 @Configuration
-@ConfigurationProperties(prefix = "file.upload")
 public class FileUploadProperties {
     
     /**
@@ -15,11 +15,13 @@ public class FileUploadProperties {
      */
     private String path = "public/img/avatars";
 
-    public String getPath() {
-        return path;
-    }
+    /**
+     * 头像上传目录
+     */
+    private String avatarDir = "src/main/resources/static/avatars";
 
-    public void setPath(String path) {
-        this.path = path;
-    }
+    /**
+     * 最大文件大小（字节）
+     */
+    private Long maxSize = 5242880L; // 5MB
 }

@@ -1,22 +1,29 @@
 package io.github.uchkun07.travelsystem.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import io.github.uchkun07.travelsystem.dto.UserLoginRequest;
-import io.github.uchkun07.travelsystem.dto.UserRegisterRequest;
-import io.github.uchkun07.travelsystem.dto.UserInfoResponse;
-import io.github.uchkun07.travelsystem.dto.UserLoginResponse;
+import io.github.uchkun07.travelsystem.dto.*;
 import io.github.uchkun07.travelsystem.entity.User;
+import io.github.uchkun07.travelsystem.entity.UserProfile;
 import io.github.uchkun07.travelsystem.mapper.UserMapper;
+import io.github.uchkun07.travelsystem.mapper.UserProfileMapper;
 import io.github.uchkun07.travelsystem.service.IUserService;
 import io.github.uchkun07.travelsystem.service.IEmailService;
 import io.github.uchkun07.travelsystem.util.JwtUtil;
 import io.github.uchkun07.travelsystem.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * 用户服务实现类(C端)
@@ -27,8 +34,12 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements IUserService {
 
     private final UserMapper userMapper;
+    private final UserProfileMapper userProfileMapper;
     private final JwtUtil jwtUtil;
     private final IEmailService emailService;
+
+    @Value("${file.upload.avatar-dir:src/main/resources/static/avatars}")
+    private String avatarUploadDir;
 
     @Override
     @Transactional
@@ -207,5 +218,158 @@ public class UserServiceImpl implements IUserService {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getEmail, email);
         return userMapper.selectCount(wrapper) == 0;
+    }
+
+    @Override
+    public UserProfileResponse getUserProfile(String token) {
+        // 从token中提取userId
+        token = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        // 查询用户信息
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+
+        // 查询用户基本信息
+        LambdaQueryWrapper<UserProfile> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserProfile::getUserId, userId);
+        UserProfile profile = userProfileMapper.selectOne(wrapper);
+
+        // 构建响应
+        UserProfileResponse.UserProfileResponseBuilder builder = UserProfileResponse.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .avatar(user.getAvatarUrl());
+
+        if (profile != null) {
+            builder.fullName(profile.getFullName())
+                    .phone(profile.getPhone())
+                    .gender(profile.getGender())
+                    .birthday(profile.getBirthday() != null ? profile.getBirthday().toString() : null)
+                    .residentAddress(profile.getResidentAddress());
+        }
+
+        return builder.build();
+    }
+
+    @Override
+    @Transactional
+    public UserProfileResponse updateUserProfile(String token, UpdateUserProfileRequest request) {
+        // 从token中提取userId
+        token = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        // 查询用户
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+
+        // 查询或创建用户基本信息
+        LambdaQueryWrapper<UserProfile> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserProfile::getUserId, userId);
+        UserProfile profile = userProfileMapper.selectOne(wrapper);
+
+        if (profile == null) {
+            // 创建新的基本信息记录
+            profile = UserProfile.builder()
+                    .userId(userId)
+                    .fullName(request.getFullName())
+                    .phone(request.getPhone())
+                    .gender(request.getGender())
+                    .birthday(request.getBirthday() != null ? LocalDate.parse(request.getBirthday()) : null)
+                    .residentAddress(request.getResidentAddress())
+                    .build();
+            userProfileMapper.insert(profile);
+        } else {
+            // 更新现有信息
+            if (request.getFullName() != null) {
+                profile.setFullName(request.getFullName());
+            }
+            if (request.getPhone() != null) {
+                profile.setPhone(request.getPhone());
+            }
+            if (request.getGender() != null) {
+                profile.setGender(request.getGender());
+            }
+            if (request.getBirthday() != null) {
+                profile.setBirthday(LocalDate.parse(request.getBirthday()));
+            }
+            if (request.getResidentAddress() != null) {
+                profile.setResidentAddress(request.getResidentAddress());
+            }
+            userProfileMapper.updateById(profile);
+        }
+
+        // 返回更新后的用户信息
+        return getUserProfile("Bearer " + token);
+    }
+
+    @Override
+    @Transactional
+    public AvatarUploadResponse uploadAvatar(String token, MultipartFile file) throws IOException {
+        // 从token中提取userId
+        token = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        // 查询用户
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+
+        // 验证文件
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("文件不能为空");
+        }
+
+        // 验证文件类型
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("只能上传图片文件");
+        }
+
+        // 验证文件大小（限制5MB）
+        long maxSize = 5 * 1024 * 1024;
+        if (file.getSize() > maxSize) {
+            throw new IllegalArgumentException("文件大小不能超过5MB");
+        }
+
+        // 生成文件名
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename != null && originalFilename.contains(".") 
+                ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                : ".jpg";
+        String filename = UUID.randomUUID().toString() + extension;
+
+        // 确保上传目录存在
+        Path uploadPath = Paths.get(avatarUploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // 保存文件
+        Path filePath = uploadPath.resolve(filename);
+        Files.copy(file.getInputStream(), filePath);
+
+        // 构建URL（相对路径）
+        String avatarUrl = "/avatars/" + filename;
+
+        // 更新用户头像URL
+        user.setAvatarUrl(avatarUrl);
+        userMapper.updateById(user);
+
+        // 生成新的token（包含更新后的头像信息）
+        String newToken = jwtUtil.generateToken(user.getUserId(), user.getUsername(), false);
+
+        log.info("用户 {} 上传头像成功: {}", userId, avatarUrl);
+
+        return AvatarUploadResponse.builder()
+                .avatarUrl(avatarUrl)
+                .token(newToken)
+                .build();
     }
 }
