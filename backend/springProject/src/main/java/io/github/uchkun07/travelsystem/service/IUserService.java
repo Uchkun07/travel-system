@@ -1,6 +1,9 @@
 package io.github.uchkun07.travelsystem.service;
 
 import io.github.uchkun07.travelsystem.dto.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 /**
  * 用户服务接口
@@ -53,4 +56,31 @@ public interface IUserService {
      * @return 是否可用
      */
     boolean checkEmailAvailable(String email);
+
+    /**
+     * 获取用户基本信息
+     *
+     * @param token 访问令牌
+     * @return 用户基本信息
+     */
+    UserProfileResponse getUserProfile(String token);
+
+    /**
+     * 更新用户基本信息
+     *
+     * @param token 访问令牌
+     * @param request 更新信息
+     * @return 更新后的用户基本信息
+     */
+    UserProfileResponse updateUserProfile(String token, UpdateUserProfileRequest request);
+
+    /**
+     * 上传用户头像
+     *
+     * @param token 访问令牌
+     * @param file 头像文件
+     * @return 头像上传响应（包含头像URL和新token）
+     * @throws IOException 文件上传异常
+     */
+    AvatarUploadResponse uploadAvatar(String token, MultipartFile file) throws IOException;
 }

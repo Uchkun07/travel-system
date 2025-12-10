@@ -3,11 +3,15 @@ package io.github.uchkun07.travelsystem.controller;
 import io.github.uchkun07.travelsystem.dto.*;
 import io.github.uchkun07.travelsystem.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 /**
  * 用户C端控制器
@@ -108,6 +112,55 @@ public class UserHomeController {
         } catch (Exception e) {
             log.error("检查邮箱失败", e);
             return ApiResponse.error(500, "检查失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "获取用户基本信息")
+    @GetMapping("/profile")
+    public ApiResponse<UserProfileResponse> getUserProfile(@RequestHeader("Authorization") String token) {
+        try {
+            UserProfileResponse response = userService.getUserProfile(token);
+            return ApiResponse.success("获取成功", response);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(401, e.getMessage());
+        } catch (Exception e) {
+            log.error("获取用户基本信息失败", e);
+            return ApiResponse.error(500, "获取失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "更新用户基本信息")
+    @PutMapping("/profile")
+    public ApiResponse<UserProfileResponse> updateUserProfile(
+            @RequestHeader("Authorization") String token,
+            @Validated @RequestBody UpdateUserProfileRequest request) {
+        try {
+            UserProfileResponse response = userService.updateUserProfile(token, request);
+            return ApiResponse.success("更新成功", response);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(400, e.getMessage());
+        } catch (Exception e) {
+            log.error("更新用户基本信息失败", e);
+            return ApiResponse.error(500, "更新失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "上传用户头像")
+    @PostMapping("/avatar")
+    public ApiResponse<AvatarUploadResponse> uploadAvatar(
+            @RequestHeader("Authorization") String token,
+            @Parameter(description = "头像文件") @RequestParam("file") MultipartFile file) {
+        try {
+            AvatarUploadResponse response = userService.uploadAvatar(token, file);
+            return ApiResponse.success("头像上传成功", response);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(400, e.getMessage());
+        } catch (IOException e) {
+            log.error("头像上传失败", e);
+            return ApiResponse.error(500, "文件上传失败: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("头像上传失败", e);
+            return ApiResponse.error(500, "上传失败: " + e.getMessage());
         }
     }
 }

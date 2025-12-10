@@ -246,11 +246,25 @@ const handleConfirmUpload = async () => {
 
     // 后端返回的是 ApiResponse 格式：{ code, message, data }
     if (response.code === 200 && response.data) {
-      // 更新 token
-      Cookies.set("token", response.data.token, { expires: 7 });
+      // 使用 userStore.setToken 方法更新 token，确保同时更新 Cookie 和 localStorage
+      userStore.setToken(response.data.token, true);
 
-      // 更新用户信息
-      await userStore.fetchUserInfo();
+      // 更新用户头像URL，如果是相对路径则添加服务器地址
+      const avatarUrl = response.data.avatarUrl || "";
+      const fullAvatarUrl =
+        avatarUrl && !avatarUrl.startsWith("http")
+          ? `http://localhost:8080${
+              avatarUrl.startsWith("/") ? avatarUrl : "/" + avatarUrl
+            }`
+          : avatarUrl;
+
+      // 更新 userStore 中的头像
+      if (userStore.userInfo) {
+        userStore.userInfo.avatar = fullAvatarUrl;
+      }
+
+      // 更新 localStorage 确保持久化
+      localStorage.setItem("userInfo", JSON.stringify(userStore.userInfo));
 
       ElMessage.success(response.message || "头像上传成功");
       avatarDialogVisible.value = false;

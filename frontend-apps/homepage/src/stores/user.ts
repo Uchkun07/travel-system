@@ -5,7 +5,7 @@ import Cookies from "js-cookie";
 import {
   login as apiLogin,
   logout as apiLogout,
-  getUserInfo,
+  getUserProfile,
   type LoginRequest,
 } from "@/apis";
 import { ElMessage } from "element-plus";
@@ -52,14 +52,13 @@ export const useUserStore = defineStore("user", () => {
       return avatarPath;
     }
 
-    // 如果是相对路径，拼接API基础地址
-    const apiBaseUrl =
-      import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+    // 如果是相对路径，拼接服务器地址（不包含/api）
+    const baseUrl = "http://localhost:8080";
 
     // 确保路径以 / 开头
     const path = avatarPath.startsWith("/") ? avatarPath : `/${avatarPath}`;
 
-    return `${apiBaseUrl}${path}`;
+    return `${baseUrl}${path}`;
   });
 
   const userId = computed(() => userInfo.value?.userId || 0);
@@ -183,9 +182,9 @@ export const useUserStore = defineStore("user", () => {
    */
   async function fetchUserInfo() {
     try {
-      const res = await getUserInfo();
+      const res = await getUserProfile();
 
-      if (res.success && res.userId) {
+      if (res && res.userId) {
         setUserInfo({
           userId: res.userId,
           username: res.username!,
@@ -195,7 +194,6 @@ export const useUserStore = defineStore("user", () => {
           phone: res.phone,
           gender: res.gender,
           birthday: res.birthday,
-          status: res.status,
         });
 
         // 获取用户信息后初始化收藏列表

@@ -77,7 +77,7 @@ public class AdminServiceImpl implements IAdminService {
         // 3. 验证密码
         if (!verifyPassword(request.getPassword(), admin.getPassword(), 
                            admin.getPasswordSalt(), admin.getPbkdf2Iterations())) {
-            throw new RuntimeException("用户名或密码错误");
+            throw new RuntimeException("密码错误");
         }
 
         // 4. 查询管理员的角色

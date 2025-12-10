@@ -52,6 +52,13 @@ service.interceptors.response.use(
       return response;
     }
 
+    // 记录响应日志（仅在开发环境）
+    if (import.meta.env.DEV) {
+      console.log("[响应拦截器] URL:", response.config.url);
+      console.log("[响应拦截器] 原始响应:", response);
+      console.log("[响应拦截器] 返回数据:", res);
+    }
+
     // 正常响应直接返回数据
     return res;
   },
@@ -65,23 +72,38 @@ service.interceptors.response.use(
 
       switch (status) {
         case 401:
-          // 未授权,清除 Cookie 和 localStorage (多种方式确保清除)
-          ElMessage.error(data.message || "登录已过期,请重新登录");
+          console.log("[401错误] URL:", error.config?.url);
+          console.log("[401错误] 错误消息:", data?.message);
 
-          // 清除 Cookie (多种方式)
-          Cookies.remove("token", { path: "/" });
-          Cookies.remove("token", {
-            path: "/",
-            domain: window.location.hostname,
-          });
-          Cookies.remove("token");
+          // 只在明确的认证失败时清除token
+          // 避免在文件上传等操作中误触发
+          if (
+            data?.message?.includes("登录") ||
+            data?.message?.includes("认证") ||
+            data?.message?.includes("token") ||
+            data?.message?.includes("过期")
+          ) {
+            console.log("[401错误] 清除token并跳转登录");
+            ElMessage.error(data.message || "登录已过期,请重新登录");
 
-          // 清除 localStorage
-          localStorage.removeItem("userInfo");
-          localStorage.removeItem("token");
+            // 清除 Cookie (多种方式)
+            Cookies.remove("token", { path: "/" });
+            Cookies.remove("token", {
+              path: "/",
+              domain: window.location.hostname,
+            });
+            Cookies.remove("token");
 
-          // 跳转到首页
-          router.push("/");
+            // 清除 localStorage
+            localStorage.removeItem("userInfo");
+            localStorage.removeItem("token");
+
+            // 跳转到首页
+            router.push("/");
+          } else {
+            console.log("[401错误] 非认证错误，不清除token");
+            ElMessage.error(data.message || "未授权");
+          }
           break;
         case 403:
           ElMessage.error("没有权限访问该资源");

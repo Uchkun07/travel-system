@@ -13,32 +13,32 @@ const routes: RouteRecordRaw[] = [
       {
         path: "",
         name: "Home",
-        meta: { title: "悦旅 - 探索世界的每一个角落" },
+        meta: { title: "WayStar - 探索世界的每一个角落" },
         component: () =>
           import("@/views/recommend-attraction/recommend-attraction.vue"),
       },
       {
         path: "explore",
         name: "Explore",
-        meta: { title: "探索 - 悦旅" },
+        meta: { title: "探索 - WayStar" },
         component: () => import("@/views/explore/Explore.vue"),
       },
       {
         path: "hotcity",
         name: "HotCity",
-        meta: { title: "热门城市 - 悦旅" },
+        meta: { title: "热门城市 - WayStar" },
         component: () => import("@/views/hotcity/HotCity.vue"),
       },
       {
         path: "routeline",
         name: "RouteLine",
-        meta: { title: "路线规划 - 悦旅" },
+        meta: { title: "路线规划 - WayStar" },
         component: () => import("@/views/routeline/RouteLine.vue"),
       },
       {
         path: "profile",
         name: "Profile",
-        meta: { title: "个人中心 - 悦旅", requiresAuth: true },
+        meta: { title: "个人中心 - WayStar", requiresAuth: true },
         component: () => import("@/views/user-center/index.vue"),
       },
     ],
@@ -49,7 +49,7 @@ const routes: RouteRecordRaw[] = [
   // {
   //   path: "/login",
   //   name: "Login",
-  //   meta: { title: "登录 - 悦旅" },
+  //   meta: { title: "登录 - WayStar" },
   //   component: () => import("@/views/auth/Login.vue"),
   // },
 ];

@@ -10,7 +10,7 @@ router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore();
 
   // 设置页面标题
-  document.title = (to.meta.title as string) || "悦旅 - 旅游系统";
+  document.title = (to.meta.title as string) || "WayStar - 旅游系统";
 
   if (userStore.isLoggedIn) {
     // 已登录 - 验证 token 是否有效
