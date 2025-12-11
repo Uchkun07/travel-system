@@ -46,7 +46,7 @@ public class UserCollection {
      * 逻辑删除标记（0=未删除，1=已删除）
      */
     @TableField("is_deleted")
-    @TableLogic
+    // @TableLogic
     private Integer isDeleted;
 
     /**
