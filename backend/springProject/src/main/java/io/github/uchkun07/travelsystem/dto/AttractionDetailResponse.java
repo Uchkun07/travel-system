@@ -29,6 +29,9 @@ public class AttractionDetailResponse {
     @Schema(description = "景点副标题")
     private String subtitle;
 
+    @Schema(description = "景点详细描述")
+    private String description;
+
     @Schema(description = "景点类型ID")
     private Integer typeId;
 

@@ -37,6 +37,7 @@ export interface AttractionDetail {
   attractionId: number;
   name: string;
   subtitle?: string;
+  description?: string;
   typeId?: number;
   typeName?: string;
   cityId?: number;
@@ -46,7 +47,7 @@ export interface AttractionDetail {
   longitude?: number;
   mainImageUrl?: string;
   multiImageUrls?: string;
-  estimatedTime?: number;
+  estimatedPlayTime?: number;
   ticketPrice?: number;
   ticketDescription?: string;
   openingHours?: string;

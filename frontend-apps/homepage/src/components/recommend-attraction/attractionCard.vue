@@ -1,11 +1,11 @@
 <template>
-  <div class="destination-card">
+  <div class="destination-card" @click="handleCardClick">
     <div class="card-image">
       <img :src="attraction.image" :alt="attraction.title" />
       <div v-if="attraction.badge" class="card-badge">
         {{ attraction.badge }}
       </div>
-      <div class="card-favorite" @click="toggleFavorite">
+      <div class="card-favorite" @click.stop="toggleFavorite">
         <heart
           :fill="isFavorite ? '#e74c3c' : 'none'"
           :stroke="isFavorite ? 'none' : '#3498db'"
@@ -36,9 +36,10 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { useCollectionStore } from "@/stores/collection";
-import { useUserStore } from "@/stores/user"; // 改为使用 userStore
+import { useUserStore } from "@/stores/user";
 import heart from "@/assets/svgs/heart.vue";
 
 interface Attraction {
@@ -61,8 +62,9 @@ const emit = defineEmits<{
   favorite: [id: number | string, isFavorite: boolean];
 }>();
 
+const router = useRouter();
 const collectionStore = useCollectionStore();
-const userStore = useUserStore(); // 使用 userStore 而不是 authStore
+const userStore = useUserStore();
 
 // 计算收藏状态
 const isFavorite = computed(() => {
@@ -70,9 +72,16 @@ const isFavorite = computed(() => {
   return Number.isFinite(id) ? collectionStore.isCollected(id) : false;
 });
 
+// 点击卡片跳转到详情页
+const handleCardClick = () => {
+  const id = Number(props.attraction.id);
+  if (Number.isFinite(id)) {
+    router.push(`/attraction/${id}`);
+  }
+};
+
 // 切换收藏
 const toggleFavorite = async () => {
-  // 检查用户是否登录 - 使用 userStore 的 isLoggedIn
   if (!userStore.isLoggedIn) {
     ElMessage.warning("请先登录后再收藏");
     return;

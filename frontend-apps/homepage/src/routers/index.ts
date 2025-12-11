@@ -41,6 +41,13 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "个人中心 - WayStar", requiresAuth: true },
         component: () => import("@/views/user-center/index.vue"),
       },
+      {
+        path: "attraction/:id",
+        name: "AttractionDetail",
+        meta: { title: "景点详情 - WayStar" },
+        component: () =>
+          import("@/views/recommend-attraction/Attraction-Detail.vue"),
+      },
     ],
   },
 
@@ -57,6 +64,20 @@ const routes: RouteRecordRaw[] = [
 export const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    // 如果有保存的位置（浏览器前进/后退）
+    if (savedPosition) {
+      return savedPosition;
+    }
+    // 如果有锚点
+    if (to.hash) {
+      return {
+        el: to.hash,
+      };
+    }
+    // 默认滚动到顶部
+    return { top: 0 };
+  },
 });
 
 // 路由守卫：保护需要登录的页面
