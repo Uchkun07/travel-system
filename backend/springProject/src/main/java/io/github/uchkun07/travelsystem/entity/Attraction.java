@@ -38,6 +38,12 @@ public class Attraction {
     private String subtitle;
 
     /**
+     * 景点详细描述
+     */
+    @TableField("description")
+    private String description;
+
+    /**
      * 关联景点类型表
      */
     @TableField("type_id")

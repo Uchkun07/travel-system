@@ -8,6 +8,9 @@ dependencies:
   '@element-plus/icons-vue':
     specifier: ^2.3.2
     version: 2.3.2(vue@3.5.22)
+  '@fortawesome/fontawesome-free':
+    specifier: ^7.1.0
+    version: 7.1.0
   '@vue/runtime-dom':
     specifier: ^3.5.22
     version: 3.5.22
@@ -349,6 +352,11 @@ packages:
 
   /@floating-ui/utils@0.2.10:
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+    dev: false
+
+  /@fortawesome/fontawesome-free@7.1.0:
+    resolution: {integrity: sha512-+WxNld5ZCJHvPQCr/GnzCTVREyStrAJjisUPtUxG5ngDA8TMlPnKp6dddlTpai4+1GNmltAeuk1hJEkBohwZYA==}
+    engines: {node: '>=6'}
     dev: false
 
   /@jridgewell/sourcemap-codec@1.5.5:

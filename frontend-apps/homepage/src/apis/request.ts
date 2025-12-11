@@ -21,6 +21,7 @@ export interface ApiResponse<T = any> {
 const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/",
   timeout: 15000,
+  withCredentials: true, // 支持跨域携带 cookie
   headers: {
     "Content-Type": "application/json;charset=utf-8",
   },

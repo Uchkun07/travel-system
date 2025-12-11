@@ -124,8 +124,8 @@ const handleCommand = async (command: string) => {
   gap: 0.5rem;
   font-size: 0.8rem;
   img {
-    width: 75px;
-    height: 75px;
+    width: 60px;
+    height: 60px;
     object-fit: contain;
   }
   h1 {

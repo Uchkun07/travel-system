@@ -6,6 +6,7 @@ import { router } from "./routers";
 import "./routers/guard"; // 引入路由守卫
 import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import { migrateTokenToCookie } from "./utils/migrate-storage"; // 引入迁移工具
 import "./utils/debug-auth"; // 引入调试工具 (开发环境)
 
