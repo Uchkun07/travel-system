@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import "./styles/style.css";
 import App from "./App.vue";
 import { createPinia } from "pinia";
+import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import { router } from "./routers";
 import "./routers/guard"; // 引入路由守卫
 import ElementPlus from "element-plus";
@@ -15,6 +16,7 @@ migrateTokenToCookie();
 
 const app = createApp(App);
 const store = createPinia();
+store.use(piniaPluginPersistedstate); // 使用持久化插件
 app.use(store);
 app.use(router);
 app.use(ElementPlus);

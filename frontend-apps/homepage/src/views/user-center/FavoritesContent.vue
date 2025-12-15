@@ -50,11 +50,8 @@ import { ElInput, ElIcon, ElButton, ElEmpty, ElMessage } from "element-plus";
 import { Search, Star, Loading } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 import attractionCard from "@/components/recommend-attraction/attractionCard.vue";
-import {
-  getAttractionsByIds,
-  getCollectedAttractionIds,
-  type AttractionCard,
-} from "@/apis/attraction";
+import { getAttractionsByIds, type AttractionCard } from "@/apis/attraction";
+import { useCollectionStore } from "@/stores/collection";
 
 // 组件所需的景点数据格式（与 attractionCard 组件匹配）
 interface AttractionCardData {
@@ -69,6 +66,7 @@ interface AttractionCardData {
 }
 
 const router = useRouter();
+const collectionStore = useCollectionStore();
 const searchKeyword = ref("");
 const loading = ref(false);
 
@@ -116,25 +114,22 @@ const filteredFavorites = computed(() => {
 const loadFavorites = async () => {
   loading.value = true;
   try {
-    // 1. 获取收藏的景点ID列表
-    const collectedResponse = await getCollectedAttractionIds();
-    if (
-      collectedResponse.code === 200 &&
-      Array.isArray(collectedResponse.data)
-    ) {
-      collectedIds.value = collectedResponse.data;
+    // 确保 collection store 已初始化
+    if (!collectionStore.initialized) {
+      await collectionStore.initializeCollections();
+    }
 
-      // 2. 如果有收藏的景点，批量获取景点详情
-      if (collectedIds.value.length > 0) {
-        const attractionsResponse = await getAttractionsByIds(
-          collectedIds.value
-        );
-        if (attractionsResponse.code === 200 && attractionsResponse.data) {
-          allAttractions.value = attractionsResponse.data;
-        }
-      } else {
-        allAttractions.value = [];
+    // 直接从store中获取收藏的景点ID列表（已持久化）
+    collectedIds.value = Array.from(collectionStore.collectedIds);
+
+    // 如果有收藏的景点，批量获取景点详情
+    if (collectedIds.value.length > 0) {
+      const attractionsResponse = await getAttractionsByIds(collectedIds.value);
+      if (attractionsResponse.code === 200 && attractionsResponse.data) {
+        allAttractions.value = attractionsResponse.data;
       }
+    } else {
+      allAttractions.value = [];
     }
   } catch (error: any) {
     console.error("加载收藏数据失败:", error);
@@ -163,7 +158,6 @@ const handleFavorite = (id: number | string, isFavorite: boolean) => {
     if (index > -1) {
       collectedIds.value.splice(index, 1);
     }
-    ElMessage.success("已取消收藏");
   }
 };
 
