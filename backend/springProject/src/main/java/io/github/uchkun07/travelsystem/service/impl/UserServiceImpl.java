@@ -85,6 +85,7 @@ public class UserServiceImpl implements IUserService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setNickname(request.getUsername()); // 默认昵称为用户名
+        user.setAvatarUrl("/avatars/defaultavatar.png");
         user.setStatus(1); // 默认启用
 
         // 使用 PBKDF2 加密密码
@@ -121,9 +122,17 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public UserLoginResponse login(UserLoginRequest request) {
-        // 查询用户
+        // 判断输入的是邮箱还是用户名（邮箱包含@符号）
+        String loginInput = request.getUsername();
+        boolean isEmail = loginInput.contains("@");
+        
+        // 根据输入类型查询用户
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, request.getUsername());
+        if (isEmail) {
+            wrapper.eq(User::getEmail, loginInput);
+        } else {
+            wrapper.eq(User::getUsername, loginInput);
+        }
         User user = userMapper.selectOne(wrapper);
 
         if (user == null) {
