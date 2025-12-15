@@ -69,18 +69,6 @@ public class AttractionHomeController {
         }
     }
 
-    @Operation(summary = "增加景点浏览量")
-    @PostMapping("/view/{attractionId}")
-    public ApiResponse<Void> incrementViewCount(@PathVariable Long attractionId) {
-        try {
-            attractionService.incrementBrowseCount(attractionId);
-            return ApiResponse.success("记录成功", null);
-        } catch (Exception e) {
-            log.error("增加浏览量失败", e);
-            return ApiResponse.error(500, "记录失败: " + e.getMessage());
-        }
-    }
-
     @Operation(summary = "收藏景点", description = "根据Token识别用户，收藏指定景点")
     @PostMapping("/collection/{attractionId}")
     public ApiResponse<Map<String, Object>> collectAttraction(

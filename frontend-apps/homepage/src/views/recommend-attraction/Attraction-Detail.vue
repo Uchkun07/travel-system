@@ -245,10 +245,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ElMessage, ElButton } from "element-plus";
+import { ElMessage } from "element-plus";
 import {
   getAttractionDetail,
-  incrementViewCount,
   type AttractionDetail,
 } from "@/apis/attraction";
 import { useCollectionStore } from "@/stores/collection";
@@ -311,12 +310,10 @@ const loadAttractionDetail = async () => {
   }
 
   loading.value = true;
-  try {
+  try { 
     const response = await getAttractionDetail(attractionId);
     if (response.code === 200 && response.data) {
-      attractionDetail.value = response.data;
-      // 增加浏览量
-      await incrementViewCount(attractionId);
+      attractionDetail.value = response.data
     } else {
       ElMessage.error(response.message || "加载景点详情失败");
       router.push("/");

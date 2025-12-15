@@ -68,12 +68,11 @@ interface AttractionCardData {
   badge?: string;
 }
 
-// 景点数据
-const attractions = ref<AttractionCardData[]>([]);
+const attractions = ref<AttractionCardData[]>([]); // 景点数据
 const initialLoading = ref(false); // 首次加载
 const loadingMore = ref(false); // 加载更多
 const currentPage = ref(1);
-const pageSize = ref(20); // 优化单次加载数量
+const pageSize = ref(28);
 const total = ref(0);
 const hasMore = ref(true); // 是否还有更多数据
 const isLoadingData = ref(false); // 防止重复请求
@@ -182,8 +181,8 @@ const handleScroll = () => {
   const windowHeight = window.innerHeight;
   const documentHeight = document.documentElement.scrollHeight;
 
-  // 预加载策略:距离底部 300px 时开始加载
-  const threshold = 300;
+  // 预加载策略:距离底部 500px 时开始加载
+  const threshold = 500;
   const distanceToBottom = documentHeight - (scrollTop + windowHeight);
 
   if (distanceToBottom < threshold) {

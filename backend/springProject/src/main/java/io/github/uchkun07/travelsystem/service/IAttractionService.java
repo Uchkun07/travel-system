@@ -66,13 +66,6 @@ public interface IAttractionService extends IService<Attraction> {
     AttractionDetailResponse getAttractionCardById(Long attractionId);
 
     /**
-     * 增加景点浏览量
-     *
-     * @param attractionId 景点ID
-     */
-    void incrementBrowseCount(Long attractionId);
-
-    /**
      * 根据ID列表批量获取景点卡片数据
      *
      * @param attractionIds 景点ID列表
