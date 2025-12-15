@@ -1,22 +1,5 @@
 import { get, post, del } from "./request";
-
-// API 响应接口
-export interface ApiResponse<T> {
-  code: number;
-  message: string;
-  data: T;
-}
-
-// 分页响应接口
-export interface PageResponse<T> {
-  records: T[];
-  total: number;
-  pageNum: number;
-  pageSize: number;
-  totalPages: number;
-  hasPrevious: boolean;
-  hasNext: boolean;
-}
+import type { ApiResponse, PageResponse } from "./common";
 
 // 景点卡片信息接口(C端列表展示)
 export interface AttractionCard {
@@ -111,14 +94,6 @@ export function getAttractionDetail(attractionId: number) {
   return get<ApiResponse<AttractionDetail>>(
     `/api/attraction/detail/${attractionId}`
   );
-}
-
-/**
- * 增加景点浏览量
- * @param attractionId 景点ID
- */
-export function incrementViewCount(attractionId: number) {
-  return post<ApiResponse<null>>(`/api/attraction/view/${attractionId}`);
 }
 
 /**

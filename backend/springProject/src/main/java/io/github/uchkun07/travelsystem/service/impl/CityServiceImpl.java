@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.github.uchkun07.travelsystem.dto.CityQueryRequest;
 import io.github.uchkun07.travelsystem.dto.CityRequest;
+import io.github.uchkun07.travelsystem.dto.CityResponse;
 import io.github.uchkun07.travelsystem.dto.PageResponse;
 import io.github.uchkun07.travelsystem.entity.City;
 import io.github.uchkun07.travelsystem.mapper.CityMapper;
@@ -137,5 +138,53 @@ public class CityServiceImpl implements ICityService {
                .orderByAsc(City::getSortOrder)
                .orderByDesc(City::getCreateTime);
         return cityMapper.selectList(wrapper);
+    }
+
+    @Override
+    public PageResponse<CityResponse> getCityCards(CityQueryRequest request) {
+        // 构建查询条件：只返回启用状态的城市
+        LambdaQueryWrapper<City> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(City::getStatus, 1);
+
+        // 支持城市名称模糊查询
+        if (request.getCityName() != null && !request.getCityName().trim().isEmpty()) {
+            wrapper.like(City::getCityName, request.getCityName().trim());
+        }
+
+        // 支持国家筛选
+        if (request.getCountry() != null && !request.getCountry().trim().isEmpty()) {
+            wrapper.eq(City::getCountry, request.getCountry().trim());
+        }
+
+        // 按热度排序，热度高的优先，其次按排序序号
+        wrapper.orderByDesc(City::getPopularity)
+               .orderByAsc(City::getSortOrder);
+
+        // 分页查询
+        Page<City> page = new Page<>(request.getPageNum(), request.getPageSize());
+        Page<City> result = cityMapper.selectPage(page, wrapper);
+
+        // 转换为客户端响应DTO
+        List<CityResponse> cityResponses = result.getRecords().stream()
+                .map(city -> CityResponse.builder()
+                        .cityName(city.getCityName())
+                        .country(city.getCountry())
+                        .description(city.getDescription())
+                        .cityUrl(city.getCityUrl())
+                        .averageTemperature(city.getAverageTemperature())
+                        .attractionCount(city.getAttractionCount())
+                        .popularity(city.getPopularity())
+                        .build())
+                .toList();
+
+        return PageResponse.<CityResponse>builder()
+                .records(cityResponses)
+                .total(result.getTotal())
+                .pageNum(result.getCurrent())
+                .pageSize(result.getSize())
+                .totalPages(result.getPages())
+                .hasPrevious(result.getCurrent() > 1)
+                .hasNext(result.getCurrent() < result.getPages())
+                .build();
     }
 }

@@ -14,6 +14,7 @@ import io.github.uchkun07.travelsystem.service.IAttractionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -381,21 +382,29 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
 
     @Override
     public AttractionDetailResponse getAttractionCardById(Long attractionId) {
+        // 异步增加浏览量
+        incrementBrowseCountAsync(attractionId);
+        
         // 直接使用已有的getAttractionDetail方法，它返回完整的详情数据
         return getAttractionDetail(attractionId);
     }
 
-    @Override
-    @Transactional
-    public void incrementBrowseCount(Long attractionId) {
-        Attraction attraction = attractionMapper.selectById(attractionId);
-        if (attraction == null) {
-            throw new IllegalArgumentException("景点不存在");
+    /**
+     * 异步增加浏览量
+     */
+    @Async
+    @Transactional(rollbackFor = Exception.class)
+    public void incrementBrowseCountAsync(Long attractionId) {
+        try {
+            Attraction attraction = attractionMapper.selectById(attractionId);
+            if (attraction != null) {
+                attraction.setBrowseCount(attraction.getBrowseCount() + 1);
+                attractionMapper.updateById(attraction);
+            }
+        } catch (Exception e) {
+            // 浏览量更新失败不影响主流程，记录日志即可
+            log.error("异步更新浏览量失败, attractionId=" + attractionId, e);
         }
-        
-        // 增加浏览量
-        attraction.setBrowseCount(attraction.getBrowseCount() + 1);
-        attractionMapper.updateById(attraction);
     }
 
     @Override
