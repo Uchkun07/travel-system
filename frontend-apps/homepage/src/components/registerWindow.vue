@@ -121,6 +121,7 @@ const visible = defineModel<boolean>("visible", { default: false });
 const emit = defineEmits<{
   close: [];
   "show-login": [];
+  "show-preference": [];
 }>();
 
 const registerFormRef = ref<FormInstance>();
@@ -295,6 +296,8 @@ const handleRegister = async () => {
 
       ElMessage.success("注册成功！欢迎加入");
       handleClose();
+      // 弹出偏好设置对话框
+      emit("show-preference");
     } else {
       ElMessage.error(res.message || "注册失败，请检查输入信息");
     }

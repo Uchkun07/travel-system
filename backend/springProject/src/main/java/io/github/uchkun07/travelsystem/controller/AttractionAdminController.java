@@ -27,24 +27,24 @@ public class AttractionAdminController {
 
     @Autowired
     private IAttractionService attractionService;
-    
+
     @Autowired
     private IAttractionTypeService attractionTypeService;
-    
+
     @Autowired
     private ICityService cityService;
-    
+
     @Autowired
     private IAttractionTagService attractionTagService;
-    
+
     @Autowired
     private IAttractionTagRelationService attractionTagRelationService;
-    
+
     // ==================== 景点管理 ====================
 
     @Operation(summary = "创建景点")
     @PostMapping("/create")
-    @RequireAdminPermission(value = {"ATTRACTION:CREATE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION:CREATE", "SYSTEM:MANAGE" })
     @OperationLog(type = "创建", object = "景点")
     public ApiResponse<Long> createAttraction(@Validated @RequestBody AttractionRequest request) {
         try {
@@ -60,7 +60,7 @@ public class AttractionAdminController {
 
     @Operation(summary = "删除景点")
     @DeleteMapping("/delete/{attractionId}")
-    @RequireAdminPermission(value = {"ATTRACTION:DELETE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION:DELETE", "SYSTEM:MANAGE" })
     @OperationLog(type = "删除", object = "景点")
     public ApiResponse<Void> deleteAttraction(@PathVariable Long attractionId) {
         try {
@@ -76,7 +76,7 @@ public class AttractionAdminController {
 
     @Operation(summary = "更新景点")
     @PutMapping("/update")
-    @RequireAdminPermission(value = {"ATTRACTION:UPDATE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION:UPDATE", "SYSTEM:MANAGE" })
     @OperationLog(type = "更新", object = "景点")
     public ApiResponse<Void> updateAttraction(@Validated @RequestBody AttractionRequest request) {
         try {
@@ -92,8 +92,9 @@ public class AttractionAdminController {
 
     @Operation(summary = "分页查询景点列表", description = "获取景点列表(景点ID、名称、类型、城市、浏览量、收藏数、人气指数)")
     @PostMapping("/list")
-    @RequireAdminPermission(value = {"ATTRACTION:LIST", "SYSTEM:MANAGE"})
-    public ApiResponse<PageResponse<AttractionListResponse>> listAttractions(@Validated @RequestBody AttractionQueryRequest request) {
+    @RequireAdminPermission(value = { "ATTRACTION:LIST", "SYSTEM:MANAGE" })
+    public ApiResponse<PageResponse<AttractionListResponse>> listAttractions(
+            @Validated @RequestBody AttractionQueryRequest request) {
         try {
             PageResponse<AttractionListResponse> page = attractionService.listAttractions(request);
             return ApiResponse.success("查询成功", page);
@@ -105,7 +106,7 @@ public class AttractionAdminController {
 
     @Operation(summary = "获取景点详情", description = "获取景点的完整信息,包括绑定的标签")
     @GetMapping("/detail/{attractionId}")
-    @RequireAdminPermission(value = {"ATTRACTION:DETAIL", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION:DETAIL", "SYSTEM:MANAGE" })
     public ApiResponse<AttractionDetailResponse> getAttractionDetail(@PathVariable Long attractionId) {
         try {
             AttractionDetailResponse detail = attractionService.getAttractionDetail(attractionId);
@@ -117,14 +118,15 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "查询失败: " + e.getMessage());
         }
     }
-    
+
     // ==================== 景点类型管理 ====================
-    
+
     @Operation(summary = "创建景点类型")
     @PostMapping("/type/create")
-    @RequireAdminPermission(value = {"ATTRACTION_TYPE:CREATE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TYPE:CREATE", "SYSTEM:MANAGE" })
     @OperationLog(type = "创建", object = "景点类型")
-    public ApiResponse<AttractionType> createAttractionType(@Validated @RequestBody AttractionTypeCreateRequest request) {
+    public ApiResponse<AttractionType> createAttractionType(
+            @Validated @RequestBody AttractionTypeCreateRequest request) {
         try {
             AttractionType attractionType = attractionTypeService.createAttractionType(request);
             log.info("创建景点类型成功: typeId={}, typeName={}", attractionType.getTypeId(), attractionType.getTypeName());
@@ -136,10 +138,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "创建失败");
         }
     }
-    
+
     @Operation(summary = "删除景点类型")
     @DeleteMapping("/type/delete/{typeId}")
-    @RequireAdminPermission(value = {"ATTRACTION_TYPE:DELETE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TYPE:DELETE", "SYSTEM:MANAGE" })
     @OperationLog(type = "删除", object = "景点类型")
     public ApiResponse<Void> deleteAttractionType(@PathVariable Integer typeId) {
         try {
@@ -152,10 +154,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "删除失败");
         }
     }
-    
+
     @Operation(summary = "批量删除景点类型")
     @DeleteMapping("/type/batch-delete")
-    @RequireAdminPermission(value = {"ATTRACTION_TYPE:DELETE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TYPE:DELETE", "SYSTEM:MANAGE" })
     @OperationLog(type = "批量删除", object = "景点类型")
     public ApiResponse<Void> batchDeleteAttractionTypes(@RequestBody List<Integer> typeIds) {
         try {
@@ -168,12 +170,13 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "批量删除失败");
         }
     }
-    
+
     @Operation(summary = "修改景点类型")
     @PutMapping("/type/update")
-    @RequireAdminPermission(value = {"ATTRACTION_TYPE:UPDATE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TYPE:UPDATE", "SYSTEM:MANAGE" })
     @OperationLog(type = "修改", object = "景点类型")
-    public ApiResponse<AttractionType> updateAttractionType(@Validated @RequestBody AttractionTypeUpdateRequest request) {
+    public ApiResponse<AttractionType> updateAttractionType(
+            @Validated @RequestBody AttractionTypeUpdateRequest request) {
         try {
             AttractionType attractionType = attractionTypeService.updateAttractionType(request);
             return ApiResponse.success("修改成功", attractionType);
@@ -184,10 +187,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "修改失败");
         }
     }
-    
+
     @Operation(summary = "分页查询景点类型")
     @GetMapping("/type/list")
-    @RequireAdminPermission(value = {"ATTRACTION_TYPE:VIEW", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TYPE:VIEW", "SYSTEM:MANAGE" })
     public ApiResponse<PageResponse<AttractionType>> queryAttractionTypes(
             @RequestParam(defaultValue = "1") Long pageNum,
             @RequestParam(defaultValue = "10") Long pageSize,
@@ -204,10 +207,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "查询失败");
         }
     }
-    
+
     @Operation(summary = "查询景点类型详情")
     @GetMapping("/type/detail/{typeId}")
-    @RequireAdminPermission(value = {"ATTRACTION_TYPE:VIEW", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TYPE:VIEW", "SYSTEM:MANAGE" })
     public ApiResponse<AttractionType> getAttractionTypeById(@PathVariable Integer typeId) {
         try {
             AttractionType attractionType = attractionTypeService.getAttractionTypeById(typeId);
@@ -219,12 +222,12 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "查询失败");
         }
     }
-    
+
     // ==================== 城市管理 ====================
-    
+
     @Operation(summary = "创建城市")
     @PostMapping("/city/create")
-    @RequireAdminPermission(value = {"CITY:CREATE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "CITY:CREATE", "SYSTEM:MANAGE" })
     @OperationLog(type = "创建", object = "城市")
     public ApiResponse<City> createCity(@Validated @RequestBody CityRequest request) {
         try {
@@ -237,10 +240,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "创建失败");
         }
     }
-    
+
     @Operation(summary = "删除城市")
     @DeleteMapping("/city/delete/{cityId}")
-    @RequireAdminPermission(value = {"CITY:DELETE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "CITY:DELETE", "SYSTEM:MANAGE" })
     @OperationLog(type = "删除", object = "城市")
     public ApiResponse<Void> deleteCity(@PathVariable Integer cityId) {
         try {
@@ -253,10 +256,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "删除失败");
         }
     }
-    
+
     @Operation(summary = "批量删除城市")
     @DeleteMapping("/city/batch-delete")
-    @RequireAdminPermission(value = {"CITY:DELETE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "CITY:DELETE", "SYSTEM:MANAGE" })
     @OperationLog(type = "批量删除", object = "城市")
     public ApiResponse<Void> batchDeleteCities(@RequestBody List<Integer> cityIds) {
         try {
@@ -269,10 +272,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "批量删除失败");
         }
     }
-    
+
     @Operation(summary = "修改城市")
     @PutMapping("/city/update")
-    @RequireAdminPermission(value = {"CITY:UPDATE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "CITY:UPDATE", "SYSTEM:MANAGE" })
     @OperationLog(type = "修改", object = "城市")
     public ApiResponse<City> updateCity(@Validated @RequestBody CityRequest request) {
         try {
@@ -285,10 +288,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "修改失败");
         }
     }
-    
+
     @Operation(summary = "分页查询城市")
     @GetMapping("/city/list")
-    @RequireAdminPermission(value = {"CITY:VIEW", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "CITY:VIEW", "SYSTEM:MANAGE" })
     public ApiResponse<PageResponse<City>> queryCities(
             @RequestParam(defaultValue = "1") Long pageNum,
             @RequestParam(defaultValue = "10") Long pageSize,
@@ -306,10 +309,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "查询失败");
         }
     }
-    
+
     @Operation(summary = "查询城市详情")
     @GetMapping("/city/detail/{cityId}")
-    @RequireAdminPermission(value = {"CITY:VIEW", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "CITY:VIEW", "SYSTEM:MANAGE" })
     public ApiResponse<City> getCityById(@PathVariable Integer cityId) {
         try {
             City city = cityService.getCityById(cityId);
@@ -321,10 +324,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "查询失败");
         }
     }
-    
+
     @Operation(summary = "获取所有城市")
     @GetMapping("/city/all")
-    @RequireAdminPermission(value = {"CITY:VIEW", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "CITY:VIEW", "SYSTEM:MANAGE" })
     public ApiResponse<List<City>> getAllCities() {
         try {
             List<City> cities = cityService.getAllCities();
@@ -334,12 +337,12 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "查询失败");
         }
     }
-    
+
     // ==================== 景点标签管理 ====================
-    
+
     @Operation(summary = "创建景点标签")
     @PostMapping("/tag/create")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG:CREATE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG:CREATE", "SYSTEM:MANAGE" })
     @OperationLog(type = "创建", object = "景点标签")
     public ApiResponse<AttractionTag> createTag(@Validated @RequestBody AttractionTagRequest request) {
         try {
@@ -352,10 +355,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "创建失败");
         }
     }
-    
+
     @Operation(summary = "删除景点标签")
     @DeleteMapping("/tag/delete/{tagId}")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG:DELETE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG:DELETE", "SYSTEM:MANAGE" })
     @OperationLog(type = "删除", object = "景点标签")
     public ApiResponse<Void> deleteTag(@PathVariable Integer tagId) {
         try {
@@ -368,10 +371,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "删除失败");
         }
     }
-    
+
     @Operation(summary = "批量删除景点标签")
     @DeleteMapping("/tag/batch-delete")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG:DELETE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG:DELETE", "SYSTEM:MANAGE" })
     @OperationLog(type = "批量删除", object = "景点标签")
     public ApiResponse<Void> batchDeleteTags(@RequestBody List<Integer> tagIds) {
         try {
@@ -384,10 +387,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "批量删除失败");
         }
     }
-    
+
     @Operation(summary = "修改景点标签")
     @PutMapping("/tag/update")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG:UPDATE", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG:UPDATE", "SYSTEM:MANAGE" })
     @OperationLog(type = "修改", object = "景点标签")
     public ApiResponse<AttractionTag> updateTag(@Validated @RequestBody AttractionTagRequest request) {
         try {
@@ -400,10 +403,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "修改失败");
         }
     }
-    
+
     @Operation(summary = "分页查询景点标签")
     @GetMapping("/tag/list")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG:VIEW", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG:VIEW", "SYSTEM:MANAGE" })
     public ApiResponse<PageResponse<AttractionTag>> queryTags(
             @RequestParam(defaultValue = "1") Long pageNum,
             @RequestParam(defaultValue = "10") Long pageSize,
@@ -419,10 +422,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "查询失败");
         }
     }
-    
+
     @Operation(summary = "查询景点标签详情")
     @GetMapping("/tag/detail/{tagId}")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG:VIEW", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG:VIEW", "SYSTEM:MANAGE" })
     public ApiResponse<AttractionTag> getTagById(@PathVariable Integer tagId) {
         try {
             AttractionTag tag = attractionTagService.getTagById(tagId);
@@ -434,10 +437,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "查询失败");
         }
     }
-    
+
     @Operation(summary = "获取所有景点标签")
     @GetMapping("/tag/all")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG:VIEW", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG:VIEW", "SYSTEM:MANAGE" })
     public ApiResponse<List<AttractionTag>> getAllTags() {
         try {
             List<AttractionTag> tags = attractionTagService.getAllTags();
@@ -447,12 +450,12 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "查询失败");
         }
     }
-    
+
     // ==================== 景点标签关联管理 ====================
-    
+
     @Operation(summary = "景点绑定标签")
     @PostMapping("/tag-relation/bind")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG_RELATION:BIND", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG_RELATION:BIND", "SYSTEM:MANAGE" })
     @OperationLog(type = "绑定", object = "景点标签")
     public ApiResponse<Void> bindTag(@Validated @RequestBody AttractionTagBindRequest request) {
         try {
@@ -465,10 +468,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "绑定失败");
         }
     }
-    
+
     @Operation(summary = "景点解绑标签")
     @PostMapping("/tag-relation/unbind")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG_RELATION:UNBIND", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG_RELATION:UNBIND", "SYSTEM:MANAGE" })
     @OperationLog(type = "解绑", object = "景点标签")
     public ApiResponse<Void> unbindTag(@Validated @RequestBody AttractionTagUnbindRequest request) {
         try {
@@ -481,10 +484,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "解绑失败");
         }
     }
-    
+
     @Operation(summary = "景点批量绑定标签")
     @PostMapping("/tag-relation/batch-bind")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG_RELATION:BIND", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG_RELATION:BIND", "SYSTEM:MANAGE" })
     @OperationLog(type = "批量绑定", object = "景点标签")
     public ApiResponse<Void> batchBindTags(@Validated @RequestBody AttractionTagBatchBindRequest request) {
         try {
@@ -497,10 +500,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "批量绑定失败");
         }
     }
-    
+
     @Operation(summary = "景点批量解绑标签")
     @PostMapping("/tag-relation/batch-unbind")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG_RELATION:UNBIND", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG_RELATION:UNBIND", "SYSTEM:MANAGE" })
     @OperationLog(type = "批量解绑", object = "景点标签")
     public ApiResponse<Void> batchUnbindTags(@Validated @RequestBody AttractionTagBatchBindRequest request) {
         try {
@@ -513,10 +516,10 @@ public class AttractionAdminController {
             return ApiResponse.error(500, "批量解绑失败");
         }
     }
-    
+
     @Operation(summary = "查询景点的所有标签")
     @GetMapping("/tag-relation/list/{attractionId}")
-    @RequireAdminPermission(value = {"ATTRACTION_TAG_RELATION:VIEW", "SYSTEM:MANAGE"})
+    @RequireAdminPermission(value = { "ATTRACTION_TAG_RELATION:VIEW", "SYSTEM:MANAGE" })
     public ApiResponse<List<AttractionTag>> getAttractionTags(@PathVariable Long attractionId) {
         try {
             List<AttractionTag> tags = attractionTagRelationService.getAttractionTags(attractionId);

@@ -203,4 +203,17 @@ public class AttractionTypeServiceImpl implements IAttractionTypeService {
         }
         return attractionType;
     }
+
+    /**
+     * 获取所有景点类型
+     * @return 景点类型列表
+     */
+    @Override
+    public List<AttractionType> getAllAttractionTypes() {
+        LambdaQueryWrapper<AttractionType> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(AttractionType::getStatus, 1) // 只查询启用状态的类型
+                   .orderByAsc(AttractionType::getSortOrder)
+                   .orderByDesc(AttractionType::getCreateTime);
+        return attractionTypeMapper.selectList(queryWrapper);
+    }
 }
