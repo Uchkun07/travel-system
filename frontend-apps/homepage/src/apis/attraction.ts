@@ -1,6 +1,16 @@
 import { get, post, del } from "./request";
 import type { ApiResponse, PageResponse } from "./common";
 
+// 景点类型接口
+export interface AttractionType {
+  typeId: number;
+  typeName: string;
+  sortOrder: number;
+  status: number;
+  createTime: string;
+  updateTime: string;
+}
+
 // 景点卡片信息接口(C端列表展示)
 export interface AttractionCard {
   attractionId: number;
@@ -133,6 +143,14 @@ export function checkCollectionStatus(attractionId: number) {
   return get<ApiResponse<CollectionStatusResponseData>>(
     `/api/attraction/collection/${attractionId}/status`
   );
+}
+
+/**
+ * 获取所有景点类型列表(启用状态)
+ * @returns 景点类型列表
+ */
+export function getAllAttractionTypes() {
+  return get<ApiResponse<AttractionType[]>>("/api/attraction/type/all");
 }
 
 /**

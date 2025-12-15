@@ -82,6 +82,11 @@ export function getAttractionTypeById(typeId: number) {
   return get<AttractionType>(`/api/admin/attraction/type/detail/${typeId}`);
 }
 
+// 获取所有景点类型（启用状态）
+export function getAllAttractionTypes() {
+  return get<AttractionType[]>("/api/admin/attraction/type/all");
+}
+
 // ===================== 城市相关 =====================
 // 城市接口定义
 export interface City {

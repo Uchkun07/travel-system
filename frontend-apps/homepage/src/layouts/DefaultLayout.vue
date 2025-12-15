@@ -24,7 +24,11 @@
     <RegisterWindow
       v-model:visible="registerVisible"
       @show-login="showLoginDialog"
+      @show-preference="showPreferenceDialog"
     />
+
+    <!-- 偏好设置弹窗 -->
+    <PreferenceDialog v-model:visible="preferenceVisible" />
   </div>
 </template>
 
@@ -34,10 +38,12 @@ import Navigation from "@/components/navigation.vue";
 import Footer from "@/components/Footer.vue";
 import LoginWindow from "@/components/LoginWindow.vue";
 import RegisterWindow from "@/components/registerWindow.vue";
+import PreferenceDialog from "@/components/PreferenceDialog.vue";
 
 // 控制登录和注册弹窗的显示
 const loginVisible = ref(false);
 const registerVisible = ref(false);
+const preferenceVisible = ref(false);
 
 // 显示登录弹窗
 const showLoginDialog = () => {
@@ -49,6 +55,11 @@ const showLoginDialog = () => {
 const showRegisterDialog = () => {
   registerVisible.value = true;
   loginVisible.value = false;
+};
+
+// 显示偏好设置弹窗
+const showPreferenceDialog = () => {
+  preferenceVisible.value = true;
 };
 </script>
 

@@ -5,7 +5,9 @@ import io.github.uchkun07.travelsystem.dto.AttractionCardResponse;
 import io.github.uchkun07.travelsystem.dto.AttractionDetailResponse;
 import io.github.uchkun07.travelsystem.dto.AttractionQueryRequest;
 import io.github.uchkun07.travelsystem.dto.PageResponse;
+import io.github.uchkun07.travelsystem.entity.AttractionType;
 import io.github.uchkun07.travelsystem.service.IAttractionService;
+import io.github.uchkun07.travelsystem.service.IAttractionTypeService;
 import io.github.uchkun07.travelsystem.service.IUserCollectionService;
 import io.github.uchkun07.travelsystem.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +40,9 @@ public class AttractionHomeController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private IAttractionTypeService attractionTypeService;
+
     @Operation(summary = "分页获取景点卡片数据", description = "前台景点列表展示，支持分页和筛选")
     @PostMapping("/list")
     public ApiResponse<PageResponse<AttractionCardResponse>> getAttractionList(
@@ -46,7 +51,7 @@ public class AttractionHomeController {
             // 只返回已审核通过的景点
             request.setAuditStatus(2); // 2=已通过
             request.setStatus(1); // 1=正常
-            
+
             PageResponse<AttractionCardResponse> page = attractionService.getAttractionCards(request);
             return ApiResponse.success("获取成功", page);
         } catch (Exception e) {
@@ -73,8 +78,7 @@ public class AttractionHomeController {
     @PostMapping("/collection/{attractionId}")
     public ApiResponse<Map<String, Object>> collectAttraction(
             HttpServletRequest request,
-            @Parameter(description = "景点ID", required = true)
-            @PathVariable Long attractionId) {
+            @Parameter(description = "景点ID", required = true) @PathVariable Long attractionId) {
         try {
             // 从请求头获取 Token
             String token = request.getHeader("Authorization");
@@ -107,8 +111,7 @@ public class AttractionHomeController {
     @DeleteMapping("/collection/{attractionId}")
     public ApiResponse<Map<String, Object>> uncollectAttraction(
             HttpServletRequest request,
-            @Parameter(description = "景点ID", required = true)
-            @PathVariable Long attractionId) {
+            @Parameter(description = "景点ID", required = true) @PathVariable Long attractionId) {
         try {
             // 从请求头获取 Token
             String token = request.getHeader("Authorization");
@@ -170,8 +173,7 @@ public class AttractionHomeController {
     @GetMapping("/collection/{attractionId}/status")
     public ApiResponse<Map<String, Object>> isAttractionCollected(
             HttpServletRequest request,
-            @Parameter(description = "景点ID", required = true)
-            @PathVariable Long attractionId) {
+            @Parameter(description = "景点ID", required = true) @PathVariable Long attractionId) {
         try {
             // 从请求头获取 Token
             String token = request.getHeader("Authorization");
@@ -197,6 +199,18 @@ public class AttractionHomeController {
         } catch (Exception e) {
             log.error("检查收藏状态失败", e);
             return ApiResponse.error(500, "检查失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "获取所有的景点类型")
+    @GetMapping("/type/all")
+    public ApiResponse<List<AttractionType>> getAllAttractionType() {
+        try {
+            List<AttractionType> types = attractionTypeService.getAllAttractionTypes();
+            return ApiResponse.success("查询成功", types);
+        } catch (Exception e) {
+            log.error("获取所有景点类型失败", e);
+            return ApiResponse.error(500, "查询失败");
         }
     }
 

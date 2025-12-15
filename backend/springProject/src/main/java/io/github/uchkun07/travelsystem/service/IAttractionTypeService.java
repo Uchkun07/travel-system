@@ -53,4 +53,10 @@ public interface IAttractionTypeService {
      * @return 景点类型
      */
     AttractionType getAttractionTypeById(Integer typeId);
+
+    /**
+     * 获取所有景点类型
+     * @return 景点类型列表
+     */
+    List<AttractionType> getAllAttractionTypes();
 }

@@ -8,6 +8,7 @@ import io.github.uchkun07.travelsystem.mapper.UserMapper;
 import io.github.uchkun07.travelsystem.mapper.UserProfileMapper;
 import io.github.uchkun07.travelsystem.service.IUserService;
 import io.github.uchkun07.travelsystem.service.IEmailService;
+import io.github.uchkun07.travelsystem.service.IUserPreferenceService;
 import io.github.uchkun07.travelsystem.util.JwtUtil;
 import io.github.uchkun07.travelsystem.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class UserServiceImpl implements IUserService {
     private final UserProfileMapper userProfileMapper;
     private final JwtUtil jwtUtil;
     private final IEmailService emailService;
+    private final IUserPreferenceService userPreferenceService;
 
     @Value("${file.upload.avatar-dir:src/main/resources/static/avatars}")
     private String avatarUploadDir;
@@ -104,6 +106,9 @@ public class UserServiceImpl implements IUserService {
         }
 
         userMapper.insert(user);
+
+        // 初始化用户偏好
+        userPreferenceService.initializeUserPreference(user.getUserId());
 
         // 生成token
         String token = jwtUtil.generateToken(user.getUserId(), user.getUsername(), false);

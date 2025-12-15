@@ -109,11 +109,115 @@
         </ElFormItem>
       </ElForm>
     </div>
+
+    <!-- 偏好信息 -->
+    <div class="profile-form" v-loading="preferenceLoading">
+      <h3 class="form-section-title">旅行偏好</h3>
+
+      <ElForm :model="preferenceForm" label-width="110px" label-position="left">
+        <ElRow :gutter="20">
+          <ElCol :xs="24" :sm="12">
+            <ElFormItem label="偏好景点类型">
+              <ElSelect
+                v-model="preferenceForm.preferAttractionTypeId"
+                :disabled="!isEditingPreference"
+                placeholder="选择喜欢的景点类型"
+                clearable
+                style="width: 100%"
+              >
+                <ElOption
+                  v-for="type in attractionTypeStore.attractionTypes"
+                  :key="type.typeId"
+                  :label="type.typeName"
+                  :value="type.typeId"
+                />
+              </ElSelect>
+            </ElFormItem>
+          </ElCol>
+          <ElCol :xs="24" :sm="12">
+            <ElFormItem label="出行人群">
+              <ElSelect
+                v-model="preferenceForm.travelCrowd"
+                :disabled="!isEditingPreference"
+                placeholder="选择出行人群"
+                clearable
+                style="width: 100%"
+              >
+                <ElOption label="独自出行" value="独自出行" />
+                <ElOption label="情侣" value="情侣" />
+                <ElOption label="亲子" value="亲子" />
+                <ElOption label="朋友" value="朋友" />
+                <ElOption label="家庭" value="家庭" />
+              </ElSelect>
+            </ElFormItem>
+          </ElCol>
+        </ElRow>
+
+        <ElRow :gutter="20">
+          <ElCol :xs="24" :sm="12">
+            <ElFormItem label="预算下限 (元)">
+              <ElInputNumber
+                v-model="preferenceForm.budgetFloor"
+                :disabled="!isEditingPreference"
+                :min="0"
+                :max="100000"
+                :step="100"
+                placeholder="最低预算"
+                controls-position="right"
+                style="width: 100%"
+              />
+            </ElFormItem>
+          </ElCol>
+          <ElCol :xs="24" :sm="12">
+            <ElFormItem label="预算上限 (元)">
+              <ElInputNumber
+                v-model="preferenceForm.budgetRange"
+                :disabled="!isEditingPreference"
+                :min="0"
+                :max="100000"
+                :step="100"
+                placeholder="最高预算"
+                controls-position="right"
+                style="width: 100%"
+              />
+            </ElFormItem>
+          </ElCol>
+        </ElRow>
+
+        <ElRow :gutter="20">
+          <ElCol :xs="24">
+            <ElFormItem label="偏好出行季节">
+              <ElCheckboxGroup
+                v-model="selectedSeasons"
+                :disabled="!isEditingPreference"
+              >
+                <ElCheckbox value="春">春季</ElCheckbox>
+                <ElCheckbox value="夏">夏季</ElCheckbox>
+                <ElCheckbox value="秋">秋季</ElCheckbox>
+                <ElCheckbox value="冬">冬季</ElCheckbox>
+              </ElCheckboxGroup>
+            </ElFormItem>
+          </ElCol>
+        </ElRow>
+
+        <ElFormItem v-if="isEditingPreference">
+          <ElButton type="primary" @click="handleSavePreference">
+            保存偏好
+          </ElButton>
+          <ElButton @click="handleCancelPreference">取消</ElButton>
+        </ElFormItem>
+        <ElFormItem v-else>
+          <ElButton type="primary" @click="handleEditPreference">
+            编辑偏好
+          </ElButton>
+        </ElFormItem>
+      </ElForm>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import {
   ElButton,
   ElIcon,
@@ -126,19 +230,34 @@ import {
   ElRow,
   ElCol,
   ElMessage,
+  ElInputNumber,
+  ElCheckboxGroup,
+  ElCheckbox,
 } from "element-plus";
 import { Edit, Suitcase, Star, Calendar } from "@element-plus/icons-vue";
 import { useUserStore } from "@/stores";
+import { useAttractionTypeStore } from "@/stores/attractionType";
 import {
   getUserProfile,
   updateUserProfile,
   type UpdateProfileRequest,
 } from "@/apis/auth";
+import {
+  getUserPreference,
+  updateUserPreference,
+  type UserPreferenceRequest,
+} from "@/apis/userPreference";
 
 const userStore = useUserStore();
+const attractionTypeStore = useAttractionTypeStore();
 const isEditing = ref(false);
 const loading = ref(false);
 const dataLoading = ref(true); // 添加数据加载状态
+
+// 偏好相关状态
+const isEditingPreference = ref(false);
+const preferenceLoading = ref(true);
+const selectedSeasons = ref<string[]>([]);
 
 // 统计数据
 const stats = reactive({
@@ -158,10 +277,54 @@ const profileForm = reactive({
   residentAddress: "",
 });
 
+// 偏好表单
+const preferenceForm = reactive<UserPreferenceRequest>({
+  preferAttractionTypeId: undefined,
+  budgetFloor: undefined,
+  budgetRange: undefined,
+  travelCrowd: undefined,
+  preferSeason: undefined,
+});
+
 // 备份原始数据
 let originalForm = { ...profileForm };
+let originalPreferenceForm = { ...preferenceForm };
 
-// 组件挂载时加载用户信息
+// 加载用户偏好
+const loadUserPreference = async () => {
+  preferenceLoading.value = true;
+  try {
+    const response = await getUserPreference();
+    if (response.code === 200 && response.data) {
+      const data = response.data;
+      preferenceForm.preferAttractionTypeId = data.preferAttractionTypeId;
+      preferenceForm.budgetFloor = data.budgetFloor;
+      preferenceForm.budgetRange = data.budgetRange;
+      preferenceForm.travelCrowd = data.travelCrowd;
+      preferenceForm.preferSeason = data.preferSeason;
+
+      // 解析季节字符串为数组
+      if (data.preferSeason) {
+        selectedSeasons.value = data.preferSeason.split(",").filter((s) => s);
+      } else {
+        selectedSeasons.value = [];
+      }
+
+      // 保存原始数据
+      originalPreferenceForm = { ...preferenceForm };
+    }
+  } catch (error: any) {
+    console.error("加载用户偏好失败:", error);
+    if (error.response?.status !== 404) {
+      // 404 表示用户还没有偏好记录，不需要提示错误
+      ElMessage.warning("加载偏好信息失败");
+    }
+  } finally {
+    preferenceLoading.value = false;
+  }
+};
+
+// 组件挂载时加载用户信息和偏好
 onMounted(async () => {
   dataLoading.value = true;
   try {
@@ -200,6 +363,12 @@ onMounted(async () => {
   } finally {
     dataLoading.value = false;
   }
+
+  // 加载景点类型和用户偏好
+  attractionTypeStore.fetchAttractionTypes().catch((error) => {
+    console.error("加载景点类型失败:", error);
+  });
+  await loadUserPreference();
 });
 
 const handleEdit = () => {
@@ -285,6 +454,69 @@ const handleCancel = () => {
   // 恢复原始数据
   Object.assign(profileForm, originalForm);
   isEditing.value = false;
+};
+
+// 编辑偏好
+const handleEditPreference = () => {
+  isEditingPreference.value = true;
+};
+
+// 保存偏好
+const handleSavePreference = async () => {
+  loading.value = true;
+  try {
+    // 设置季节字符串
+    preferenceForm.preferSeason = selectedSeasons.value.join(",") || undefined;
+
+    const response = await updateUserPreference(preferenceForm);
+    if (response.code === 200) {
+      ElMessage.success("偏好设置保存成功");
+      isEditingPreference.value = false;
+
+      // 更新偏好数据
+      if (response.data) {
+        const data = response.data;
+        preferenceForm.preferAttractionTypeId = data.preferAttractionTypeId;
+        preferenceForm.budgetFloor = data.budgetFloor;
+        preferenceForm.budgetRange = data.budgetRange;
+        preferenceForm.travelCrowd = data.travelCrowd;
+        preferenceForm.preferSeason = data.preferSeason;
+
+        if (data.preferSeason) {
+          selectedSeasons.value = data.preferSeason
+            .split(",")
+            .filter((s: string) => s);
+        }
+      }
+
+      // 更新备份
+      originalPreferenceForm = { ...preferenceForm };
+    } else {
+      ElMessage.error(response.message || "保存失败");
+    }
+  } catch (error: any) {
+    console.error("保存偏好失败:", error);
+    ElMessage.error(error?.message || "保存失败，请稍后重试");
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 取消编辑偏好
+const handleCancelPreference = () => {
+  // 恢复原始数据
+  Object.assign(preferenceForm, originalPreferenceForm);
+
+  // 恢复季节选择
+  if (originalPreferenceForm.preferSeason) {
+    selectedSeasons.value = originalPreferenceForm.preferSeason
+      .split(",")
+      .filter((s: string) => s);
+  } else {
+    selectedSeasons.value = [];
+  }
+
+  isEditingPreference.value = false;
 };
 </script>
 
