@@ -314,6 +314,18 @@ const statsDialogVisible = ref(false);
 const selectedTags = ref<number[]>([]);
 const currentUserId = ref<number>(0);
 
+<<<<<<< Updated upstream
+=======
+// 获取完整头像 URL
+const getFullAvatarUrl = (avatarUrl?: string) => {
+  if (!avatarUrl) return "";
+  if (avatarUrl.startsWith("http")) return avatarUrl;
+  const baseUrl =
+    import.meta.env.VITE_API_BASE_URL || "http://8.146.237.23:8080";
+  return `${baseUrl}${avatarUrl}`;
+};
+
+>>>>>>> Stashed changes
 // 获取性别文本
 const getGenderText = (gender?: number) => {
   if (gender === undefined || gender === null) return "-";

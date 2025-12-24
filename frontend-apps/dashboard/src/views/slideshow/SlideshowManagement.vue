@@ -450,7 +450,10 @@ const handleSubmit = async () => {
             const fileUrl = uploadRes.data.fileUrl;
             formData.imageUrl = fileUrl.startsWith("http")
               ? fileUrl
-              : `http://localhost:8080${fileUrl}`;
+              : `${
+                  import.meta.env.VITE_API_BASE_URL ||
+                  "http://8.146.237.23:8080"
+                }${fileUrl}`;
           } else {
             ElMessage.error("图片上传失败");
             return;
