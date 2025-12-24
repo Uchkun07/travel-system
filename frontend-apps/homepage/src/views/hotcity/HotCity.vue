@@ -8,7 +8,7 @@
       <ElInput
         calss="searchInput"
         v-model="request.cityName"
-        placeholder="搜索目的地、城市或..."
+        placeholder="搜索目的城市..."
         :prefix-icon="Search"
         @input="debounceHandleSearch"
       >

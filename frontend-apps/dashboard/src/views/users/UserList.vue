@@ -68,7 +68,11 @@
         <el-table-column prop="email" label="邮箱" width="200" />
         <el-table-column prop="avatarUrl" label="头像" width="80">
           <template #default="{ row }">
-            <el-avatar v-if="row.avatarUrl" :src="row.avatarUrl" :size="40" />
+            <el-avatar
+              v-if="row.avatarUrl"
+              :src="getFullAvatarUrl(row.avatarUrl)"
+              :size="40"
+            />
             <el-avatar v-else :size="40">{{
               row.username?.charAt(0).toUpperCase()
             }}</el-avatar>
@@ -146,7 +150,7 @@
         <el-descriptions-item label="头像" :span="2">
           <el-avatar
             v-if="currentUser.avatarUrl"
-            :src="currentUser.avatarUrl"
+            :src="getFullAvatarUrl(currentUser.avatarUrl)"
             :size="60"
           />
         </el-descriptions-item>
@@ -313,6 +317,13 @@ const tagDialogVisible = ref(false);
 const statsDialogVisible = ref(false);
 const selectedTags = ref<number[]>([]);
 const currentUserId = ref<number>(0);
+
+// 获取完整头像 URL
+const getFullAvatarUrl = (avatarUrl?: string) => {
+  if (!avatarUrl) return "";
+  if (avatarUrl.startsWith("http")) return avatarUrl;
+  return `http://localhost:8080${avatarUrl}`;
+};
 
 // 获取性别文本
 const getGenderText = (gender?: number) => {

@@ -42,7 +42,13 @@
               <p v-if="item.subtitle" class="slide-subtitle">
                 {{ item.subtitle }}
               </p>
-              <el-button type="primary" size="large" round class="explore-btn">
+              <el-button
+                type="primary"
+                @click="handleSlideClick(item)"
+                size="large"
+                round
+                class="explore-btn"
+              >
                 <el-icon class="mr-1"><ArrowRight /></el-icon>
                 探索更多
               </el-button>
