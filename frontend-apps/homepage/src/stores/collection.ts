@@ -129,19 +129,23 @@ export const useCollectionStore = defineStore(
     persist: {
       key: "collection",
       storage: localStorage,
+<<<<<<< Updated upstream
       pick: ["collectedIds", "initialized"],
+=======
+>>>>>>> Stashed changes
       serializer: {
         serialize: (state) => {
           return JSON.stringify({
-            ...state,
             collectedIds: Array.from(state.collectedIds),
+            initialized: state.initialized,
           });
         },
         deserialize: (value) => {
           const parsed = JSON.parse(value);
           return {
-            ...parsed,
             collectedIds: new Set(parsed.collectedIds || []),
+            initialized: parsed.initialized || false,
+            loading: false,
           };
         },
       },

@@ -63,3 +63,10 @@ mybatis-plus:
       logic-delete-field: deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
+
+# 文件上传配置
+file:
+  upload:
+    avatar-dir: C:/avatars
+    city-dir: C:/cities
+    slideshow-dir: C:/slideshows
