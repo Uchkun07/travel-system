@@ -129,10 +129,7 @@ export const useCollectionStore = defineStore(
     persist: {
       key: "collection",
       storage: localStorage,
-<<<<<<< Updated upstream
       pick: ["collectedIds", "initialized"],
-=======
->>>>>>> Stashed changes
       serializer: {
         serialize: (state) => {
           return JSON.stringify({

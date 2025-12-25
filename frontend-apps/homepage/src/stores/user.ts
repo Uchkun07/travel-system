@@ -56,10 +56,8 @@ export const useUserStore = defineStore("user", () => {
     const baseUrl =
       import.meta.env.VITE_API_BASE_URL || "http://8.146.237.23:8080";
 
-    // 确保路径以 / 开头
-    const path = avatarPath.startsWith("/") ? avatarPath : `/${avatarPath}`;
-
-    return `${baseUrl}${path}`;
+    // 后端返回的路径已经包含前导斜杠，直接拼接
+    return `${baseUrl}${avatarPath}`;
   });
 
   const userId = computed(() => userInfo.value?.userId || 0);

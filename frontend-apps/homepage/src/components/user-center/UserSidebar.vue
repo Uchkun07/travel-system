@@ -255,7 +255,7 @@ const handleConfirmUpload = async () => {
         avatarUrl && !avatarUrl.startsWith("http")
           ? `${
               import.meta.env.VITE_API_BASE_URL || "http://8.146.237.23:8080"
-            }${avatarUrl.startsWith("/") ? avatarUrl : "/" + avatarUrl}`
+            }${avatarUrl}`
           : avatarUrl;
 
       // 更新 userStore 中的头像
