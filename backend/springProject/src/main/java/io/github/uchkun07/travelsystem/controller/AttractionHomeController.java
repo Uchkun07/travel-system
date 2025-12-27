@@ -230,4 +230,16 @@ public class AttractionHomeController {
             return ApiResponse.error(500, "获取失败: " + e.getMessage());
         }
     }
+
+    @Operation(summary = "获取热度最高的三个景点", description = "根据浏览量(browseCount)获取热度最高的3个景点")
+    @GetMapping("/top/browse")
+    public ApiResponse<List<AttractionCardResponse>> getTopThreeByBrowse() {
+        try {
+            List<AttractionCardResponse> attractions = attractionService.getTopThreeByBrowse();
+            return ApiResponse.success("获取成功", attractions);
+        } catch (Exception e) {
+            log.error("获取热门景点失败", e);
+            return ApiResponse.error(500, "获取失败: " + e.getMessage());
+        }
+    }
 }

@@ -164,3 +164,11 @@ export function getAttractionsByIds(attractionIds: number[]) {
     attractionIds
   );
 }
+
+/**
+ * 获取热度最高的三个景点(按浏览量排序)
+ * @returns 景点卡片列表
+ */
+export function getTopThreeAttractions() {
+  return get<ApiResponse<AttractionCard[]>>("/api/attraction/top/browse");
+}
