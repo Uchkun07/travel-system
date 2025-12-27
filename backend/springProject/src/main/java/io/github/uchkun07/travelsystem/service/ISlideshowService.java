@@ -51,4 +51,9 @@ public interface ISlideshowService {
      * 增加点击次数
      */
     void incrementClickCount(Integer slideshowId);
+
+    /**
+     * 禁用已过期的轮播图
+     */
+    void disableExpiredSlideshows();
 }
