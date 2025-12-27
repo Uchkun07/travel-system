@@ -72,4 +72,11 @@ public interface IAttractionService extends IService<Attraction> {
      * @return 景点卡片列表
      */
     List<AttractionCardResponse> getAttractionCardsByIds(List<Long> attractionIds);
+
+    /**
+     * 获取浏览量最高的三个景点
+     *
+     * @return 景点卡片列表
+     */
+    List<AttractionCardResponse> getTopThreeByBrowse();
 }

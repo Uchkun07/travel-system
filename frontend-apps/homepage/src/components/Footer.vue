@@ -23,30 +23,6 @@
         </div>
       </div>
 
-      <!-- 热门目的地 -->
-      <div class="footer-section">
-        <h3 class="footer-title">热门目的地</h3>
-        <ul class="footer-links">
-          <li><a href="#">东南亚旅游</a></li>
-          <li><a href="#">欧洲经典</a></li>
-          <li><a href="#">海岛度假</a></li>
-          <li><a href="#">中东文化</a></li>
-          <li><a href="#">非洲探险</a></li>
-        </ul>
-      </div>
-
-      <!-- 帮助中心 -->
-      <div class="footer-section">
-        <h3 class="footer-title">帮助中心</h3>
-        <ul class="footer-links">
-          <li><a href="#">预订指南</a></li>
-          <li><a href="#">支付方式</a></li>
-          <li><a href="#">签证信息</a></li>
-          <li><a href="#">旅行保险</a></li>
-          <li><a href="#">常见问题</a></li>
-        </ul>
-      </div>
-
       <!-- 联系我们 -->
       <div class="footer-section">
         <h3 class="footer-title">联系我们</h3>
@@ -61,7 +37,7 @@
           </li>
           <li>
             <ElIcon><Location /></ElIcon>
-            <span>乌鲁木齐市瑞达世贸大厦1805号</span>
+            <span>URC</span>
           </li>
         </ul>
       </div>
@@ -69,7 +45,7 @@
 
     <!-- 底部版权信息 -->
     <div class="footer-bottom">
-      <p>© 2023 WayStar | 新ICP备12345678号 | 旅行社业经营许可证：L-SH-9999</p>
+      <p>© 2026 WayStar | 新ICP备xxxxxxxxx号</p>
     </div>
   </footer>
 </template>

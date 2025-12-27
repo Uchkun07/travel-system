@@ -328,11 +328,34 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         // 创建分页对象
         Page<Attraction> page = new Page<>(request.getPageNum(), request.getPageSize());
         
-        // 查询条件：只查询已审核通过且启用的景点
+        // 构建查询条件
         LambdaQueryWrapper<Attraction> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Attraction::getAuditStatus, 2); // 已审核
-        wrapper.eq(Attraction::getStatus, 1); // 启用
-        wrapper.orderByDesc(Attraction::getPopularity); // 按热度排序
+        
+        // 审核状态和景点状态（从Controller传入）
+        if (request.getAuditStatus() != null) {
+            wrapper.eq(Attraction::getAuditStatus, request.getAuditStatus());
+        }
+        if (request.getStatus() != null) {
+            wrapper.eq(Attraction::getStatus, request.getStatus());
+        }
+        
+        // 景点名称模糊查询
+        if (StringUtils.hasText(request.getName())) {
+            wrapper.like(Attraction::getName, request.getName());
+        }
+        
+        // 城市筛选
+        if (request.getCityId() != null) {
+            wrapper.eq(Attraction::getCityId, request.getCityId());
+        }
+        
+        // 类型筛选
+        if (request.getTypeId() != null) {
+            wrapper.eq(Attraction::getTypeId, request.getTypeId());
+        }
+        
+        // 默认按热度降序排序
+        wrapper.orderByDesc(Attraction::getPopularity);
         
         Page<Attraction> attractionPage = attractionMapper.selectPage(page, wrapper);
         
@@ -415,6 +438,49 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
 
         // 批量查询景点
         List<Attraction> attractions = listByIds(attractionIds);
+        
+        // 转换为卡片响应
+        return attractions.stream().map(attraction -> {
+            AttractionCardResponse card = new AttractionCardResponse();
+            card.setAttractionId(attraction.getAttractionId());
+            card.setName(attraction.getName());
+            card.setDescription(attraction.getSubtitle());
+            card.setImageUrl(attraction.getMainImageUrl());
+            card.setAverageRating(attraction.getAverageRating());
+            card.setViewCount(attraction.getBrowseCount());
+            card.setPopularity(attraction.getPopularity());
+            card.setTicketPrice(attraction.getTicketPrice());
+            
+            // 获取城市信息
+            if (attraction.getCityId() != null) {
+                City city = cityMapper.selectById(attraction.getCityId());
+                if (city != null) {
+                    card.setLocation(city.getCityName());
+                }
+            }
+            
+            // 获取类型信息
+            if (attraction.getTypeId() != null) {
+                AttractionType type = attractionTypeMapper.selectById(attraction.getTypeId());
+                if (type != null) {
+                    card.setType(type.getTypeName());
+                }
+            }
+            
+            return card;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AttractionCardResponse> getTopThreeByBrowse() {
+        // 查询浏览量最高的3个已审核通过且启用的景点
+        LambdaQueryWrapper<Attraction> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Attraction::getAuditStatus, 2); // 已审核
+        wrapper.eq(Attraction::getStatus, 1); // 启用
+        wrapper.orderByDesc(Attraction::getBrowseCount); // 按浏览量降序
+        wrapper.last("LIMIT 3"); // 只取前3条
+        
+        List<Attraction> attractions = attractionMapper.selectList(wrapper);
         
         // 转换为卡片响应
         return attractions.stream().map(attraction -> {

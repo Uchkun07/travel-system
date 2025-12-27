@@ -144,4 +144,23 @@ public class SlideshowServiceImpl implements ISlideshowService {
         slideshow.setClickCount(slideshow.getClickCount() + 1);
         slideshowMapper.updateById(slideshow);
     }
+
+    @Override
+    @Transactional
+    public void disableExpiredSlideshows() {
+        LocalDateTime now = LocalDateTime.now();
+        LambdaQueryWrapper<Slideshow> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Slideshow::getStatus, 1)
+               .isNotNull(Slideshow::getEndTime)
+               .lt(Slideshow::getEndTime, now);
+        
+        List<Slideshow> expiredSlideshows = slideshowMapper.selectList(wrapper);
+        if (!expiredSlideshows.isEmpty()) {
+            for (Slideshow slideshow : expiredSlideshows) {
+                slideshow.setStatus(0);
+                slideshowMapper.updateById(slideshow);
+            }
+            log.info("自动禁用过期轮播图: {}条", expiredSlideshows.size());
+        }
+    }
 }
