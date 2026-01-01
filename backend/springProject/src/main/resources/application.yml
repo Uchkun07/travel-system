@@ -48,6 +48,14 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
 
+# DeepSeek AI 配置
+deepseek:
+  api:
+    url: https://api.deepseek.com/chat/completions
+    key: sk-30589b3e516044b98603f19985934166
+    model: deepseek-chat
+    timeout: 60 # 请求超时时间(秒)
+
 # JWT配置
 jwt:
   secret: ${JWT_SECRET:travel-system-secret-key-for-jwt-token-generation-and-validation-2024}
