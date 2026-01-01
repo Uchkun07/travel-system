@@ -129,19 +129,20 @@ export const useCollectionStore = defineStore(
     persist: {
       key: "collection",
       storage: localStorage,
-      paths: ["collectedIds", "initialized"],
+      pick: ["collectedIds", "initialized"],
       serializer: {
         serialize: (state) => {
           return JSON.stringify({
-            ...state,
             collectedIds: Array.from(state.collectedIds),
+            initialized: state.initialized,
           });
         },
         deserialize: (value) => {
           const parsed = JSON.parse(value);
           return {
-            ...parsed,
             collectedIds: new Set(parsed.collectedIds || []),
+            initialized: parsed.initialized || false,
+            loading: false,
           };
         },
       },
