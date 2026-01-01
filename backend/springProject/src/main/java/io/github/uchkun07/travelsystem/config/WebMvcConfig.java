@@ -64,8 +64,5 @@ public class WebMvcConfig implements WebMvcConfigurer {
         
         registry.addResourceHandler("/attractions/**")
                 .addResourceLocations("classpath:/static/attractions/");
-        
-        registry.addResourceHandler("/slideshows/**")
-                .addResourceLocations("classpath:/static/slideshows/");
     }
 }
