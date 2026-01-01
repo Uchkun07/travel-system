@@ -100,6 +100,20 @@
 			<artifactId>commons-pool2</artifactId>
 		</dependency>
 
+		<!-- OkHttp for AI API calls -->
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>4.12.0</version>
+		</dependency>
+
+		<!-- OkHttp SSE for streaming responses -->
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp-sse</artifactId>
+			<version>4.12.0</version>
+		</dependency>
+
 	<dependency>
 		<groupId>com.baomidou</groupId>
 		<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
