@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.uchkun07.travelsystem.mapper.UserCountTableMapper">
+
+    <!-- 增加收藏计数 -->
+    <update id="incrementCollectCount">
+        INSERT INTO user_count_table (user_id, collect_count, browsing_count, planning_count)
+        VALUES (#{userId}, #{increment}, 0, 0)
+        ON DUPLICATE KEY UPDATE
+            collect_count = collect_count + #{increment}
+    </update>
+
+    <!-- 增加浏览计数 -->
+    <update id="incrementBrowsingCount">
+        INSERT INTO user_count_table (user_id, collect_count, browsing_count, planning_count)
+        VALUES (#{userId}, 0, #{increment}, 0)
+        ON DUPLICATE KEY UPDATE
+            browsing_count = browsing_count + #{increment}
+    </update>
+
+    <!-- 增加路线规划计数 -->
+    <update id="incrementPlanningCount">
+        INSERT INTO user_count_table (user_id, collect_count, browsing_count, planning_count)
+        VALUES (#{userId}, 0, 0, #{increment})
+        ON DUPLICATE KEY UPDATE
+            planning_count = planning_count + #{increment}
+    </update>
+
+</mapper>

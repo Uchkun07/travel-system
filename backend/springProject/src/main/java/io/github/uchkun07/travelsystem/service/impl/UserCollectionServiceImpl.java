@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.github.uchkun07.travelsystem.entity.UserCollection;
 import io.github.uchkun07.travelsystem.mapper.UserCollectionMapper;
 import io.github.uchkun07.travelsystem.service.IUserCollectionService;
+import io.github.uchkun07.travelsystem.service.IUserCountService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +22,9 @@ import java.util.stream.Collectors;
 @Service
 public class UserCollectionServiceImpl extends ServiceImpl<UserCollectionMapper, UserCollection>
         implements IUserCollectionService {
+
+    @Autowired
+    private IUserCountService userCountService;
 
     @Override
     public boolean collectAttraction(Long userId, Long attractionId) {
@@ -45,6 +50,10 @@ public class UserCollectionServiceImpl extends ServiceImpl<UserCollectionMapper,
                     .set(UserCollection::getCollectionTime, LocalDateTime.now());
             boolean updated = update(restore);
             log.info("恢复收藏记录，userId: {}, attractionId: {}, result: {}", userId, attractionId, updated);
+            if (updated) {
+                // 恢复收藏成功，增加计数
+                userCountService.incrementCollectCount(userId);
+            }
             return updated;
         }
 
@@ -56,6 +65,10 @@ public class UserCollectionServiceImpl extends ServiceImpl<UserCollectionMapper,
         record.setIsDeleted(0);
         boolean saved = save(record);
         log.info("新增收藏记录，userId: {}, attractionId: {}, result: {}", userId, attractionId, saved);
+        if (saved) {
+            // 新增收藏成功，增加计数
+            userCountService.incrementCollectCount(userId);
+        }
         return saved;
     }
 
@@ -69,6 +82,10 @@ public class UserCollectionServiceImpl extends ServiceImpl<UserCollectionMapper,
                 .set(UserCollection::getIsDeleted, 1);
         boolean updated = update(update);
         log.info("取消收藏，userId: {}, attractionId: {}, result: {}", userId, attractionId, updated);
+        if (updated) {
+            // 取消收藏成功，减少计数
+            userCountService.decrementCollectCount(userId);
+        }
         return updated;
     }
 

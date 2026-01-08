@@ -243,15 +243,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import {
-  getAttractionDetail,
-  type AttractionDetail,
-} from "@/apis/attraction";
+import { getAttractionDetail, type AttractionDetail } from "@/apis/attraction";
 import { useCollectionStore } from "@/stores/collection";
 import { useUserStore } from "@/stores/user";
+import { createBrowseTracker, type BrowseTracker } from "@/utils/browseTracker";
 
 const route = useRoute();
 const router = useRouter();
@@ -264,6 +262,7 @@ const collectLoading = ref(false);
 const showMap = ref(false);
 const mapContainer = ref<HTMLElement | null>(null);
 let mapInstance: any = null;
+let browseTracker: BrowseTracker | null = null;
 
 declare global {
   interface Window {
@@ -310,10 +309,19 @@ const loadAttractionDetail = async () => {
   }
 
   loading.value = true;
-  try { 
+  try {
     const response = await getAttractionDetail(attractionId);
     if (response.code === 200 && response.data) {
-      attractionDetail.value = response.data
+      attractionDetail.value = response.data;
+
+      // 启动浏览追踪（仅登录用户）
+      if (userStore.isLoggedIn && userStore.userId) {
+        browseTracker = createBrowseTracker(userStore.userId, attractionId, {
+          reportInterval: 30000, // 每30秒上报一次
+          autoStart: true, // 自动开始追踪
+          trackVisibility: true, // 追踪页面可见性
+        });
+      }
     } else {
       ElMessage.error(response.message || "加载景点详情失败");
       router.push("/");
@@ -411,6 +419,14 @@ const initMap = () => {
 
 onMounted(() => {
   loadAttractionDetail();
+});
+
+// 组件卸载时停止追踪
+onBeforeUnmount(async () => {
+  if (browseTracker) {
+    await browseTracker.stop();
+    browseTracker = null;
+  }
 });
 </script>
 

@@ -68,7 +68,7 @@
         v-model="inputMessage"
         type="textarea"
         :rows="2"
-        placeholder="输入您的问题... (Ctrl+Enter发送)"
+        placeholder="输入您的问题... (Enter发送，Shift+Enter换行)"
         :disabled="isLoading"
         @keydown="handleKeydown"
       />
@@ -90,6 +90,9 @@ import { ElMessage } from "element-plus";
 import { Close, Delete, User } from "@element-plus/icons-vue";
 import { MdPreview } from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
+
+// API基础URL - 使用环境变量配置
+const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 interface Message {
   role: "user" | "assistant";
@@ -125,12 +128,9 @@ const clearChat = async () => {
 
   try {
     if (sessionId.value) {
-      await fetch(
-        `http://localhost:8080/api/ai/chat/session/${sessionId.value}`,
-        {
-          method: "DELETE",
-        }
-      );
+      await fetch(`${baseUrl}/api/ai/chat/session/${sessionId.value}`, {
+        method: "DELETE",
+      });
     }
     messages.value = [];
     sessionId.value = "";
@@ -152,7 +152,8 @@ const scrollToBottom = () => {
 
 // 处理键盘事件
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.ctrlKey && event.key === "Enter") {
+  // Enter发送，Shift+Enter换行
+  if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
     handleSend();
   }
@@ -192,7 +193,7 @@ const handleSend = () => {
 
   // 使用EventSource进行SSE连接
   const eventSource = new EventSource(
-    `http://localhost:8080/api/ai/chat/stream?${params.toString()}`
+    `${baseUrl}/api/ai/chat/stream?${params.toString()}`
   );
 
   let isNormalClose = false; // 标记是否正常关闭
@@ -466,11 +467,12 @@ watch(
   color: #303133;
   border-radius: 12px 12px 12px 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 0;
 }
 
 /* AI消息Markdown样式 */
 .message-bubble.ai-message {
-  padding: 5px;
+  padding: 0;
 }
 
 .message-bubble.ai-message :deep(.md-editor-previewOnly) {
@@ -505,6 +507,7 @@ watch(
 
 .message-bubble.ai-message :deep(pre code) {
   background: transparent;
+  padding: 0;
   color: inherit;
 }
 

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.uchkun07.travelsystem.mapper.UserBrowseRecordMapper">
+
+    <!-- 查询指定时间内的浏览记录 -->
+    <select id="selectRecentRecord" resultType="io.github.uchkun07.travelsystem.entity.UserBrowseRecord">
+        SELECT
+            browse_record_id AS browseRecordId,
+            user_id AS userId,
+            attraction_id AS attractionId,
+            browse_duration AS browseDuration,
+            browse_time AS browseTime,
+            device_info AS deviceInfo,
+            create_time AS createTime
+        FROM user_browse_record
+        WHERE user_id = #{userId}
+          AND attraction_id = #{attractionId}
+          AND browse_time >= #{startTime}
+        ORDER BY browse_time DESC
+        LIMIT 1
+    </select>
+
+    <!-- 累加浏览时长 -->
+    <update id="addBrowseDuration">
+        UPDATE user_browse_record
+        SET browse_duration = browse_duration + #{additionalDuration}
+        WHERE browse_record_id = #{browseRecordId}
+    </update>
+
+</mapper>
