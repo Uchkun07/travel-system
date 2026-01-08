@@ -197,7 +197,8 @@ const getImageUrl = (url?: string): string => {
     return url;
   }
   // 否则拼接baseURL
-  const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+  const baseURL =
+    import.meta.env.VITE_API_BASE_URL || "http://8.146.237.23:8080";
   return `${baseURL}${url.startsWith("/") ? url : "/" + url}`;
 };
 

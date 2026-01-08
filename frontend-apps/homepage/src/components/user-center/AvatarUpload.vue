@@ -39,7 +39,7 @@ const avatarUrl = computed(() => {
     if (props.modelValue.startsWith("http")) {
       return props.modelValue;
     }
-    return `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}${
+    return `${import.meta.env.VITE_API_BASE_URL || "http://8.146.237.23:8080"}${
       props.modelValue
     }`;
   }

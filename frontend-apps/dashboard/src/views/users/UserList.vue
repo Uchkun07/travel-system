@@ -322,7 +322,9 @@ const currentUserId = ref<number>(0);
 const getFullAvatarUrl = (avatarUrl?: string) => {
   if (!avatarUrl) return "";
   if (avatarUrl.startsWith("http")) return avatarUrl;
-  return `http://localhost:8080${avatarUrl}`;
+  const baseUrl =
+    import.meta.env.VITE_API_BASE_URL || "http://8.146.237.23:8080";
+  return `${baseUrl}${avatarUrl}`;
 };
 
 // 获取性别文本

@@ -26,6 +26,12 @@ public class FileUploadService {
     @Value("${server.port:8080}")
     private String serverPort;
     
+    @Value("${file.upload.city-dir:C:/cities}")
+    private String cityUploadDir;
+    
+    @Value("${file.upload.slideshow-dir:C:/slideshows}")
+    private String slideshowUploadDir;
+    
     /**
      * 允许上传的图片格式
      */
@@ -174,13 +180,14 @@ public class FileUploadService {
      * @return 上传目录路径
      */
     private String getUploadDirectory(FileCategory category) {
-        // 获取项目根目录下的 resources/static 目录
-        String classPath = this.getClass().getResource("/").getPath();
-        // 处理 Windows 路径
-        if (classPath.startsWith("/") && System.getProperty("os.name").toLowerCase().contains("windows")) {
-            classPath = classPath.substring(1);
+        // 根据分类返回不同的上传目录
+        switch (category) {
+            case CITY:
+                return cityUploadDir;
+            case SLIDESHOW:
+                return slideshowUploadDir;
+            default:
+                return "C:/uploads/" + category.getPath();
         }
-        
-        return classPath + "static/" + category.getPath();
     }
 }

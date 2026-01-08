@@ -4,14 +4,14 @@ server:
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/travel_system?useSSL=false
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD}
+    username: root
+    password: 102030
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      host: localhost
+      port: 6379
+      password:
       database: 0
       timeout: 3000ms
       lettuce:
@@ -21,10 +21,10 @@ spring:
           min-idle: 0
           max-wait: -1ms
   mail:
-    host: ${MAIL_HOST:smtp.qq.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    host: smtp.qq.com
+    port: 587
+    username: 2208844091@qq.com
+    password: tczyvqbqpplyeahe
     properties:
       mail:
         smtp:
@@ -58,7 +58,7 @@ deepseek:
 
 # JWT配置
 jwt:
-  secret: ${JWT_SECRET:travel-system-secret-key-for-jwt-token-generation-and-validation-2024}
+  secret: travel-system-secret-key-for-jwt-token-generation-and-validation-2024
   expiration: 604800000 # 7天(毫秒)
   expiration-short: 86400000 # 1天(毫秒)
 
@@ -71,3 +71,10 @@ mybatis-plus:
       logic-delete-field: deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
+
+# 文件上传配置
+file:
+  upload:
+    avatar-dir: C:/avatars
+    city-dir: C:/cities
+    slideshow-dir: C:/slideshows

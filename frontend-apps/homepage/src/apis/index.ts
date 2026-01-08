@@ -15,3 +15,6 @@ export * from "./auth";
 
 // 导出景点相关API
 export * from "./attraction";
+
+// 导出浏览记录API
+export * from "./browse";
