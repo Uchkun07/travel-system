@@ -63,6 +63,14 @@
             </ElRadioGroup>
           </ElFormItem>
 
+          <ElFormItem label="出行偏好" required>
+            <ElRadioGroup v-model="planForm.travelPreference">
+              <ElRadioButton value="经济">经济</ElRadioButton>
+              <ElRadioButton value="适中">适中</ElRadioButton>
+              <ElRadioButton value="舒适">舒适</ElRadioButton>
+            </ElRadioGroup>
+          </ElFormItem>
+
           <ElFormItem>
             <ElButton
               type="primary"
@@ -193,6 +201,7 @@ const planForm = ref({
   departureDate: "",
   travelMode: "自驾",
   travelGroup: "独自",
+  travelPreference: "适中",
 });
 
 // 收藏列表
@@ -340,6 +349,9 @@ onMounted(() => {
     }
 
     .plan-form {
+      :deep(.el-form-item) {
+        margin: 0 0 11px;
+      }
       :deep(.el-form-item__label) {
         font-weight: 500;
         color: #5f6368;
