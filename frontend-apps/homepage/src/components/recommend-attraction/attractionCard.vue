@@ -51,6 +51,9 @@ interface Attraction {
   price: number;
   rating: number;
   badge?: string;
+  requestId?: string;
+  recommendPosition?: number;
+  recVersion?: string;
 }
 
 interface Props {
@@ -60,6 +63,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits<{
   favorite: [id: number | string, isFavorite: boolean];
+  "card-click": [id: number | string];
 }>();
 
 const router = useRouter();
@@ -76,7 +80,24 @@ const isFavorite = computed(() => {
 const handleCardClick = () => {
   const id = Number(props.attraction.id);
   if (Number.isFinite(id)) {
-    router.push(`/attraction/${id}`);
+    emit("card-click", props.attraction.id);
+
+    const query: Record<string, string> = {};
+    if (props.attraction.requestId) {
+      query.rid = String(props.attraction.requestId);
+    }
+    if (props.attraction.recommendPosition) {
+      query.pos = String(props.attraction.recommendPosition);
+    }
+    if (props.attraction.recVersion) {
+      query.rv = String(props.attraction.recVersion);
+    }
+    query.src = "home";
+
+    router.push({
+      path: `/attraction/${id}`,
+      query,
+    });
   }
 };
 

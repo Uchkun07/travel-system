@@ -147,6 +147,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
 import { ElInput, ElButton, ElMessage } from "element-plus";
 import { Search, ArrowRight, Loading } from "@element-plus/icons-vue";
 import ExploreNature from "@/assets/svgs/Explore_nature.vue";
@@ -161,6 +162,7 @@ import {
 } from "@/apis/attraction";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const route = useRoute();
 
 // 搜索关键词
 const searchKeyword = ref("");
@@ -442,7 +444,14 @@ const clearTypeSearch = () => {
 };
 
 onMounted(() => {
-  fetchTopAttractions();
+  // 检查URL参数，如果有城市名称则自动搜索
+  const cityName = route.query.city as string;
+  if (cityName) {
+    searchKeyword.value = cityName;
+    handleSearch();
+  } else {
+    fetchTopAttractions();
+  }
 });
 </script>
 

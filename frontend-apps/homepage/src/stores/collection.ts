@@ -17,7 +17,7 @@ export const useCollectionStore = defineStore(
 
     // 计算属性：检查是否收藏
     const isCollected = computed(
-      () => (id: number) => collectedIds.value.has(id)
+      () => (id: number) => collectedIds.value.has(id),
     );
 
     // 获取收藏数量
@@ -129,7 +129,7 @@ export const useCollectionStore = defineStore(
     persist: {
       key: "collection",
       storage: localStorage,
-      paths: ["collectedIds", "initialized"],
+      pick: ["collectedIds", "initialized"],
       serializer: {
         serialize: (state) => {
           return JSON.stringify({
@@ -146,5 +146,5 @@ export const useCollectionStore = defineStore(
         },
       },
     },
-  }
+  },
 );

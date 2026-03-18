@@ -243,13 +243,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import {
-  getAttractionDetail,
-  type AttractionDetail,
-} from "@/apis/attraction";
+import { getAttractionDetail, type AttractionDetail } from "@/apis/attraction";
+import { trackRecommendEvent } from "@/apis/recommend";
 import { useCollectionStore } from "@/stores/collection";
 import { useUserStore } from "@/stores/user";
 
@@ -264,6 +262,8 @@ const collectLoading = ref(false);
 const showMap = ref(false);
 const mapContainer = ref<HTMLElement | null>(null);
 let mapInstance: any = null;
+const detailEnterAt = Date.now();
+let stayTracked = false;
 
 declare global {
   interface Window {
@@ -310,10 +310,10 @@ const loadAttractionDetail = async () => {
   }
 
   loading.value = true;
-  try { 
+  try {
     const response = await getAttractionDetail(attractionId);
     if (response.code === 200 && response.data) {
-      attractionDetail.value = response.data
+      attractionDetail.value = response.data;
     } else {
       ElMessage.error(response.message || "加载景点详情失败");
       router.push("/");
@@ -411,6 +411,45 @@ const initMap = () => {
 
 onMounted(() => {
   loadAttractionDetail();
+  window.addEventListener("beforeunload", trackStayIfNeeded);
+});
+
+const trackStayIfNeeded = () => {
+  if (stayTracked) return;
+  const attractionId = attractionDetail.value?.attractionId;
+  if (!attractionId) return;
+
+  const staySeconds = Math.max(
+    Math.floor((Date.now() - detailEnterAt) / 1000),
+    0,
+  );
+  // 少于2秒通常是误触，不写入行为画像
+  if (staySeconds < 2) return;
+
+  stayTracked = true;
+  const requestId =
+    typeof route.query.rid === "string" ? route.query.rid : undefined;
+  const position =
+    typeof route.query.pos === "string" ? Number(route.query.pos) : undefined;
+  const recVersion =
+    typeof route.query.rv === "string" ? route.query.rv : undefined;
+  const sourcePage =
+    typeof route.query.src === "string" ? route.query.src : "detail";
+
+  trackRecommendEvent({
+    attractionId,
+    eventType: "stay",
+    requestId,
+    position: Number.isFinite(position as number) ? position : undefined,
+    staySeconds,
+    sourcePage,
+    recVersion,
+  }).catch(() => null);
+};
+
+onBeforeUnmount(() => {
+  trackStayIfNeeded();
+  window.removeEventListener("beforeunload", trackStayIfNeeded);
 });
 </script>
 

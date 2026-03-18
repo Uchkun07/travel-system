@@ -168,6 +168,7 @@ onMounted(() => {
 
   :deep(.swiper-pagination) {
     top: 20px;
+    height: 10px;
   }
 
   :deep(.swiper-pagination-bullet) {

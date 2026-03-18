@@ -8,8 +8,8 @@
     <!-- 推荐景点区域 -->
     <section class="attractions-section">
       <div class="section-header">
-        <h2 class="section-title">热门景点推荐</h2>
-        <p class="section-subtitle">发现最受欢迎的旅游目的地</p>
+        <h2 class="section-title">个性化景点推荐</h2>
+        <p class="section-subtitle">基于偏好与热度融合，为你智能推荐目的地</p>
         <div v-if="userStore.isLoggedIn" class="collection-info">
           已收藏 {{ collectionStore.collectionCount }} 个景点
         </div>
@@ -26,6 +26,7 @@
           :key="attraction.id"
           :attraction="attraction"
           @favorite="handleFavorite"
+          @card-click="handleCardClickTrack"
         />
       </div>
 
@@ -53,6 +54,11 @@ import {
   type AttractionCard,
   type AttractionQueryRequest,
 } from "@/apis/attraction";
+import {
+  getHomeRecommendations,
+  trackRecommendEvent,
+  type RecommendHomeRequest,
+} from "@/apis/recommend";
 import { useCollectionStore } from "@/stores/collection";
 import { useUserStore } from "@/stores/user";
 
@@ -66,6 +72,9 @@ interface AttractionCardData {
   price: number;
   rating: number;
   badge?: string;
+  recommendPosition?: number;
+  requestId?: string;
+  recVersion?: string;
 }
 
 const attractions = ref<AttractionCardData[]>([]); // 景点数据
@@ -76,6 +85,7 @@ const pageSize = ref(28);
 const total = ref(0);
 const hasMore = ref(true); // 是否还有更多数据
 const isLoadingData = ref(false); // 防止重复请求
+const impressionSentKeys = new Set<string>();
 
 // Store
 const collectionStore = useCollectionStore();
@@ -83,7 +93,10 @@ const userStore = useUserStore();
 
 // 数据转换：将后端数据转换为组件需要的格式
 const transformAttraction = (
-  attraction: AttractionCard
+  attraction: AttractionCard,
+  recommendPosition?: number,
+  requestId?: string,
+  recVersion?: string,
 ): AttractionCardData => ({
   id: attraction.attractionId,
   title: attraction.name,
@@ -93,7 +106,40 @@ const transformAttraction = (
   price: attraction.ticketPrice || 0,
   rating: attraction.averageRating || 0,
   badge: attraction.type,
+  recommendPosition,
+  requestId,
+  recVersion,
 });
+
+const sendImpressionTrack = async (items: AttractionCardData[]) => {
+  const tasks: Promise<any>[] = [];
+  for (const item of items) {
+    const attractionId = Number(item.id);
+    if (
+      !Number.isFinite(attractionId) ||
+      !item.requestId ||
+      !item.recommendPosition
+    ) {
+      continue;
+    }
+    const key = `${item.requestId}:${attractionId}:${item.recommendPosition}`;
+    if (impressionSentKeys.has(key)) {
+      continue;
+    }
+    impressionSentKeys.add(key);
+    tasks.push(
+      trackRecommendEvent({
+        attractionId,
+        eventType: "impression",
+        requestId: item.requestId,
+        position: item.recommendPosition,
+        sourcePage: "home",
+        recVersion: item.recVersion || "content-v1",
+      }).catch(() => null),
+    );
+  }
+  await Promise.all(tasks);
+};
 
 // 加载景点数据
 const loadAttractions = async (append: boolean = false) => {
@@ -112,32 +158,58 @@ const loadAttractions = async (append: boolean = false) => {
   }
 
   try {
-    const params: AttractionQueryRequest = {
+    const recParams: RecommendHomeRequest = {
       pageNum: currentPage.value,
       pageSize: pageSize.value,
     };
 
-    const response = await getAttractionCards(params);
+    let newAttractions: AttractionCardData[] = [];
+    let loaded = false;
 
-    if (response.code === 200 && response.data) {
-      const newAttractions = response.data.records.map(transformAttraction);
-      total.value = response.data.total;
+    try {
+      const recResponse = await getHomeRecommendations(recParams);
+      if (recResponse.code === 200 && recResponse.data?.page) {
+        const requestId = recResponse.data.requestId;
+        const recVersion = recResponse.data.recVersion;
+        const startPos = (currentPage.value - 1) * pageSize.value;
+        newAttractions = recResponse.data.page.records.map((a, idx) =>
+          transformAttraction(a, startPos + idx + 1, requestId, recVersion),
+        );
+        total.value = recResponse.data.page.total;
+        loaded = true;
+      }
+    } catch (e) {
+      console.warn("个性化推荐接口失败，回退热门列表", e);
+    }
 
+    if (!loaded) {
+      const params: AttractionQueryRequest = {
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      };
+      const response = await getAttractionCards(params);
+      if (response.code === 200 && response.data) {
+        newAttractions = response.data.records.map((a) =>
+          transformAttraction(a),
+        );
+        total.value = response.data.total;
+        loaded = true;
+      }
+    }
+
+    if (loaded) {
       if (append) {
-        // 追加模式:添加到现有列表
         attractions.value = [...attractions.value, ...newAttractions];
       } else {
-        // 初始加载:替换列表
         attractions.value = newAttractions;
       }
 
-      // 检查是否还有更多数据
       hasMore.value = attractions.value.length < total.value;
-
-      // 如果还有数据,页码+1准备下次加载
       if (hasMore.value) {
         currentPage.value++;
       }
+
+      await sendImpressionTrack(newAttractions);
     }
 
     // 如果用户已登录，初始化收藏列表
@@ -157,6 +229,22 @@ const loadAttractions = async (append: boolean = false) => {
 // 处理收藏事件
 const handleFavorite = (id: number | string, isFavorite: boolean) => {
   console.log(`景点 ${id} 收藏状态: ${isFavorite}`);
+};
+
+const handleCardClickTrack = (id: number | string) => {
+  const attractionId = Number(id);
+  if (!Number.isFinite(attractionId)) return;
+  const item = attractions.value.find((a) => Number(a.id) === attractionId);
+  if (!item?.requestId) return;
+
+  trackRecommendEvent({
+    attractionId,
+    eventType: "click",
+    requestId: item.requestId,
+    position: item.recommendPosition,
+    sourcePage: "home",
+    recVersion: item.recVersion || "content-v1",
+  }).catch(() => null);
 };
 
 // 防抖函数
@@ -201,7 +289,7 @@ watch(
       // 用户登录后初始化收藏列表
       collectionStore.initializeCollections();
     }
-  }
+  },
 );
 
 // 组件挂载时加载数据并添加滚动监听
