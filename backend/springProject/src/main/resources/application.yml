@@ -88,6 +88,27 @@ route:
     pref-comfort-time-weight: 0.8
     pref-moderate-time-weight: 0.5
 
+# 个性化推荐算法配置（Python）
+recommend:
+  algorithm:
+    # Python 脚本绝对路径（留空则使用 backend/python/recommendationAlgorithm.py）
+    script-path: ${RECOMMEND_SCRIPT_PATH:}
+    behavior-window-days: 30
+    behavior-switch-threshold: 20
+    # 冷启动：60%偏好 + 40%热门
+    cold-preference-weight: 0.6
+    cold-hot-weight: 0.4
+    # 稳定期：80%画像 + 20%热门
+    mature-profile-weight: 0.8
+    mature-hot-weight: 0.2
+    # 画像拆分：40%显式 + 60%隐式
+    profile-explicit-weight: 0.4
+    profile-implicit-weight: 0.6
+    # 隐式行为拆分：40%点击 + 60%停留
+    behavior-click-weight: 0.4
+    behavior-stay-weight: 0.6
+    rec-version: content-py-v1
+
 # MyBatis-Plus 配置
 mybatis-plus:
   configuration:
