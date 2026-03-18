@@ -36,6 +36,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@/views/routeline/RouteLine.vue"),
       },
       {
+        path: "route-result",
+        name: "RouteResult",
+        meta: { title: "规划结果 - WayStar" },
+        component: () => import("@/views/routeline/RouteResult.vue"),
+      },
+      {
         path: "profile",
         name: "Profile",
         meta: { title: "个人中心 - WayStar", requiresAuth: true },

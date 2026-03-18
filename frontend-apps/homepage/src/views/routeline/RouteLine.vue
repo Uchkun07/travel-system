@@ -190,6 +190,7 @@ import {
   getAttractionsByIds,
   type AttractionCard,
 } from "@/apis/attraction";
+import { planRoute } from "@/apis/routePlan";
 
 const router = useRouter();
 const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
@@ -280,7 +281,7 @@ const toggleSelectAll = () => {
   } else {
     // 全选
     selectedAttractions.value = collectionList.value.map(
-      (attraction) => attraction.attractionId
+      (attraction) => attraction.attractionId,
     );
   }
 };
@@ -292,18 +293,40 @@ const getImageUrl = (imageUrl: string) => {
 };
 
 // 开始规划路线
-const handlePlan = () => {
+const handlePlan = async () => {
   if (!canPlan.value) {
     ElMessage.warning("请完整填写所有必填项并至少选择一个景点");
     return;
   }
 
   planning.value = true;
-  // TODO: 调用路线规划API
-  setTimeout(() => {
+  try {
+    const res = await planRoute({
+      departure: planForm.value.departure,
+      budget: planForm.value.budget!,
+      departureDate: planForm.value.departureDate,
+      travelMode: planForm.value.travelMode,
+      travelGroup: planForm.value.travelGroup,
+      travelPreference: planForm.value.travelPreference,
+      attractionIds: selectedAttractions.value,
+    });
+
+    if (res.code !== 200 || !res.data) {
+      ElMessage.error(res.message || "路线规划失败，请稍后重试");
+      return;
+    }
+
+    // 将结果通过路由 state 传递给结果页（避免 URL 过长）
+    router.push({
+      name: "RouteResult",
+      state: { result: JSON.stringify(res.data) },
+    });
+  } catch (e) {
+    console.error("路线规划请求失败", e);
+    ElMessage.error("网络异常，请稍后重试");
+  } finally {
     planning.value = false;
-    ElMessage.success("路线规划功能开发中...");
-  }, 1500);
+  }
 };
 
 // 跳转到探索页面

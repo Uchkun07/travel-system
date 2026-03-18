@@ -1,0 +1,48 @@
+package io.github.uchkun07.travelsystem.controller;
+
+import io.github.uchkun07.travelsystem.dto.ApiResponse;
+import io.github.uchkun07.travelsystem.dto.RoutePlanRequest;
+import io.github.uchkun07.travelsystem.dto.RoutePlanResult;
+import io.github.uchkun07.travelsystem.service.IRoutePlanService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * 路线规划控制器
+ * POST /api/route/plan — 提交规划参数，返回最优路线结果
+ */
+@Slf4j
+@Tag(name = "路线规划", description = "模拟退火算法 + 高德路径规划")
+@RestController
+@RequestMapping("/api/route")
+@RequiredArgsConstructor
+public class RoutePlanController {
+
+    private final IRoutePlanService routePlanService;
+
+    /**
+     * 执行路线规划
+     *
+     * @param request 出发地、预算、日期、出行方式/人群/偏好、景点 ID 列表
+     * @return 包含各景点顺序及费用/耗时的规划结果
+     */
+    @Operation(summary = "路线规划", description = "提交景点列表，返回模拟退火最优路线")
+    @PostMapping("/plan")
+    public ApiResponse<RoutePlanResult> plan(@Valid @RequestBody RoutePlanRequest request) {
+        try {
+            log.info("路线规划请求：departure={}, attractions={}",
+                    request.getDeparture(), request.getAttractionIds());
+            RoutePlanResult result = routePlanService.plan(request);
+            return ApiResponse.success("路线规划成功", result);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(400, e.getMessage());
+        } catch (Exception e) {
+            log.error("路线规划失败", e);
+            return ApiResponse.error(500, "路线规划失败：" + e.getMessage());
+        }
+    }
+}
