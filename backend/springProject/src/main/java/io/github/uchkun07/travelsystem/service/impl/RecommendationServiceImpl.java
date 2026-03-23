@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 public class RecommendationServiceImpl implements IRecommendationService {
 
     private static final int CANDIDATE_SIZE = 500;
+    private static final int PREFERRED_TYPE_APPEND_SIZE = 200;
 
     private final AttractionMapper attractionMapper;
     private final AttractionTypeMapper attractionTypeMapper;
@@ -61,7 +62,8 @@ public class RecommendationServiceImpl implements IRecommendationService {
         long pageNum = normalizePageNum(request == null ? null : request.getPageNum());
         long pageSize = normalizePageSize(request == null ? null : request.getPageSize());
 
-        List<Attraction> candidates = queryCandidates();
+        UserPreference preference = loadUserPreference(userId);
+        List<Attraction> candidates = queryCandidates(preference);
         String requestId = UUID.randomUUID().toString().replace("-", "");
         if (candidates.isEmpty()) {
             return RecommendHomeResponse.builder()
@@ -80,7 +82,6 @@ public class RecommendationServiceImpl implements IRecommendationService {
                     .build();
         }
 
-        UserPreference preference = loadUserPreference(userId);
         long behaviorEventCount = 0L;
         List<RecommendTypeBehaviorStat> behaviorStats = List.of();
         if (userId != null) {
@@ -328,7 +329,7 @@ public class RecommendationServiceImpl implements IRecommendationService {
         return result;
     }
 
-    private List<Attraction> queryCandidates() {
+    private List<Attraction> queryCandidates(UserPreference preference) {
         Page<Attraction> page = new Page<>(1, CANDIDATE_SIZE);
         LambdaQueryWrapper<Attraction> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Attraction::getAuditStatus, 2)
@@ -337,7 +338,47 @@ public class RecommendationServiceImpl implements IRecommendationService {
                 .orderByDesc(Attraction::getBrowseCount)
                 .orderByDesc(Attraction::getFavoriteCount)
                 .orderByDesc(Attraction::getAverageRating);
-        return attractionMapper.selectPage(page, wrapper).getRecords();
+        List<Attraction> baseCandidates = attractionMapper.selectPage(page, wrapper).getRecords();
+
+        Integer preferTypeId = preference == null ? null : preference.getPreferAttractionTypeId();
+        if (preferTypeId == null) {
+            return baseCandidates;
+        }
+
+        boolean hasPreferredType = baseCandidates.stream()
+                .anyMatch(a -> preferTypeId.equals(a.getTypeId()));
+        if (hasPreferredType) {
+            return baseCandidates;
+        }
+
+        Page<Attraction> preferredPage = new Page<>(1, PREFERRED_TYPE_APPEND_SIZE);
+        LambdaQueryWrapper<Attraction> preferredWrapper = new LambdaQueryWrapper<>();
+        preferredWrapper.eq(Attraction::getAuditStatus, 2)
+                .eq(Attraction::getStatus, 1)
+                .eq(Attraction::getTypeId, preferTypeId)
+                .orderByDesc(Attraction::getPopularity)
+                .orderByDesc(Attraction::getBrowseCount)
+                .orderByDesc(Attraction::getFavoriteCount)
+                .orderByDesc(Attraction::getAverageRating)
+                .orderByDesc(Attraction::getCreateTime);
+        List<Attraction> preferredCandidates = attractionMapper.selectPage(preferredPage, preferredWrapper).getRecords();
+
+        if (preferredCandidates.isEmpty()) {
+            return baseCandidates;
+        }
+
+        Map<Long, Attraction> merged = new LinkedHashMap<>();
+        for (Attraction item : baseCandidates) {
+            merged.put(item.getAttractionId(), item);
+        }
+        for (Attraction item : preferredCandidates) {
+            merged.put(item.getAttractionId(), item);
+        }
+
+        List<Attraction> result = new ArrayList<>(merged.values());
+        log.info("推荐候选补齐偏好类型: userPreferTypeId={}, baseSize={}, appendSize={}, mergedSize={}",
+                preferTypeId, baseCandidates.size(), preferredCandidates.size(), result.size());
+        return result;
     }
 
     private UserPreference loadUserPreference(Long userId) {

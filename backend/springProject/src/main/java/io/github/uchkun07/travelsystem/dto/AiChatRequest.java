@@ -10,6 +10,7 @@ import lombok.Data;
 @Schema(description = "AI聊天请求")
 public class AiChatRequest {
 
+    @SuppressWarnings("deprecation")
     @Schema(description = "用户问题", required = true, example = "你好，请介绍一下北京有什么旅游景点？")
     private String message;
 
