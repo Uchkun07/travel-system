@@ -6,7 +6,6 @@ import io.github.uchkun07.travelsystem.dto.DashboardDTO;
 import io.github.uchkun07.travelsystem.service.IDashboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

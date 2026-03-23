@@ -76,6 +76,7 @@ public class RoutePathUtil {
         String cacheKey = buildCacheKey(from, to, mode);
 
         // 1. 读缓存
+        @SuppressWarnings("null")
         String cached = redisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
             try {
@@ -178,6 +179,7 @@ public class RoutePathUtil {
                 from[0], from[1], to[0], to[1], mode);
     }
 
+    @SuppressWarnings("null")
     private void writeCache(String key, PathCost cost) {
         try {
             redisTemplate.opsForValue().set(

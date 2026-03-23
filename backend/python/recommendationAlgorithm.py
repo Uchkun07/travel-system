@@ -67,6 +67,15 @@ def safe_int(v, default=0):
         return default
 
 
+def normalize_type_id(v):
+    if v is None:
+        return None
+    try:
+        return int(v)
+    except Exception:
+        return None
+
+
 def normalize(value, max_value):
     if max_value <= 0:
         return 0.0
@@ -180,11 +189,14 @@ def main():
 
     scored = []
     score_map = {}
+    prefer_type_id = normalize_type_id(pref.get("preferAttractionTypeId")) if pref else None
 
     for c in candidates:
         hs = hot_score(c, max_browse, max_favorite, max_rating)
         es = explicit_score(c, pref)
         ims = implicit_score(c, behavior_by_type, max_click, max_stay, behavior_click_w, behavior_stay_w)
+        item_type_id = normalize_type_id(c.get("typeId"))
+        type_match = prefer_type_id is not None and item_type_id == prefer_type_id
 
         if not pref:
             total = hs
@@ -195,12 +207,16 @@ def main():
             total = cold_pref_w * es + cold_hot_w * hs
 
         total = round(total, 6)
-        scored.append({"candidate": c, "score": total})
+        scored.append({"candidate": c, "score": total, "typeMatch": type_match})
         aid = c.get("attractionId")
         if aid is not None:
             score_map[str(aid)] = total
 
-    scored.sort(key=lambda x: x["score"], reverse=True)
+    # 有显式偏好类型时，先保证偏好类型优先，再按综合分排序。
+    if prefer_type_id is not None:
+        scored.sort(key=lambda x: (1 if x["typeMatch"] else 0, x["score"]), reverse=True)
+    else:
+        scored.sort(key=lambda x: x["score"], reverse=True)
     scored = diversify(scored)
 
     ordered_ids = [x["candidate"].get("attractionId") for x in scored if x["candidate"].get("attractionId") is not None]

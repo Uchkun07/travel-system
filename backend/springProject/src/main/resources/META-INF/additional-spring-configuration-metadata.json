@@ -1,0 +1,157 @@
+{"properties": [
+  {
+    "name": "deepseek.api.url",
+    "type": "java.lang.String",
+    "description": "A description for 'deepseek.api.url'"
+  },
+  {
+    "name": "deepseek.api.model",
+    "type": "java.lang.String",
+    "description": "A description for 'deepseek.api.model'"
+  },
+  {
+    "name": "deepseek.api.model",
+    "type": "java.lang.String",
+    "description": "A description for 'deepseek.api.model'"
+  },
+  {
+    "name": "deepseek.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'deepseek.api.key'"
+  },
+  {
+    "name": "deepseek.api.timeout",
+    "type": "java.lang.String",
+    "description": "A description for 'deepseek.api.timeout'"
+  },
+  {
+    "name": "amap.key",
+    "type": "java.lang.String",
+    "description": "A description for 'amap.key'"
+  },
+  {
+    "name": "amap.geocode-url",
+    "type": "java.lang.String",
+    "description": "A description for 'amap.geocode-url'"
+  },
+  {
+    "name": "amap.driving-url",
+    "type": "java.lang.String",
+    "description": "A description for 'amap.driving-url'"
+  },
+  {
+    "name": "amap.transit-url",
+    "type": "java.lang.String",
+    "description": "A description for 'amap.transit-url'"
+  },
+  {
+    "name": "amap.timeout",
+    "type": "java.lang.String",
+    "description": "A description for 'amap.timeout'"
+  },
+  {
+    "name": "route.algorithm.script-path",
+    "type": "java.lang.String",
+    "description": "A description for 'route.algorithm.script-path'"
+  },
+  {
+    "name": "recommend.algorithm.script-path",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.script-path'"
+  },
+  {
+    "name": "route.algorithm.initial-temp",
+    "type": "java.lang.String",
+    "description": "A description for 'route.algorithm.initial-temp'"
+  },
+  {
+    "name": "route.algorithm.cooling-rate",
+    "type": "java.lang.String",
+    "description": "A description for 'route.algorithm.cooling-rate'"
+  },
+  {
+    "name": "route.algorithm.min-temp",
+    "type": "java.lang.String",
+    "description": "A description for 'route.algorithm.min-temp'"
+  },
+  {
+    "name": "route.algorithm.iterations-per-temp",
+    "type": "java.lang.String",
+    "description": "A description for 'route.algorithm.iterations-per-temp'"
+  },
+  {
+    "name": "route.algorithm.pref-economy-time-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'route.algorithm.pref-economy-time-weight'"
+  },
+  {
+    "name": "route.algorithm.pref-comfort-time-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'route.algorithm.pref-comfort-time-weight'"
+  },
+  {
+    "name": "route.algorithm.pref-moderate-time-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'route.algorithm.pref-moderate-time-weight'"
+  },
+  {
+    "name": "route.algorithm.pref-moderate-time-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'route.algorithm.pref-moderate-time-weight'"
+  },
+  {
+    "name": "recommend.algorithm.behavior-switch-threshold",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.behavior-switch-threshold'"
+  },
+  {
+    "name": "recommend.algorithm.behavior-window-days",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.behavior-window-days'"
+  },
+  {
+    "name": "recommend.algorithm.cold-preference-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.cold-preference-weight'"
+  },
+  {
+    "name": "recommend.algorithm.cold-hot-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.cold-hot-weight'"
+  },
+  {
+    "name": "recommend.algorithm.mature-profile-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.mature-profile-weight'"
+  },
+  {
+    "name": "recommend.algorithm.mature-hot-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.mature-hot-weight'"
+  },
+  {
+    "name": "recommend.algorithm.profile-implicit-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.profile-implicit-weight'"
+  },
+  {
+    "name": "recommend.algorithm.profile-explicit-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.profile-explicit-weight'"
+  },
+  {
+    "name": "recommend.algorithm.behavior-click-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.behavior-click-weight'"
+  },
+  {
+    "name": "recommend.algorithm.behavior-stay-weight",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.behavior-stay-weight'"
+  },
+  {
+    "name": "recommend.algorithm.rec-version",
+    "type": "java.lang.String",
+    "description": "A description for 'recommend.algorithm.rec-version'"
+  }
+]}
