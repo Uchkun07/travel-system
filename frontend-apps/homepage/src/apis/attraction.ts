@@ -66,6 +66,7 @@ export interface AttractionQueryRequest {
   pageSize: number;
   attractionId?: number;
   name?: string;
+  city?: string;
   cityId?: number;
   typeId?: number;
   auditStatus?: number;
@@ -91,7 +92,7 @@ export interface CollectionStatusResponseData {
 export function getAttractionCards(params: AttractionQueryRequest) {
   return post<ApiResponse<PageResponse<AttractionCard>>>(
     "/api/attraction/list",
-    params
+    params,
   );
 }
 
@@ -102,7 +103,7 @@ export function getAttractionCards(params: AttractionQueryRequest) {
  */
 export function getAttractionDetail(attractionId: number) {
   return get<ApiResponse<AttractionDetail>>(
-    `/api/attraction/detail/${attractionId}`
+    `/api/attraction/detail/${attractionId}`,
   );
 }
 
@@ -112,7 +113,7 @@ export function getAttractionDetail(attractionId: number) {
  */
 export function collectAttraction(attractionId: number) {
   return post<ApiResponse<CollectResponseData>>(
-    `/api/attraction/collection/${attractionId}`
+    `/api/attraction/collection/${attractionId}`,
   );
 }
 
@@ -122,7 +123,7 @@ export function collectAttraction(attractionId: number) {
  */
 export function uncollectAttraction(attractionId: number) {
   return del<ApiResponse<CollectResponseData>>(
-    `/api/attraction/collection/${attractionId}`
+    `/api/attraction/collection/${attractionId}`,
   );
 }
 
@@ -141,7 +142,7 @@ export function getCollectedAttractionIds() {
  */
 export function checkCollectionStatus(attractionId: number) {
   return get<ApiResponse<CollectionStatusResponseData>>(
-    `/api/attraction/collection/${attractionId}/status`
+    `/api/attraction/collection/${attractionId}/status`,
   );
 }
 
@@ -161,7 +162,7 @@ export function getAllAttractionTypes() {
 export function getAttractionsByIds(attractionIds: number[]) {
   return post<ApiResponse<AttractionCard[]>>(
     "/api/attraction/batch",
-    attractionIds
+    attractionIds,
   );
 }
 

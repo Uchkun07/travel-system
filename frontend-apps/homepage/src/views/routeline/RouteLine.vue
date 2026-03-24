@@ -634,8 +634,25 @@ onMounted(() => {
   }
 }
 
+@media (max-width: 1200px) {
+  .routeline-page {
+    padding: 28px 1.25rem;
+
+    .content-wrapper {
+      gap: 20px;
+    }
+
+    .form-section,
+    .collection-section {
+      padding: 20px;
+    }
+  }
+}
+
 @media (max-width: 1024px) {
   .routeline-page {
+    padding: 24px 1rem;
+
     .content-wrapper {
       flex-direction: column;
     }
@@ -644,6 +661,148 @@ onMounted(() => {
       flex: 1;
       width: 100%;
       position: static;
+      height: auto;
+
+      .plan-form {
+        :deep(.el-radio-group) {
+          flex-wrap: wrap;
+        }
+      }
+    }
+
+    .collection-section {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .collection-section .collection-list {
+      height: auto;
+      max-height: 65vh;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .routeline-page {
+    padding: 18px 12px;
+
+    .form-section,
+    .collection-section {
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .form-section {
+      .section-title {
+        font-size: 1.25rem;
+        margin-bottom: 14px;
+      }
+
+      .plan-form {
+        :deep(.el-form-item) {
+          margin: 0 0 10px;
+        }
+
+        :deep(.el-radio-button__inner) {
+          font-size: 13px;
+          padding: 8px 10px;
+        }
+      }
+    }
+
+    .collection-section {
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+
+        .section-title {
+          font-size: 1.25rem;
+        }
+
+        .header-right {
+          width: 100%;
+          justify-content: space-between;
+          gap: 8px;
+
+          .selected-count {
+            font-size: 0.88rem;
+          }
+
+          .select-all-btn {
+            padding: 6px 12px;
+            font-size: 0.88rem;
+          }
+        }
+      }
+
+      .collection-list {
+        max-height: none;
+        overflow-y: visible;
+        gap: 12px;
+
+        .collection-item {
+          width: 100%;
+          gap: 12px;
+          padding: 12px;
+
+          .item-image {
+            flex: 0 0 96px;
+            height: 96px;
+          }
+
+          .item-info {
+            .item-name {
+              font-size: 1rem;
+            }
+
+            .item-meta {
+              gap: 10px;
+              flex-wrap: wrap;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .routeline-page {
+    padding: 14px 10px;
+
+    .collection-section {
+      .section-header {
+        .header-right {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      .collection-list {
+        .collection-item {
+          flex-direction: column;
+
+          .item-checkbox {
+            order: 2;
+            align-self: flex-end;
+          }
+
+          .item-image {
+            width: 100%;
+            height: 168px;
+            flex: none;
+          }
+
+          .item-info {
+            width: 100%;
+
+            .item-description {
+              margin-bottom: 8px;
+            }
+          }
+        }
+      }
     }
   }
 }

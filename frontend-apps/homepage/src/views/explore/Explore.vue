@@ -328,6 +328,47 @@ const handleSearch = async () => {
   }
 };
 
+// 按城市浏览景点（用于热门城市跳转）
+const handleCitySearch = async (cityName: string) => {
+  const cityKeyword = cityName.trim();
+
+  if (!cityKeyword) return;
+
+  loading.value = true;
+  isSearchMode.value = true;
+  isTypeMode.value = false;
+  isViewAllMode.value = false;
+
+  try {
+    const response = await getAttractionCards({
+      pageNum: 1,
+      pageSize: 20,
+      city: cityKeyword,
+    });
+
+    if (response.code === 200 && response.data) {
+      searchResults.value = response.data.records || [];
+
+      setTimeout(() => {
+        resultsSection.value?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+
+      if (searchResults.value.length === 0) {
+        ElMessage.info(`未找到${cityKeyword}相关景点`);
+      }
+    }
+  } catch (error) {
+    console.error("城市筛选失败:", error);
+    ElMessage.error("城市筛选失败，请稍后重试");
+    searchResults.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
+
 // 查看全部景点（按热度排序）
 const handleViewAll = async () => {
   loading.value = true;
@@ -448,7 +489,7 @@ onMounted(() => {
   const cityName = route.query.city as string;
   if (cityName) {
     searchKeyword.value = cityName;
-    handleSearch();
+    handleCitySearch(cityName);
   } else {
     fetchTopAttractions();
   }
@@ -470,6 +511,7 @@ onMounted(() => {
     .search {
       position: absolute;
       max-width: 56rem;
+      width: min(56rem, 92vw);
       z-index: 10;
       left: 50%;
       top: 50%;
@@ -485,7 +527,7 @@ onMounted(() => {
       }
       :deep(.el-input__wrapper) {
         /* div.search-container */
-        width: 700px;
+        width: min(700px, 100%);
         height: 67px;
         /* 自动布局 */
         display: flex;
@@ -697,6 +739,151 @@ onMounted(() => {
             box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
           }
         }
+      }
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .explore-page {
+    .content {
+      max-width: 100%;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      margin-top: -4rem;
+
+      .tagsCardFrame {
+        min-width: 0;
+      }
+    }
+  }
+}
+
+@media (max-width: 992px) {
+  .explore-page {
+    header {
+      height: 62vh;
+
+      .head-image {
+        height: 62vh;
+      }
+
+      .search {
+        width: min(92vw, 720px);
+
+        .searchTitle {
+          font-size: 2rem;
+        }
+
+        .searchInput {
+          width: 100%;
+        }
+      }
+    }
+
+    .content {
+      .tagsCardFrame {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        min-width: 0;
+      }
+
+      .hotAttractions {
+        .cards-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .explore-page {
+    header {
+      height: 56vh;
+
+      .head-image {
+        height: 56vh;
+      }
+
+      .search {
+        .searchTitle {
+          font-size: 1.75rem;
+          line-height: 1.2;
+        }
+
+        :deep(.el-input__wrapper) {
+          height: 54px;
+          border-radius: 28px;
+          padding: 6px;
+        }
+
+        .searchButton {
+          width: 88px;
+          height: 40px;
+          border-radius: 20px;
+          font-size: 14px;
+        }
+      }
+    }
+
+    .content {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+      margin-top: -3rem;
+
+      .tagsCardFrame {
+        gap: 14px;
+
+        .tagsCard {
+          height: auto;
+          min-height: 140px;
+          padding: 16px;
+
+          .title {
+            font-size: 16px;
+          }
+        }
+      }
+
+      .hotAttractions {
+        margin-top: 40px;
+
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .cards-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .explore-page {
+    header {
+      height: 50vh;
+
+      .head-image {
+        height: 50vh;
+      }
+
+      .search {
+        .searchTitle {
+          font-size: 1.6rem;
+          line-height: 1.2;
+        }
+      }
+    }
+
+    .content {
+      .tagsCardFrame {
+        grid-template-columns: 1fr;
       }
     }
   }

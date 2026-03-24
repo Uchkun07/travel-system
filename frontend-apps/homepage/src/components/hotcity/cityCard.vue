@@ -153,4 +153,45 @@ const handleExploreCity = () => {
     text-align: center;
   }
 }
+
+@media (max-width: 768px) {
+  .container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .image {
+    height: 210px;
+  }
+
+  .info {
+    padding: 1rem;
+
+    .name {
+      height: auto;
+
+      .nameTitle {
+        font-size: 1.25rem;
+      }
+
+      .location {
+        font-size: 0.92rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .image {
+    height: 180px;
+  }
+
+  .info {
+    .description {
+      font-size: 0.92rem;
+      line-height: 22px;
+    }
+  }
+}
 </style>
