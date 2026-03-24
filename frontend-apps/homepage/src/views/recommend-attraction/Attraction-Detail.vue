@@ -265,6 +265,11 @@ let mapInstance: any = null;
 const detailEnterAt = Date.now();
 let stayTracked = false;
 
+type NearbyFoodItem = {
+  name: string;
+  description?: string;
+};
+
 declare global {
   interface Window {
     AMap: any;
@@ -284,13 +289,41 @@ const galleryImages = computed(() => {
 });
 
 // 计算附近美食列表
-const nearbyFoodList = computed(() => {
+const nearbyFoodList = computed<NearbyFoodItem[]>(() => {
   if (!attractionDetail.value?.nearbyFood) return [];
   try {
     const foods = JSON.parse(attractionDetail.value.nearbyFood);
-    return Array.isArray(foods) ? foods : [];
+    if (!Array.isArray(foods)) return [];
+
+    return foods
+      .map((item) => {
+        if (typeof item === "string") {
+          const name = item.trim();
+          return name ? { name } : null;
+        }
+
+        if (item && typeof item === "object") {
+          const record = item as { name?: unknown; description?: unknown };
+          const name =
+            typeof record.name === "string" ? record.name.trim() : "";
+          if (!name) return null;
+          const description =
+            typeof record.description === "string" && record.description.trim()
+              ? record.description.trim()
+              : undefined;
+          return { name, description };
+        }
+
+        return null;
+      })
+      .filter((food): food is NearbyFoodItem => Boolean(food));
   } catch {
-    return [];
+    const fallbackItems = attractionDetail.value.nearbyFood
+      .split(/[、,，;；\n]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    return fallbackItems.map((name) => ({ name }));
   }
 });
 

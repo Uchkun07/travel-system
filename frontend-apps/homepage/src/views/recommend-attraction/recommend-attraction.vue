@@ -502,8 +502,8 @@ onUnmounted(() => {
 @media (max-width: 480px) {
   .hero-section,
   .attractions-section {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0rem;
+    padding-right: 0rem;
   }
 
   .section-title {

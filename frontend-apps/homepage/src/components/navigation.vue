@@ -282,4 +282,79 @@ const handleCommand = async (command: string) => {
   border-color: #2d88ff;
   color: #fff;
 }
+
+@media (max-width: 1200px) {
+  .navbar {
+    padding: 0 2rem;
+  }
+
+  .menu ul {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    height: auto;
+    min-height: 64px;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    row-gap: 0.6rem;
+  }
+
+  .logo {
+    gap: 0.35rem;
+
+    img {
+      width: 42px;
+      height: 42px;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+    }
+  }
+
+  .menu {
+    order: 3;
+    width: 100%;
+  }
+
+  .menu ul {
+    width: 100%;
+    margin: 0.25rem 0 0;
+    padding: 0;
+    gap: 0.5rem;
+    justify-content: space-between;
+
+    li {
+      font-size: 0.9rem;
+    }
+  }
+
+  .user,
+  .user-info {
+    margin-left: auto;
+  }
+
+  .user {
+    gap: 0.6rem;
+  }
+
+  .username {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu ul {
+    li {
+      font-size: 0.82rem;
+    }
+  }
+
+  :deep(.el-button) {
+    padding: 8px 12px;
+  }
+}
 </style>

@@ -25,6 +25,9 @@ public class AttractionQueryRequest {
     @Schema(description = "景点类型ID")
     private Integer typeId;
 
+    @Schema(description = "城市名称（模糊查询）")
+    private String city;
+
     @Schema(description = "城市ID")
     private Integer cityId;
 

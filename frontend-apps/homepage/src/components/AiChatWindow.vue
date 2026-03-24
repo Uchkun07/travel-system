@@ -602,4 +602,49 @@ watch(
 .chat-messages::-webkit-scrollbar-thumb:hover {
   background: #c0c4cc;
 }
+
+@media (max-width: 768px) {
+  .ai-chat-window {
+    right: 10px;
+    left: 10px;
+    bottom: 76px;
+    width: auto;
+    height: 72vh;
+    border-radius: 10px;
+  }
+
+  .chat-messages {
+    padding: 14px;
+  }
+
+  .message-content {
+    max-width: 82%;
+  }
+
+  .chat-input {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-chat-window {
+    right: 8px;
+    left: 8px;
+    bottom: 70px;
+    height: 76vh;
+  }
+
+  .chat-header {
+    padding: 12px 14px;
+  }
+
+  .header-title {
+    font-size: 14px;
+  }
+
+  .message-bubble {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
 </style>
