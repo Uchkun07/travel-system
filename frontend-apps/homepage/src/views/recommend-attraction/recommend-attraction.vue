@@ -26,7 +26,6 @@
           :key="attraction.id"
           :attraction="attraction"
           @favorite="handleFavorite"
-          @card-click="handleCardClickTrack"
         />
       </div>
 
@@ -56,7 +55,6 @@ import {
 } from "@/apis/attraction";
 import {
   getHomeRecommendations,
-  trackRecommendEvent,
   type RecommendHomeRequest,
 } from "@/apis/recommend";
 import { useCollectionStore } from "@/stores/collection";
@@ -84,8 +82,9 @@ const pageSize = ref(28);
 const total = ref(0);
 const hasMore = ref(true); // 是否还有更多数据
 const isLoadingData = ref(false); // 防止重复请求
-const impressionSentKeys = new Set<string>();
 const loadedAttractionIds = new Set<number>();
+
+// 推荐流与全量流分别分页，避免一方总数影响另一方继续加载。
 const recommendPageNum = ref(1);
 const allPageNum = ref(1);
 const recommendHasMore = ref(true);
@@ -116,34 +115,89 @@ const transformAttraction = (
   recVersion,
 });
 
-const sendImpressionTrack = async (items: AttractionCardData[]) => {
-  const tasks: Promise<any>[] = [];
-  for (const item of items) {
-    const attractionId = Number(item.id);
-    if (
-      !Number.isFinite(attractionId) ||
-      !item.requestId ||
-      !item.recommendPosition
-    ) {
-      continue;
-    }
-    const key = `${item.requestId}:${attractionId}:${item.recommendPosition}`;
-    if (impressionSentKeys.has(key)) {
-      continue;
-    }
-    impressionSentKeys.add(key);
-    tasks.push(
-      trackRecommendEvent({
-        attractionId,
-        eventType: "impression",
-        requestId: item.requestId,
-        position: item.recommendPosition,
-        sourcePage: "home",
-        recVersion: item.recVersion || "content-v1",
-      }).catch(() => null),
-    );
+const appendUniqueAttractions = (
+  items: AttractionCardData[],
+  append: boolean,
+) => {
+  if (!append) {
+    loadedAttractionIds.clear();
+    attractions.value = [];
   }
-  await Promise.all(tasks);
+
+  const uniqueItems: AttractionCardData[] = [];
+  for (const item of items) {
+    const id = Number(item.id);
+    if (!Number.isFinite(id)) continue;
+    if (loadedAttractionIds.has(id)) continue;
+    loadedAttractionIds.add(id);
+    uniqueItems.push(item);
+  }
+
+  if (append) {
+    attractions.value = [...attractions.value, ...uniqueItems];
+  } else {
+    attractions.value = uniqueItems;
+  }
+};
+
+const loadRecommendPage = async (): Promise<AttractionCardData[]> => {
+  if (!useRecommend.value || !recommendHasMore.value) {
+    return [];
+  }
+
+  const recParams: RecommendHomeRequest = {
+    pageNum: recommendPageNum.value,
+    pageSize: pageSize.value,
+  };
+
+  try {
+    const recResponse = await getHomeRecommendations(recParams);
+    if (recResponse.code === 200 && recResponse.data?.page) {
+      const requestId = recResponse.data.requestId;
+      const recVersion = recResponse.data.recVersion;
+      const startPos = (recommendPageNum.value - 1) * pageSize.value;
+      const records = recResponse.data.page.records.map((a, idx) =>
+        transformAttraction(a, startPos + idx + 1, requestId, recVersion),
+      );
+
+      total.value = Math.max(total.value, recResponse.data.page.total || 0);
+      recommendHasMore.value = recResponse.data.page.hasNext;
+      if (recommendHasMore.value) {
+        recommendPageNum.value++;
+      }
+      return records;
+    }
+  } catch (e) {
+    console.warn("个性化推荐接口失败，回退热门列表", e);
+  }
+
+  recommendHasMore.value = false;
+  return [];
+};
+
+const loadAllPage = async (): Promise<AttractionCardData[]> => {
+  if (!allHasMore.value) {
+    return [];
+  }
+
+  const params: AttractionQueryRequest = {
+    pageNum: allPageNum.value,
+    pageSize: pageSize.value,
+  };
+
+  const response = await getAttractionCards(params);
+  if (response.code === 200 && response.data) {
+    const records = response.data.records.map((a) => transformAttraction(a));
+    total.value = Math.max(total.value, response.data.total || 0);
+    allHasMore.value = response.data.hasNext;
+    if (allHasMore.value) {
+      allPageNum.value++;
+    }
+    return records;
+  }
+
+  allHasMore.value = false;
+  return [];
 };
 
 const appendUniqueAttractions = (items: AttractionCardData[]) => {
@@ -240,25 +294,27 @@ const loadAttractions = async (append: boolean = false) => {
   }
 
   try {
-    let uniqueNewAttractions: AttractionCardData[] = [];
+    if (!append) {
+      total.value = 0;
+      recommendPageNum.value = 1;
+      allPageNum.value = 1;
+      recommendHasMore.value = useRecommend.value;
+      allHasMore.value = true;
+    }
+
+    let newAttractions: AttractionCardData[] = [];
 
     if (useRecommend.value && recommendHasMore.value) {
-      try {
-        const recommendItems = await loadRecommendPage();
-        uniqueNewAttractions = appendUniqueAttractions(recommendItems);
-      } catch (e) {
-        console.warn("个性化推荐接口失败，切换全量列表", e);
-        recommendHasMore.value = false;
-      }
+      newAttractions = await loadRecommendPage();
     }
 
-    if (uniqueNewAttractions.length === 0 && allHasMore.value) {
-      const allItems = await loadAllPage();
-      uniqueNewAttractions = appendUniqueAttractions(allItems);
+    if (newAttractions.length === 0 && allHasMore.value) {
+      newAttractions = await loadAllPage();
     }
 
-    hasMore.value = recommendHasMore.value || allHasMore.value;
-    await sendImpressionTrack(uniqueNewAttractions);
+    appendUniqueAttractions(newAttractions, append);
+    hasMore.value =
+      (useRecommend.value && recommendHasMore.value) || allHasMore.value;
 
     // 如果用户已登录，初始化收藏列表
     if (userStore.isLoggedIn && !collectionStore.initialized) {
@@ -277,22 +333,6 @@ const loadAttractions = async (append: boolean = false) => {
 // 处理收藏事件
 const handleFavorite = (id: number | string, isFavorite: boolean) => {
   console.log(`景点 ${id} 收藏状态: ${isFavorite}`);
-};
-
-const handleCardClickTrack = (id: number | string) => {
-  const attractionId = Number(id);
-  if (!Number.isFinite(attractionId)) return;
-  const item = attractions.value.find((a) => Number(a.id) === attractionId);
-  if (!item?.requestId) return;
-
-  trackRecommendEvent({
-    attractionId,
-    eventType: "click",
-    requestId: item.requestId,
-    position: item.recommendPosition,
-    sourcePage: "home",
-    recVersion: item.recVersion || "content-v1",
-  }).catch(() => null);
 };
 
 // 防抖函数
@@ -332,16 +372,14 @@ const debouncedHandleScroll = debounce(handleScroll, 200);
 // 监听登录状态变化
 watch(
   () => userStore.isLoggedIn,
-  (newVal) => {
+  (newVal, oldVal) => {
     if (newVal && attractions.value.length > 0) {
       // 用户登录后初始化收藏列表
       collectionStore.initializeCollections();
     }
 
-    if (!newVal) {
-      recommendHasMore.value = false;
-    } else if (recommendPageNum.value === 1) {
-      recommendHasMore.value = true;
+    if (newVal !== oldVal) {
+      loadAttractions(false);
     }
   },
 );

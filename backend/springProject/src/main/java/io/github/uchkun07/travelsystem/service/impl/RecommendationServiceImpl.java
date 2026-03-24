@@ -2,8 +2,6 @@ package io.github.uchkun07.travelsystem.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.uchkun07.travelsystem.config.RecommendAlgorithmProperties;
 import io.github.uchkun07.travelsystem.dto.AttractionCardResponse;
 import io.github.uchkun07.travelsystem.dto.PageResponse;
@@ -27,16 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -55,7 +51,6 @@ public class RecommendationServiceImpl implements IRecommendationService {
     private final UserPreferenceMapper userPreferenceMapper;
     private final UserBrowseRecordMapper userBrowseRecordMapper;
     private final RecommendAlgorithmProperties recommendProps;
-    private final ObjectMapper objectMapper;
 
     @Override
     public RecommendHomeResponse getHomeRecommendations(Long userId, RecommendHomeRequest request) {
@@ -91,7 +86,7 @@ public class RecommendationServiceImpl implements IRecommendationService {
             behaviorStats = userBrowseRecordMapper.aggregateUserBehaviorByType(userId, window);
         }
 
-        PythonRankResult rankResult = callPythonRank(candidates, preference, behaviorStats, behaviorEventCount);
+        RankResult rankResult = rankInJava(candidates, preference, behaviorStats, behaviorEventCount);
 
         List<Attraction> orderedAttractions = reorderByIds(candidates, rankResult.orderedIds());
 
@@ -134,7 +129,15 @@ public class RecommendationServiceImpl implements IRecommendationService {
         }
 
         String eventType = normalizeEventType(request.getEventType());
-        int staySeconds = "stay".equals(eventType) ? Math.max(defaultInt(request.getStaySeconds()), 0) : 0;
+        // 仅保留“详情停留”行为，首页曝光/点击不再入库。
+        if (!"stay".equals(eventType)) {
+            return;
+        }
+
+        int staySeconds = Math.max(defaultInt(request.getStaySeconds()), 0);
+        if (staySeconds < 2) {
+            return;
+        }
 
         String requestIdShort = safeShort(request.getRequestId(), 8);
         String sourcePage = safeShort(request.getSourcePage(), 12);
@@ -158,148 +161,89 @@ public class RecommendationServiceImpl implements IRecommendationService {
                 .userId(userId)
                 .attractionId(request.getAttractionId())
                 .browseDuration(staySeconds)
-                .browseTime(LocalDateTime.now())
+            // 记录用户进入详情页的大致时间点，便于后续行为分析。
+            .browseTime(LocalDateTime.now().minusSeconds(staySeconds))
                 .deviceInfo(deviceInfo)
                 .build();
 
         userBrowseRecordMapper.insert(record);
     }
 
-    private PythonRankResult callPythonRank(List<Attraction> candidates,
-                                            UserPreference preference,
-                                            List<RecommendTypeBehaviorStat> behaviorStats,
-                                            long behaviorEventCount) {
+    private RankResult fallbackRank(long behaviorEventCount) {
+        boolean behaviorEnabled = behaviorEventCount >= recommendProps.getBehaviorSwitchThreshold();
+        return new RankResult(List.of(), behaviorEnabled);
+    }
+
+    private RankResult rankInJava(List<Attraction> candidates,
+                                  UserPreference preference,
+                                  List<RecommendTypeBehaviorStat> behaviorStats,
+                                  long behaviorEventCount) {
         try {
-            Map<String, Object> input = new LinkedHashMap<>();
-            input.put("candidates", buildCandidatePayload(candidates));
-            input.put("preference", buildPreferencePayload(preference));
-            input.put("behaviorByType", buildBehaviorPayload(behaviorStats));
-            input.put("behaviorEventCount", behaviorEventCount);
-            input.put("params", buildAlgoParams());
-
-            String inputJson = objectMapper.writeValueAsString(input);
-            String scriptPath = resolveScriptPath();
-
-            ProcessBuilder pb = new ProcessBuilder("python", scriptPath);
-            pb.redirectErrorStream(false);
-            Process process = pb.start();
-
-            try (OutputStream os = process.getOutputStream()) {
-                os.write(inputJson.getBytes(StandardCharsets.UTF_8));
+            if (candidates.isEmpty()) {
+                return new RankResult(List.of(), false);
             }
 
-            String stdout;
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
+            boolean behaviorEnabled = behaviorEventCount >= recommendProps.getBehaviorSwitchThreshold();
+            Integer preferTypeId = preference == null ? null : preference.getPreferAttractionTypeId();
+
+            int maxBrowse = candidates.stream().map(Attraction::getBrowseCount).filter(Objects::nonNull).max(Integer::compareTo).orElse(1);
+            int maxFavorite = candidates.stream().map(Attraction::getFavoriteCount).filter(Objects::nonNull).max(Integer::compareTo).orElse(1);
+            double maxRating = candidates.stream()
+                    .map(Attraction::getAverageRating)
+                    .filter(Objects::nonNull)
+                    .mapToDouble(Number::doubleValue)
+                    .max()
+                    .orElse(5.0);
+
+            Map<Integer, RecommendTypeBehaviorStat> behaviorByType = behaviorStats.stream()
+                    .filter(s -> s.getTypeId() != null)
+                    .collect(Collectors.toMap(RecommendTypeBehaviorStat::getTypeId, s -> s, (a, b) -> a));
+
+            int maxClick = behaviorByType.values().stream().map(RecommendTypeBehaviorStat::getClickCount)
+                    .filter(Objects::nonNull).max(Integer::compareTo).orElse(1);
+            int maxStay = behaviorByType.values().stream().map(RecommendTypeBehaviorStat::getStaySeconds)
+                    .filter(Objects::nonNull).max(Integer::compareTo).orElse(1);
+
+            List<ScoredAttraction> scored = new ArrayList<>(candidates.size());
+            for (Attraction item : candidates) {
+                double hs = hotScore(item, maxBrowse, maxFavorite, maxRating);
+                double es = explicitScore(item, preference);
+                double ims = implicitScore(item, behaviorByType, maxClick, maxStay);
+
+                double total;
+                if (preference == null) {
+                    total = hs;
+                } else if (behaviorEnabled) {
+                    double profile = recommendProps.getProfileExplicitWeight() * es
+                            + recommendProps.getProfileImplicitWeight() * ims;
+                    total = recommendProps.getMatureProfileWeight() * profile
+                            + recommendProps.getMatureHotWeight() * hs;
+                } else {
+                    total = recommendProps.getColdPreferenceWeight() * es
+                            + recommendProps.getColdHotWeight() * hs;
                 }
-                stdout = sb.toString();
+
+                boolean typeMatch = preferTypeId != null && preferTypeId.equals(item.getTypeId());
+                scored.add(new ScoredAttraction(item, round(total), typeMatch));
             }
 
-            try (BufferedReader errReader = new BufferedReader(
-                    new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
-                String errLine;
-                while ((errLine = errReader.readLine()) != null) {
-                    log.debug("[Python Recommend] {}", errLine);
-                }
+            Comparator<ScoredAttraction> byScoreDesc = Comparator.comparing(ScoredAttraction::score).reversed();
+            if (preferTypeId != null) {
+                scored.sort(Comparator.comparing(ScoredAttraction::typeMatch).reversed().thenComparing(byScoreDesc));
+            } else {
+                scored.sort(byScoreDesc);
             }
 
-            int exitCode = process.waitFor();
-            if (exitCode != 0 || !StringUtils.hasText(stdout)) {
-                log.warn("推荐算法 Python 脚本执行异常，exitCode={}，降级使用热门排序", exitCode);
-                return fallbackRank(behaviorEventCount);
-            }
-
-            JsonNode root = objectMapper.readTree(stdout);
-            List<Long> orderedIds = new ArrayList<>();
-            JsonNode arr = root.path("orderedIds");
-            if (arr.isArray()) {
-                for (JsonNode n : arr) {
-                    if (n.isNumber()) {
-                        orderedIds.add(n.asLong());
-                    }
-                }
-            }
-            boolean behaviorEnabled = root.path("behaviorEnabled").asBoolean(false);
-            return new PythonRankResult(orderedIds, behaviorEnabled);
-        } catch (Exception e) {
-            log.warn("调用 Python 推荐算法失败，降级使用热门排序: {}", e.getMessage());
+            List<ScoredAttraction> diversified = diversify(scored, 3);
+            List<Long> orderedIds = diversified.stream()
+                    .map(s -> s.attraction().getAttractionId())
+                    .filter(Objects::nonNull)
+                    .toList();
+            return new RankResult(orderedIds, behaviorEnabled);
+        } catch (Exception ex) {
+            log.warn("Java 推荐排序异常，降级热门排序: {}", ex.getMessage());
             return fallbackRank(behaviorEventCount);
         }
-    }
-
-    private PythonRankResult fallbackRank(long behaviorEventCount) {
-        boolean behaviorEnabled = behaviorEventCount >= recommendProps.getBehaviorSwitchThreshold();
-        return new PythonRankResult(List.of(), behaviorEnabled);
-    }
-
-    private List<Map<String, Object>> buildCandidatePayload(List<Attraction> candidates) {
-        List<Map<String, Object>> list = new ArrayList<>(candidates.size());
-        for (Attraction a : candidates) {
-            Map<String, Object> m = new LinkedHashMap<>();
-            m.put("attractionId", a.getAttractionId());
-            m.put("typeId", a.getTypeId());
-            m.put("browseCount", defaultInt(a.getBrowseCount()));
-            m.put("favoriteCount", defaultInt(a.getFavoriteCount()));
-            m.put("averageRating", a.getAverageRating() == null ? 0.0 : a.getAverageRating().doubleValue());
-            m.put("ticketPrice", a.getTicketPrice() == null ? 0.0 : a.getTicketPrice().doubleValue());
-            m.put("bestSeason", a.getBestSeason());
-            list.add(m);
-        }
-        return list;
-    }
-
-    private Map<String, Object> buildPreferencePayload(UserPreference preference) {
-        if (preference == null) {
-            return null;
-        }
-        Map<String, Object> p = new LinkedHashMap<>();
-        p.put("preferAttractionTypeId", preference.getPreferAttractionTypeId());
-        p.put("budgetFloor", preference.getBudgetFloor());
-        p.put("budgetRange", preference.getBudgetRange());
-        p.put("preferSeason", preference.getPreferSeason());
-        return p;
-    }
-
-    private Map<String, Object> buildBehaviorPayload(List<RecommendTypeBehaviorStat> behaviorStats) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        for (RecommendTypeBehaviorStat stat : behaviorStats) {
-            if (stat.getTypeId() == null) {
-                continue;
-            }
-            Map<String, Object> value = new LinkedHashMap<>();
-            value.put("clickCount", defaultInt(stat.getClickCount()));
-            value.put("staySeconds", defaultInt(stat.getStaySeconds()));
-            map.put(String.valueOf(stat.getTypeId()), value);
-        }
-        return map;
-    }
-
-    private Map<String, Object> buildAlgoParams() {
-        Map<String, Object> p = new LinkedHashMap<>();
-        p.put("behaviorSwitchThreshold", recommendProps.getBehaviorSwitchThreshold());
-        p.put("coldPreferenceWeight", recommendProps.getColdPreferenceWeight());
-        p.put("coldHotWeight", recommendProps.getColdHotWeight());
-        p.put("matureProfileWeight", recommendProps.getMatureProfileWeight());
-        p.put("matureHotWeight", recommendProps.getMatureHotWeight());
-        p.put("profileExplicitWeight", recommendProps.getProfileExplicitWeight());
-        p.put("profileImplicitWeight", recommendProps.getProfileImplicitWeight());
-        p.put("behaviorClickWeight", recommendProps.getBehaviorClickWeight());
-        p.put("behaviorStayWeight", recommendProps.getBehaviorStayWeight());
-        return p;
-    }
-
-    private String resolveScriptPath() {
-        String configured = recommendProps.getScriptPath();
-        if (StringUtils.hasText(configured)) {
-            return configured;
-        }
-        return Paths.get(System.getProperty("user.dir"))
-                .getParent().resolve("python/recommendationAlgorithm.py")
-                .toAbsolutePath().toString();
     }
 
     private List<Attraction> reorderByIds(List<Attraction> candidates, List<Long> orderedIds) {
@@ -362,7 +306,6 @@ public class RecommendationServiceImpl implements IRecommendationService {
                 .orderByDesc(Attraction::getAverageRating)
                 .orderByDesc(Attraction::getCreateTime);
         List<Attraction> preferredCandidates = attractionMapper.selectPage(preferredPage, preferredWrapper).getRecords();
-
         if (preferredCandidates.isEmpty()) {
             return baseCandidates;
         }
@@ -379,6 +322,107 @@ public class RecommendationServiceImpl implements IRecommendationService {
         log.info("推荐候选补齐偏好类型: userPreferTypeId={}, baseSize={}, appendSize={}, mergedSize={}",
                 preferTypeId, baseCandidates.size(), preferredCandidates.size(), result.size());
         return result;
+    }
+
+    private double explicitScore(Attraction item, UserPreference preference) {
+        if (preference == null) {
+            return 0.0;
+        }
+        double score = 0.0;
+
+        Integer prefType = preference.getPreferAttractionTypeId();
+        if (prefType != null && prefType.equals(item.getTypeId())) {
+            score += 0.55;
+        }
+
+        String preferSeason = preference.getPreferSeason();
+        String bestSeason = item.getBestSeason();
+        if (StringUtils.hasText(preferSeason) && StringUtils.hasText(bestSeason)) {
+            String[] seasons = preferSeason.split("[,，]");
+            for (String s : seasons) {
+                String season = s.trim();
+                if (season.isEmpty()) {
+                    continue;
+                }
+                if (bestSeason.contains(season)) {
+                    score += 0.2;
+                    break;
+                }
+            }
+        }
+
+        Integer budgetFloor = preference.getBudgetFloor();
+        Integer budgetRange = preference.getBudgetRange();
+        double ticketPrice = item.getTicketPrice() == null ? 0.0 : item.getTicketPrice().doubleValue();
+        if (budgetFloor != null && budgetRange != null
+                && budgetFloor <= ticketPrice && ticketPrice <= budgetRange) {
+            score += 0.25;
+        }
+
+        return Math.min(score, 1.0);
+    }
+
+    private double hotScore(Attraction item, int maxBrowse, int maxFavorite, double maxRating) {
+        double browse = normalize(defaultInt(item.getBrowseCount()), maxBrowse);
+        double favorite = normalize(defaultInt(item.getFavoriteCount()), maxFavorite);
+        double rating = normalize(item.getAverageRating() == null ? 0.0 : item.getAverageRating().doubleValue(), maxRating);
+        return 0.5 * browse + 0.3 * favorite + 0.2 * rating;
+    }
+
+    private double implicitScore(Attraction item,
+                                 Map<Integer, RecommendTypeBehaviorStat> behaviorByType,
+                                 int maxClick,
+                                 int maxStay) {
+        Integer typeId = item.getTypeId();
+        if (typeId == null) {
+            return 0.0;
+        }
+        RecommendTypeBehaviorStat stat = behaviorByType.get(typeId);
+        if (stat == null) {
+            return 0.0;
+        }
+        double clickNorm = normalize(defaultInt(stat.getClickCount()), maxClick);
+        double stayNorm = normalize(defaultInt(stat.getStaySeconds()), maxStay);
+        return recommendProps.getBehaviorClickWeight() * clickNorm
+                + recommendProps.getBehaviorStayWeight() * stayNorm;
+    }
+
+    private List<ScoredAttraction> diversify(List<ScoredAttraction> scoredItems, int maxPerType) {
+        List<ScoredAttraction> result = new ArrayList<>();
+        List<ScoredAttraction> overflow = new ArrayList<>();
+        Map<Integer, Integer> seen = new HashMap<>();
+
+        for (ScoredAttraction item : scoredItems) {
+            Integer type = item.attraction().getTypeId();
+            int count = seen.getOrDefault(type, 0);
+            if (count < maxPerType) {
+                result.add(item);
+                seen.put(type, count + 1);
+            } else {
+                overflow.add(item);
+            }
+        }
+
+        result.addAll(overflow);
+        return result;
+    }
+
+    private double normalize(double value, double maxValue) {
+        if (maxValue <= 0) {
+            return 0.0;
+        }
+        double n = value / maxValue;
+        if (n < 0) {
+            return 0.0;
+        }
+        if (n > 1) {
+            return 1.0;
+        }
+        return n;
+    }
+
+    private double round(double value) {
+        return Math.round(value * 1_000_000d) / 1_000_000d;
     }
 
     private UserPreference loadUserPreference(Long userId) {
@@ -469,6 +513,9 @@ public class RecommendationServiceImpl implements IRecommendationService {
         return v.length() <= maxLen ? v : v.substring(0, maxLen);
     }
 
-    private record PythonRankResult(List<Long> orderedIds, boolean behaviorEnabled) {
+    private record RankResult(List<Long> orderedIds, boolean behaviorEnabled) {
+    }
+
+    private record ScoredAttraction(Attraction attraction, double score, boolean typeMatch) {
     }
 }

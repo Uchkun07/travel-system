@@ -31,7 +31,7 @@
     </header>
     <div class="content">
       <div class="tagsCardFrame">
-        <div class="tagsCard" @click="handleTypeClick(3, '自然风光')">
+        <div class="tagsCard" @click="handleTypeClick(1, '自然风光')">
           <ExploreNature class="icon" />
           <span class="title">自然风光</span>
           <span class="total">245个梦幻目的地</span>
@@ -41,14 +41,14 @@
           <span class="title">文化古迹</span>
           <span class="total">189个历史遗迹</span>
         </div>
-        <div class="tagsCard" @click="handleTypeClick(6, '休闲度假')">
+        <div class="tagsCard" @click="handleTypeClick(3, '主题体验')">
           <ExploreHoliday class="icon" />
-          <span class="title">休闲度假</span>
+          <span class="title">主题体验</span>
           <span class="total">512个度假胜地</span>
         </div>
-        <div class="tagsCard" @click="handleTypeClick(8, '小众秘境')">
+        <div class="tagsCard" @click="handleTypeClick(5, '红色旅游')">
           <ExploreTravel class="icon" />
-          <span class="title">小众秘境</span>
+          <span class="title">红色旅游</span>
           <span class="total">120个隐秘之地</span>
         </div>
       </div>
@@ -60,10 +60,10 @@
                 isSearchMode
                   ? `搜索结果 (${attractionCards.length})`
                   : isViewAllMode
-                  ? `全部景点 (${attractionCards.length})`
-                  : isTypeMode
-                  ? `${selectedTypeName} (${attractionCards.length})`
-                  : "本月热门目的地"
+                    ? `全部景点 (${attractionCards.length})`
+                    : isTypeMode
+                      ? `${selectedTypeName} (${attractionCards.length})`
+                      : "本月热门目的地"
               }}
             </h2>
             <p class="subtitle">
@@ -73,10 +73,10 @@
                     ? `关键词: ${searchKeyword}`
                     : "请输入搜索关键词"
                   : isViewAllMode
-                  ? "按热度值排序展示"
-                  : isTypeMode
-                  ? `探索${selectedTypeName}相关景点`
-                  : "基于社区 2,000,000+ 旅行者的真实评分"
+                    ? "按热度值排序展示"
+                    : isTypeMode
+                      ? `探索${selectedTypeName}相关景点`
+                      : "基于社区 2,000,000+ 旅行者的真实评分"
               }}
             </p>
           </div>
@@ -599,7 +599,8 @@ onMounted(() => {
         }
 
         &:hover {
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          box-shadow:
+            0 20px 25px -5px rgba(0, 0, 0, 0.1),
             0 10px 10px -5px rgba(0, 0, 0, 0.04);
           transform: scale(1.02);
         }
