@@ -40,7 +40,7 @@ public class UserServiceImpl implements IUserService {
     private final IEmailService emailService;
     private final IUserPreferenceService userPreferenceService;
 
-    @Value("${file.upload.avatar-dir:src/main/resources/static/avatars}")
+    @Value("${file.upload.avatar-dir:/opt/travel-system/uploads/avatars}")
     private String avatarUploadDir;
 
     @Override

@@ -405,7 +405,7 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
                     // 处理图片URL - 如果是相对路径则添加前缀
                     String imageUrl = attraction.getMainImageUrl();
                     if (imageUrl != null && !imageUrl.startsWith("http")) {
-                        imageUrl = "http://localhost:8080" + imageUrl;
+                        imageUrl = "http://121.199.57.162:8080" + imageUrl;
                     }
                     
                     // 手动构建响应对象，只包含卡片所需字段
