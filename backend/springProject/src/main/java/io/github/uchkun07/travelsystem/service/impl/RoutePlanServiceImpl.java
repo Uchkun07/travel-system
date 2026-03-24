@@ -1,6 +1,5 @@
 package io.github.uchkun07.travelsystem.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.uchkun07.travelsystem.config.RouteAlgorithmProperties;
 import io.github.uchkun07.travelsystem.dto.RoutePlanRequest;
 import io.github.uchkun07.travelsystem.dto.RoutePlanResult;
@@ -13,9 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -25,8 +21,8 @@ import java.util.*;
  * <p>流程：
  * 1. 批量地理编码（出发地 + 各景点地址）
  * 2. 计算 n×n 路径成本矩阵（高德 API + Redis 缓存）
- * 3. 序列化矩阵为 JSON，通过 ProcessBuilder 调用 Python 模拟退火脚本
- * 4. 解析 Python 输出，补充景点信息/天气/人流量，封装返回结果
+ * 3. 在 Java 内执行模拟退火，求解最优游览顺序
+ * 4. 补充景点信息/天气/人流量，封装返回结果
  * </p>
  */
 @Slf4j
@@ -38,7 +34,6 @@ public class RoutePlanServiceImpl implements IRoutePlanService {
     private final GeocodingUtil geocodingUtil;
     private final RoutePathUtil routePathUtil;
     private final RouteAlgorithmProperties algorithmProps;
-    private final ObjectMapper objectMapper;
 
     // ── 模拟天气/人流量数据（预留接口，后续可对接真实 API） ──────────────────
     private static final String[] WEATHER_POOL = {
@@ -108,88 +103,129 @@ public class RoutePlanServiceImpl implements IRoutePlanService {
             default      -> algorithmProps.getPrefModerateTimeWeight();
         };
 
-        // ── 5. 构建 Python 输入 JSON ────────────────────────────────────────────
-        Map<String, Object> pyInput = new LinkedHashMap<>();
-        pyInput.put("nodeCount", n);
-        pyInput.put("distMatrix", distMatrix);
-        pyInput.put("timeMatrix", timeMatrix);
-        pyInput.put("costMatrix", costMatrix);
-        pyInput.put("timeWeight", timeWeight);
-        pyInput.put("initialTemp", algorithmProps.getInitialTemp());
-        pyInput.put("coolingRate", algorithmProps.getCoolingRate());
-        pyInput.put("minTemp", algorithmProps.getMinTemp());
-        pyInput.put("iterationsPerTemp", algorithmProps.getIterationsPerTemp());
+        // ── 5. Java 模拟退火求解最优顺序 ────────────────────────────────────────
+        int[] orderedIndexes = runSimulatedAnnealing(n, timeMatrix, costMatrix, timeWeight);
 
-        // ── 6. 调用 Python 模拟退火算法 ─────────────────────────────────────────
-        int[] orderedIndexes = callPythonSA(pyInput);
-
-        // ── 7. 组装结果 ────────────────────────────────────────────────────────
+        // ── 6. 组装结果 ────────────────────────────────────────────────────────
         return buildResult(request, attractions, coords, distMatrix, timeMatrix,
                 costMatrix, orderedIndexes);
     }
 
-    // ────────────────────── 调用 Python 子进程 ────────────────────────────────
+    // ────────────────────── Java 模拟退火实现 ────────────────────────────────
 
-    private int[] callPythonSA(Map<String, Object> pyInput) {
-        String scriptPath = resolveScriptPath();
-        try {
-            String inputJson = objectMapper.writeValueAsString(pyInput);
-            int nodeCount = (int) pyInput.get("nodeCount");
+    private int[] runSimulatedAnnealing(int nodeCount,
+                                        double[][] timeMatrix,
+                                        double[][] costMatrix,
+                                        double timeWeight) {
+        if (nodeCount <= 1) {
+            return new int[0];
+        }
 
-            ProcessBuilder pb = new ProcessBuilder("python", scriptPath);
-            pb.redirectErrorStream(false);
-            Process process = pb.start();
+        int[] fallback = fallbackOrder(nodeCount);
+        if (nodeCount == 2) {
+            return fallback;
+        }
 
-            // 写入 JSON 到子进程 stdin
-            try (OutputStream os = process.getOutputStream()) {
-                os.write(inputJson.getBytes(StandardCharsets.UTF_8));
-            }
+        List<Integer> currentOrder = new ArrayList<>();
+        for (int i = 1; i < nodeCount; i++) {
+            currentOrder.add(i);
+        }
+        Collections.shuffle(currentOrder);
 
-            // 读取 stdout
-            String stdout;
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) sb.append(line);
-                stdout = sb.toString();
-            }
+        double currentCost = calcRouteCost(currentOrder, timeMatrix, costMatrix, timeWeight);
+        List<Integer> bestOrder = new ArrayList<>(currentOrder);
+        double bestCost = currentCost;
 
-            // 读取 stderr（用于日志）
-            try (BufferedReader errReader = new BufferedReader(
-                    new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
-                String errLine;
-                while ((errLine = errReader.readLine()) != null) {
-                    log.debug("[Python SA] {}", errLine);
+        double temp = normalizeInitialTemp(algorithmProps.getInitialTemp(), algorithmProps.getMinTemp());
+        double minTemp = normalizeMinTemp(algorithmProps.getMinTemp());
+        double coolingRate = normalizeCoolingRate(algorithmProps.getCoolingRate());
+        int iterationsPerTemp = Math.max(algorithmProps.getIterationsPerTemp(), 1);
+
+        Random random = new Random();
+        while (temp > minTemp) {
+            for (int i = 0; i < iterationsPerTemp; i++) {
+                List<Integer> neighbor = randomNeighbor(currentOrder, random);
+                double neighborCost = calcRouteCost(neighbor, timeMatrix, costMatrix, timeWeight);
+                double delta = neighborCost - currentCost;
+
+                if (delta < 0 || random.nextDouble() < Math.exp(-delta / temp)) {
+                    currentOrder = neighbor;
+                    currentCost = neighborCost;
+                    if (currentCost < bestCost) {
+                        bestCost = currentCost;
+                        bestOrder = new ArrayList<>(currentOrder);
+                    }
                 }
             }
-
-            int exitCode = process.waitFor();
-            if (exitCode != 0 || stdout.isBlank()) {
-                log.warn("Python SA 脚本异常（exitCode={}），降级使用贪心顺序", exitCode);
-                return fallbackOrder(nodeCount);
-            }
-
-            // Python 返回格式：{"order": [0,2,1,3,...]}
-            int[] order = objectMapper.readTree(stdout).path("order")
-                    .traverse(objectMapper)
-                    .readValueAs(int[].class);
-            return order;
-
-        } catch (Exception e) {
-            log.warn("调用 Python SA 失败：{}，降级使用贪心顺序", e.getMessage());
-            return fallbackOrder((int) pyInput.get("nodeCount"));
+            temp *= coolingRate;
         }
+
+        return bestOrder.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    /** 脚本路径：用户配置的绝对路径，或相对工作目录的默认路径 */
-    private String resolveScriptPath() {
-        String configured = algorithmProps.getScriptPath();
-        if (configured != null && !configured.isBlank()) return configured;
-        // 默认路径：后端工作目录向上两级找 backend/python/
-        return Paths.get(System.getProperty("user.dir"))
-                .getParent().resolve("python/routePlanningAlgorithm.py")
-                .toAbsolutePath().toString();
+    private double calcRouteCost(List<Integer> order,
+                                 double[][] timeMatrix,
+                                 double[][] costMatrix,
+                                 double timeWeight) {
+        double costWeight = 1.0 - timeWeight;
+        double total = 0.0;
+        int prev = 0;
+        for (int node : order) {
+            total += timeWeight * timeMatrix[prev][node] + costWeight * costMatrix[prev][node];
+            prev = node;
+        }
+        return total;
+    }
+
+    private List<Integer> randomNeighbor(List<Integer> order, Random random) {
+        if (order.size() < 2) {
+            return new ArrayList<>(order);
+        }
+
+        if (random.nextDouble() < 0.5) {
+            List<Integer> copy = new ArrayList<>(order);
+            int i = random.nextInt(copy.size());
+            int j = random.nextInt(copy.size());
+            while (j == i) {
+                j = random.nextInt(copy.size());
+            }
+            Collections.swap(copy, i, j);
+            return copy;
+        }
+
+        int i = random.nextInt(order.size());
+        int j = random.nextInt(order.size());
+        if (i > j) {
+            int t = i;
+            i = j;
+            j = t;
+        }
+
+        List<Integer> copy = new ArrayList<>(order);
+        while (i < j) {
+            Collections.swap(copy, i, j);
+            i++;
+            j--;
+        }
+        return copy;
+    }
+
+    private double normalizeInitialTemp(double initialTemp, double minTemp) {
+        if (initialTemp <= minTemp) {
+            return Math.max(minTemp + 1.0, 10.0);
+        }
+        return initialTemp;
+    }
+
+    private double normalizeMinTemp(double minTemp) {
+        return minTemp <= 0 ? 1.0 : minTemp;
+    }
+
+    private double normalizeCoolingRate(double coolingRate) {
+        if (coolingRate <= 0 || coolingRate >= 1) {
+            return 0.995;
+        }
+        return coolingRate;
     }
 
     /**
