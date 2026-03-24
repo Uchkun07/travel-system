@@ -39,7 +39,7 @@ const avatarUrl = computed(() => {
     if (props.modelValue.startsWith("http")) {
       return props.modelValue;
     }
-    return `${import.meta.env.VITE_API_BASE_URL || "http://8.146.237.23:8080"}${
+    return `${import.meta.env.VITE_API_BASE_URL || "https://121.199.57.162:8080"}${
       props.modelValue
     }`;
   }
@@ -92,7 +92,7 @@ const handleUpload = async (options: any) => {
         console.log("Token更新后 - Cookie:", Cookies.get("token"));
         console.log(
           "Token更新后 - localStorage:",
-          localStorage.getItem("token")
+          localStorage.getItem("token"),
         );
       } else {
         console.warn("响应中没有token字段！");

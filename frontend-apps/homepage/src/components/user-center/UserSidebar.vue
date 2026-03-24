@@ -161,7 +161,7 @@ watch(
       activeMenu.value = newMenu;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const handleMenuClick = (menu: string) => {
@@ -254,7 +254,7 @@ const handleConfirmUpload = async () => {
       const fullAvatarUrl =
         avatarUrl && !avatarUrl.startsWith("http")
           ? `${
-              import.meta.env.VITE_API_BASE_URL || "http://8.146.237.23:8080"
+              import.meta.env.VITE_API_BASE_URL || "https://121.199.57.162:8080"
             }${avatarUrl}`
           : avatarUrl;
 

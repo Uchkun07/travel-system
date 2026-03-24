@@ -452,7 +452,7 @@ const handleSubmit = async () => {
               ? fileUrl
               : `${
                   import.meta.env.VITE_API_BASE_URL ||
-                  "http://8.146.237.23:8080"
+                  "https://121.199.57.162:8080"
                 }${fileUrl}`;
           } else {
             ElMessage.error("图片上传失败");

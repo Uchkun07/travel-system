@@ -36,7 +36,7 @@ export const useUserStore = defineStore("user", () => {
   const userInfo = ref<UserInfo | null>(
     localStorage.getItem("userInfo")
       ? JSON.parse(localStorage.getItem("userInfo")!)
-      : null
+      : null,
   );
 
   // 计算属性 - isLoggedIn 基于 token 和 userInfo 的存在性
@@ -54,7 +54,7 @@ export const useUserStore = defineStore("user", () => {
 
     // 如果是相对路径，拼接服务器地址（不包含/api）
     const baseUrl =
-      import.meta.env.VITE_API_BASE_URL || "http://8.146.237.23:8080";
+      import.meta.env.VITE_API_BASE_URL || "https://121.199.57.162:8080";
 
     // 后端返回的路径已经包含前导斜杠，直接拼接
     return `${baseUrl}${avatarPath}`;

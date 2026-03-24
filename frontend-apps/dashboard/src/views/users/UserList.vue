@@ -323,7 +323,7 @@ const getFullAvatarUrl = (avatarUrl?: string) => {
   if (!avatarUrl) return "";
   if (avatarUrl.startsWith("http")) return avatarUrl;
   const baseUrl =
-    import.meta.env.VITE_API_BASE_URL || "http://8.146.237.23:8080";
+    import.meta.env.VITE_API_BASE_URL || "https://121.199.57.162:8080";
   return `${baseUrl}${avatarUrl}`;
 };
 
@@ -420,10 +420,10 @@ const handleSaveTags = async () => {
 
     // 计算需要绑定和解绑的标签
     const tagsToAdd = selectedTags.value.filter(
-      (id) => !currentTagIds.includes(id)
+      (id) => !currentTagIds.includes(id),
     );
     const tagsToRemove = currentTagIds.filter(
-      (id) => !selectedTags.value.includes(id)
+      (id) => !selectedTags.value.includes(id),
     );
 
     // 绑定新标签
