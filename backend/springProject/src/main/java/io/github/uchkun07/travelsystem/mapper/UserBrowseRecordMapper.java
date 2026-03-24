@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -33,4 +34,8 @@ public interface UserBrowseRecordMapper extends BaseMapper<UserBrowseRecord> {
             "AND (LOCATE('et=click', IFNULL(ubr.device_info, '')) > 0 OR LOCATE('et=stay', IFNULL(ubr.device_info, '')) > 0)")
     Long countRecentBehaviorEvents(@Param("userId") Long userId,
                                    @Param("days") Integer days);
+
+    int addBrowseDuration(Long browseRecordId, Integer browseDuration);
+
+    UserBrowseRecord selectRecentRecord(Long userId, Long attractionId, LocalDateTime tenMinutesAgo);
 }
