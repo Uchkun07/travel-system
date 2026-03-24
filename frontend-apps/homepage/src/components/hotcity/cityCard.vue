@@ -23,16 +23,29 @@
           ><span class="dataName">城市热度</span>
         </div>
       </div>
-      <ElButton>探索{{ cityCard.cityName }}</ElButton>
+      <ElButton @click="handleExploreCity"
+        >探索{{ cityCard.cityName }}</ElButton
+      >
     </div>
   </div>
 </template>
 <script setup lang="ts">
 import { ElButton } from "element-plus";
 import { type CityCard } from "@/apis/city";
+import { useRouter } from "vue-router";
+
 const props = defineProps<{
   cityCard: CityCard;
 }>();
+
+const router = useRouter();
+
+const handleExploreCity = () => {
+  router.push({
+    path: "/explore",
+    query: { city: props.cityCard.cityName },
+  });
+};
 </script>
 <style lang="scss" scoped>
 .container {
@@ -138,6 +151,47 @@ const props = defineProps<{
     line-height: 24px;
     letter-spacing: 0px;
     text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .image {
+    height: 210px;
+  }
+
+  .info {
+    padding: 1rem;
+
+    .name {
+      height: auto;
+
+      .nameTitle {
+        font-size: 1.25rem;
+      }
+
+      .location {
+        font-size: 0.92rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .image {
+    height: 180px;
+  }
+
+  .info {
+    .description {
+      font-size: 0.92rem;
+      line-height: 22px;
+    }
   }
 }
 </style>

@@ -60,7 +60,7 @@ public class ManageAdminController {
             AdminLoginResponse response = adminService.login(request);
             log.info("管理员登录成功: username={}, adminId={}", response.getUsername(), response.getAdminId());
             return ApiResponse.success("登录成功", response);
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             log.warn("管理员登录失败: username={}, error={}", request.getUsername(), e.getMessage());
             return ApiResponse.error(400, e.getMessage());
         } catch (Exception e) {

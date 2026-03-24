@@ -62,6 +62,53 @@ jwt:
   expiration: 604800000 # 7天(毫秒)
   expiration-short: 86400000 # 1天(毫秒)
 
+# 高德地图 API 配置
+amap:
+  key: ${AMAP_KEY:7af4638cb0fd5d313df83870b542eba6}
+  geocode-url: https://restapi.amap.com/v3/geocode/geo
+  driving-url: https://restapi.amap.com/v5/direction/driving
+  transit-url: https://restapi.amap.com/v5/direction/transit/integrated
+  timeout: 8000 # HTTP 超时时间(ms)
+
+# 路线规划算法配置（模拟退火参数可调）
+route:
+  algorithm:
+    # Python 脚本绝对路径（留空则使用相对路径 backend/python/routePlanningAlgorithm.py）
+    script-path: ${ROUTE_SCRIPT_PATH:}
+    # 初始温度（越高探索空间越大）
+    initial-temp: 10000.0
+    # 冷却系数（0.9~0.999）
+    cooling-rate: 0.995
+    # 最小温度（终止条件）
+    min-temp: 1.0
+    # 每温度迭代次数
+    iterations-per-temp: 100
+    # 经济偏好：时间/费用权重（0=只看费用，1=只看时间）
+    pref-economy-time-weight: 0.2
+    pref-comfort-time-weight: 0.8
+    pref-moderate-time-weight: 0.5
+
+# 个性化推荐算法配置（Python）
+recommend:
+  algorithm:
+    # Python 脚本绝对路径（留空则使用 backend/python/recommendationAlgorithm.py）
+    script-path: ${RECOMMEND_SCRIPT_PATH:}
+    behavior-window-days: 30
+    behavior-switch-threshold: 20
+    # 冷启动：60%偏好 + 40%热门
+    cold-preference-weight: 0.6
+    cold-hot-weight: 0.4
+    # 稳定期：80%画像 + 20%热门
+    mature-profile-weight: 0.8
+    mature-hot-weight: 0.2
+    # 画像拆分：40%显式 + 60%隐式
+    profile-explicit-weight: 0.4
+    profile-implicit-weight: 0.6
+    # 隐式行为拆分：40%点击 + 60%停留
+    behavior-click-weight: 0.4
+    behavior-stay-weight: 0.6
+    rec-version: content-py-v1
+
 # MyBatis-Plus 配置
 mybatis-plus:
   configuration:

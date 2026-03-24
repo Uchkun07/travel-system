@@ -109,6 +109,7 @@ public class AiChatServiceImpl implements IAiChatService {
                     }
                 }
 
+                @SuppressWarnings("null")
                 @Override
                 public void onEvent(EventSource eventSource, String id, String type, String data) {
                     try {

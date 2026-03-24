@@ -231,7 +231,7 @@ onUnmounted(() => {
     }
     :deep(.el-input__wrapper) {
       /* div.search-container */
-      width: 700px;
+      width: min(700px, 100%);
       height: 67px;
       /* 自动布局 */
       display: flex;
@@ -386,6 +386,131 @@ onUnmounted(() => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .header {
+    height: auto;
+    padding: 48px 16px;
+
+    .searchFrame {
+      width: 100%;
+      max-width: 760px;
+
+      :deep(.el-input__wrapper) {
+        width: 100%;
+      }
+    }
+  }
+
+  .cardFrame {
+    padding: 0 24px;
+
+    .cityCardList {
+      justify-content: center;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    .searchFrame {
+      .searchTitle {
+        font-size: 32px;
+        line-height: 42px;
+      }
+
+      .subTitle {
+        font-size: 16px;
+        line-height: 26px;
+      }
+
+      :deep(.el-input__prefix-inner) {
+        width: auto;
+        height: auto;
+      }
+
+      :deep(.el-input__wrapper) {
+        height: 56px;
+        border-radius: 32px;
+      }
+
+      .searchButton {
+        width: 96px;
+        height: 40px;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .cardFrame {
+    padding: 0 16px;
+
+    .filterFrame {
+      margin: 24px 0 36px;
+
+      .frameTitle {
+        font-size: 24px;
+        line-height: 32px;
+      }
+    }
+
+    .cityCardList {
+      gap: 20px;
+    }
+
+    .no-more-data {
+      padding: 28px 12px;
+
+      span {
+        padding: 6px 14px;
+
+        &::before,
+        &::after {
+          width: 24px;
+        }
+
+        &::before {
+          margin-right: 8px;
+        }
+
+        &::after {
+          margin-left: 8px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 36px 12px;
+
+    .searchFrame {
+      .searchTitle {
+        font-size: 26px;
+        line-height: 34px;
+      }
+
+      .subTitle {
+        font-size: 14px;
+        line-height: 22px;
+      }
+
+      :deep(.el-input__wrapper) {
+        height: 50px;
+      }
+
+      .searchButton {
+        width: 82px;
+        height: 36px;
+      }
+    }
+  }
+
+  .cardFrame {
+    padding: 0 12px;
   }
 }
 </style>

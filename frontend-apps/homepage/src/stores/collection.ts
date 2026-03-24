@@ -17,7 +17,7 @@ export const useCollectionStore = defineStore(
 
     // 计算属性：检查是否收藏
     const isCollected = computed(
-      () => (id: number) => collectedIds.value.has(id)
+      () => (id: number) => collectedIds.value.has(id),
     );
 
     // 获取收藏数量
@@ -147,5 +147,5 @@ export const useCollectionStore = defineStore(
         },
       },
     },
-  }
+  },
 );

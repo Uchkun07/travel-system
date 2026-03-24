@@ -166,6 +166,22 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         if (StringUtils.hasText(request.getName())) {
             wrapper.like(Attraction::getName, request.getName());
         }
+
+        // 城市名称模糊查询
+        if (StringUtils.hasText(request.getCity())) {
+            LambdaQueryWrapper<City> cityWrapper = new LambdaQueryWrapper<>();
+            cityWrapper.like(City::getCityName, request.getCity());
+            List<City> matchedCities = cityMapper.selectList(cityWrapper);
+
+            if (matchedCities.isEmpty()) {
+                wrapper.eq(Attraction::getCityId, -1);
+            } else {
+                List<Integer> matchedCityIds = matchedCities.stream()
+                        .map(City::getCityId)
+                        .collect(Collectors.toList());
+                wrapper.in(Attraction::getCityId, matchedCityIds);
+            }
+        }
         
         // 景点类型
         if (request.getTypeId() != null) {
@@ -342,6 +358,22 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         // 景点名称模糊查询
         if (StringUtils.hasText(request.getName())) {
             wrapper.like(Attraction::getName, request.getName());
+        }
+
+        // 城市名称模糊查询
+        if (StringUtils.hasText(request.getCity())) {
+            LambdaQueryWrapper<City> cityWrapper = new LambdaQueryWrapper<>();
+            cityWrapper.like(City::getCityName, request.getCity());
+            List<City> matchedCities = cityMapper.selectList(cityWrapper);
+
+            if (matchedCities.isEmpty()) {
+                wrapper.eq(Attraction::getCityId, -1);
+            } else {
+                List<Integer> matchedCityIds = matchedCities.stream()
+                        .map(City::getCityId)
+                        .collect(Collectors.toList());
+                wrapper.in(Attraction::getCityId, matchedCityIds);
+            }
         }
         
         // 城市筛选

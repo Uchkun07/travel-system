@@ -1,37 +1,36 @@
 package io.github.uchkun07.travelsystem.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.github.uchkun07.travelsystem.dto.RecommendTypeBehaviorStat;
 import io.github.uchkun07.travelsystem.entity.UserBrowseRecord;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- * 用户浏览记录Mapper接口
- */
 @Mapper
 public interface UserBrowseRecordMapper extends BaseMapper<UserBrowseRecord> {
 
     /**
-     * 查询指定时间内的浏览记录
-     *
-     * @param userId 用户ID
-     * @param attractionId 景点ID
-     * @param startTime 开始时间
-     * @return 浏览记录
+     * 按景点类型聚合用户近N天行为（兼容旧表结构：事件元数据写入 device_info JSON）
      */
-    UserBrowseRecord selectRecentRecord(@Param("userId") Long userId,
-                                        @Param("attractionId") Long attractionId,
-                                        @Param("startTime") LocalDateTime startTime);
+    @Select("SELECT a.type_id AS typeId, " +
+            "SUM(CASE WHEN LOCATE('et=click', IFNULL(ubr.device_info, '')) > 0 THEN 1 ELSE 0 END) AS clickCount, " +
+            "SUM(CASE WHEN LOCATE('et=stay', IFNULL(ubr.device_info, '')) > 0 " +
+            "THEN IFNULL(ubr.browse_duration, 0) ELSE 0 END) AS staySeconds " +
+            "FROM user_browse_record ubr " +
+            "JOIN attraction a ON a.attraction_id = ubr.attraction_id " +
+            "WHERE ubr.user_id = #{userId} " +
+            "AND ubr.browse_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY) " +
+            "GROUP BY a.type_id")
+    List<RecommendTypeBehaviorStat> aggregateUserBehaviorByType(@Param("userId") Long userId,
+                                                                @Param("days") Integer days);
 
-    /**
-     * 累加浏览时长
-     *
-     * @param browseRecordId 浏览记录ID
-     * @param additionalDuration 增加的时长
-     * @return 影响行数
-     */
-    int addBrowseDuration(@Param("browseRecordId") Long browseRecordId,
-                         @Param("additionalDuration") Integer additionalDuration);
+    @Select("SELECT COUNT(*) FROM user_browse_record ubr " +
+            "WHERE ubr.user_id = #{userId} " +
+            "AND ubr.browse_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY) " +
+            "AND (LOCATE('et=click', IFNULL(ubr.device_info, '')) > 0 OR LOCATE('et=stay', IFNULL(ubr.device_info, '')) > 0)")
+    Long countRecentBehaviorEvents(@Param("userId") Long userId,
+                                   @Param("days") Integer days);
 }
