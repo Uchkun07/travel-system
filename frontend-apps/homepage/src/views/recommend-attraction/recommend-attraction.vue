@@ -200,72 +200,6 @@ const loadAllPage = async (): Promise<AttractionCardData[]> => {
   return [];
 };
 
-const appendUniqueAttractions = (items: AttractionCardData[]) => {
-  const uniqueItems: AttractionCardData[] = [];
-  for (const item of items) {
-    const attractionId = Number(item.id);
-    if (!Number.isFinite(attractionId)) {
-      continue;
-    }
-    if (loadedAttractionIds.has(attractionId)) {
-      continue;
-    }
-    loadedAttractionIds.add(attractionId);
-    uniqueItems.push(item);
-  }
-  attractions.value = [...attractions.value, ...uniqueItems];
-  return uniqueItems;
-};
-
-const loadRecommendPage = async () => {
-  if (!useRecommend.value || !recommendHasMore.value) {
-    return [] as AttractionCardData[];
-  }
-
-  const recParams: RecommendHomeRequest = {
-    pageNum: recommendPageNum.value,
-    pageSize: pageSize.value,
-  };
-
-  const recResponse = await getHomeRecommendations(recParams);
-  if (recResponse.code !== 200 || !recResponse.data?.page) {
-    return [] as AttractionCardData[];
-  }
-
-  const requestId = recResponse.data.requestId;
-  const recVersion = recResponse.data.recVersion;
-  const startPos = (recommendPageNum.value - 1) * pageSize.value;
-  const items = recResponse.data.page.records.map((a, idx) =>
-    transformAttraction(a, startPos + idx + 1, requestId, recVersion),
-  );
-
-  total.value = Math.max(total.value, recResponse.data.page.total || 0);
-  recommendHasMore.value = Boolean(recResponse.data.page.hasNext);
-  recommendPageNum.value += 1;
-  return items;
-};
-
-const loadAllPage = async () => {
-  if (!allHasMore.value) {
-    return [] as AttractionCardData[];
-  }
-
-  const params: AttractionQueryRequest = {
-    pageNum: allPageNum.value,
-    pageSize: pageSize.value,
-  };
-  const response = await getAttractionCards(params);
-  if (response.code !== 200 || !response.data) {
-    return [] as AttractionCardData[];
-  }
-
-  const items = response.data.records.map((a) => transformAttraction(a));
-  total.value = Math.max(total.value, response.data.total || 0);
-  allHasMore.value = Boolean(response.data.hasNext);
-  allPageNum.value += 1;
-  return items;
-};
-
 // 加载景点数据
 const loadAttractions = async (append: boolean = false) => {
   // 防止重复请求
@@ -275,17 +209,6 @@ const loadAttractions = async (append: boolean = false) => {
   if (append && !hasMore.value) return;
 
   isLoadingData.value = true;
-
-  if (!append) {
-    attractions.value = [];
-    total.value = 0;
-    hasMore.value = true;
-    recommendPageNum.value = 1;
-    allPageNum.value = 1;
-    recommendHasMore.value = true;
-    allHasMore.value = true;
-    loadedAttractionIds.clear();
-  }
 
   if (append) {
     loadingMore.value = true;
