@@ -36,7 +36,7 @@ export const useUserStore = defineStore("user", () => {
   const userInfo = ref<UserInfo | null>(
     localStorage.getItem("userInfo")
       ? JSON.parse(localStorage.getItem("userInfo")!)
-      : null
+      : null,
   );
 
   // 计算属性 - isLoggedIn 基于 token 和 userInfo 的存在性
@@ -52,8 +52,10 @@ export const useUserStore = defineStore("user", () => {
       return avatarPath;
     }
 
-    // 如果是相对路径，拼接服务器地址（不包含/api）
-    const baseUrl = "http://localhost:8080";
+    // 如果是相对路径，拼接服务器地址（不包含 /api）
+    const baseUrl = (
+      import.meta.env.VITE_API_BASE_URL || window.location.origin
+    ).replace(/\/$/, "");
 
     // 确保路径以 / 开头
     const path = avatarPath.startsWith("/") ? avatarPath : `/${avatarPath}`;
