@@ -83,4 +83,12 @@ public interface IUserService {
      * @throws IOException 文件上传异常
      */
     AvatarUploadResponse uploadAvatar(String token, MultipartFile file) throws IOException;
+
+    /**
+     * 获取用户统计数据
+     *
+     * @param token 访问令牌
+     * @return 用户统计数据
+     */
+    UserStatsResponse getUserStats(String token);
 }

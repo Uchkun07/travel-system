@@ -36,7 +36,7 @@
           <span class="title">自然风光</span>
           <span class="total">245个梦幻目的地</span>
         </div>
-        <div class="tagsCard" @click="handleTypeClick(4, '文化古迹')">
+        <div class="tagsCard" @click="handleTypeClick(2, '文化古迹')">
           <ExploreHistoricalSite class="icon" />
           <span class="title">文化古迹</span>
           <span class="total">189个历史遗迹</span>
@@ -58,11 +58,11 @@
             <h2 class="main-title">
               {{
                 isSearchMode
-                  ? `搜索结果 (${attractionCards.length})`
+                  ? `搜索结果 (${totalattractions})`
                   : isViewAllMode
-                    ? `全部景点 (${attractionCards.length})`
+                    ? `全部景点 (${totalattractions})`
                     : isTypeMode
-                      ? `${selectedTypeName} (${attractionCards.length})`
+                      ? `${selectedTypeName} (${totalattractions})`
                       : "本月热门目的地"
               }}
             </h2>
@@ -195,6 +195,7 @@ const loadingMore = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(12);
 const totalPages = ref(0);
+const totalattractions = ref(0);
 const hasMore = ref(false);
 
 // 转换后端数据为组件所需格式
@@ -260,6 +261,7 @@ const handleTypeClick = async (typeId: number, typeName: string) => {
     if (response.code === 200 && response.data) {
       typeResults.value = response.data.records || [];
       totalPages.value = response.data.totalPages || 0;
+      totalattractions.value = response.data.total || 0;
       hasMore.value = currentPage.value < totalPages.value;
 
       // 滚动到结果区域
@@ -306,6 +308,7 @@ const handleSearch = async () => {
 
     if (response.code === 200 && response.data) {
       searchResults.value = response.data.records || [];
+      totalattractions.value = response.data.total || 0;
 
       // 滚动到结果区域
       setTimeout(() => {
@@ -348,7 +351,7 @@ const handleCitySearch = async (cityName: string) => {
 
     if (response.code === 200 && response.data) {
       searchResults.value = response.data.records || [];
-
+      totalattractions.value = response.data.total || 0;
       setTimeout(() => {
         resultsSection.value?.scrollIntoView({
           behavior: "smooth",
@@ -385,6 +388,7 @@ const handleViewAll = async () => {
 
     if (response.code === 200 && response.data) {
       allAttractions.value = response.data.records || [];
+      totalattractions.value = response.data.total || 0;
       totalPages.value = response.data.totalPages || 0;
       hasMore.value = currentPage.value < totalPages.value;
 
@@ -424,6 +428,7 @@ const loadMoreTypeAttractions = async () => {
       const newAttractions = response.data.records || [];
       typeResults.value = [...typeResults.value, ...newAttractions];
       hasMore.value = currentPage.value < (response.data.totalPages || 0);
+      totalattractions.value = response.data.total || 0;
     }
   } catch (error) {
     console.error("加载更多失败:", error);
@@ -450,6 +455,7 @@ const loadMoreAttractions = async () => {
       const newAttractions = response.data.records || [];
       allAttractions.value = [...allAttractions.value, ...newAttractions];
       hasMore.value = currentPage.value < (response.data.totalPages || 0);
+      totalattractions.value = response.data.total || 0;
     }
   } catch (error) {
     console.error("加载更多失败:", error);

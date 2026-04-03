@@ -79,8 +79,6 @@ amap:
 # 路线规划算法配置（模拟退火参数可调）
 route:
   algorithm:
-    # Python 脚本绝对路径（留空则使用相对路径 backend/python/routePlanningAlgorithm.py）
-    script-path: ${ROUTE_SCRIPT_PATH:}
     # 初始温度（越高探索空间越大）
     initial-temp: 10000.0
     # 冷却系数（0.9~0.999）
@@ -94,26 +92,24 @@ route:
     pref-comfort-time-weight: 0.8
     pref-moderate-time-weight: 0.5
 
-# 个性化推荐算法配置（Python）
+# 个性化推荐算法配置
 recommend:
   algorithm:
-    # Python 脚本绝对路径（留空则使用 backend/python/recommendationAlgorithm.py）
-    script-path: ${RECOMMEND_SCRIPT_PATH:}
     behavior-window-days: 30
-    behavior-switch-threshold: 20
-    # 冷启动：60%偏好 + 40%热门
-    cold-preference-weight: 0.6
-    cold-hot-weight: 0.4
-    # 稳定期：80%画像 + 20%热门
-    mature-profile-weight: 0.8
-    mature-hot-weight: 0.2
-    # 画像拆分：40%显式 + 60%隐式
-    profile-explicit-weight: 0.4
-    profile-implicit-weight: 0.6
-    # 隐式行为拆分：40%点击 + 60%停留
-    behavior-click-weight: 0.4
-    behavior-stay-weight: 0.6
-    rec-version: content-py-v1
+    behavior-switch-threshold: 10
+    # 冷启动：70%偏好 + 30%热门
+    cold-preference-weight: 0.7
+    cold-hot-weight: 0.3
+    # 稳定期：90%画像 + 10%热门
+    mature-profile-weight: 0.9
+    mature-hot-weight: 0.1
+    # 画像拆分：35%显式 + 65%隐式
+    profile-explicit-weight: 0.35
+    profile-implicit-weight: 0.65
+    # 隐式行为拆分：45%点击 + 55%停留
+    behavior-click-weight: 0.45
+    behavior-stay-weight: 0.55
+    rec-version: content-java-v2
 
 # MyBatis-Plus 配置
 mybatis-plus:

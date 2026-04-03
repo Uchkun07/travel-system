@@ -25,7 +25,7 @@ export interface UserInfo {
 }
 
 // Cookie 配置常量
-const TOKEN_COOKIE_NAME = "token";
+const TOKEN_COOKIE_NAME = "user_token";
 const TOKEN_EXPIRES_DAYS = 7; // Cookie 过期时间(天)
 
 export const useUserStore = defineStore("user", () => {

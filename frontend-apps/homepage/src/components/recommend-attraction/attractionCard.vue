@@ -40,6 +40,7 @@ import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { useCollectionStore } from "@/stores/collection";
 import { useUserStore } from "@/stores/user";
+import { trackRecommendEvent } from "@/apis/recommend";
 import heart from "@/assets/svgs/heart.vue";
 
 interface Attraction {
@@ -81,6 +82,15 @@ const handleCardClick = () => {
   const id = Number(props.attraction.id);
   if (Number.isFinite(id)) {
     emit("card-click", props.attraction.id);
+
+    trackRecommendEvent({
+      attractionId: id,
+      eventType: "click",
+      requestId: props.attraction.requestId,
+      position: props.attraction.recommendPosition,
+      sourcePage: "home",
+      recVersion: props.attraction.recVersion,
+    }).catch(() => null);
 
     const query: Record<string, string> = {};
     if (props.attraction.requestId) {

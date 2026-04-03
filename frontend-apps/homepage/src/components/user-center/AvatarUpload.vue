@@ -21,6 +21,7 @@ import { Plus } from "@element-plus/icons-vue";
 import { uploadAvatar } from "@/apis/auth";
 import { useUserStore } from "@/stores";
 import Cookies from "js-cookie";
+const TOKEN_COOKIE_NAME = "user_token";
 
 const props = defineProps<{
   modelValue?: string;
@@ -66,7 +67,7 @@ const handleUpload = async (options: any) => {
 
   try {
     console.log("开始上传头像...");
-    console.log("上传前 - Cookie token:", Cookies.get("token"));
+    console.log("上传前 - Cookie token:", Cookies.get(TOKEN_COOKIE_NAME));
     console.log("上传前 - localStorage token:", localStorage.getItem("token"));
 
     const response = await uploadAvatar(file);
@@ -89,10 +90,10 @@ const handleUpload = async (options: any) => {
         // 这样可以确保 token 同时更新到 Cookie 和 store
         userStore.setToken(responseData.token, true);
 
-        console.log("Token更新后 - Cookie:", Cookies.get("token"));
+        console.log("Token更新后 - Cookie:", Cookies.get(TOKEN_COOKIE_NAME));
         console.log(
           "Token更新后 - localStorage:",
-          localStorage.getItem("token")
+          localStorage.getItem("token"),
         );
       } else {
         console.warn("响应中没有token字段！");

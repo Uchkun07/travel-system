@@ -3,8 +3,16 @@ package io.github.uchkun07.travelsystem.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.github.uchkun07.travelsystem.dto.*;
 import io.github.uchkun07.travelsystem.entity.User;
+import io.github.uchkun07.travelsystem.entity.UserBrowseRecord;
+import io.github.uchkun07.travelsystem.entity.UserCollection;
+import io.github.uchkun07.travelsystem.entity.UserCountTable;
 import io.github.uchkun07.travelsystem.entity.UserProfile;
+import io.github.uchkun07.travelsystem.entity.TravelRoute;
+import io.github.uchkun07.travelsystem.mapper.TravelRouteMapper;
+import io.github.uchkun07.travelsystem.mapper.UserBrowseRecordMapper;
+import io.github.uchkun07.travelsystem.mapper.UserCollectionMapper;
 import io.github.uchkun07.travelsystem.mapper.UserMapper;
+import io.github.uchkun07.travelsystem.mapper.UserCountTableMapper;
 import io.github.uchkun07.travelsystem.mapper.UserProfileMapper;
 import io.github.uchkun07.travelsystem.service.IUserService;
 import io.github.uchkun07.travelsystem.service.IEmailService;
@@ -35,7 +43,11 @@ import java.util.UUID;
 public class UserServiceImpl implements IUserService {
 
     private final UserMapper userMapper;
+    private final UserCountTableMapper userCountTableMapper;
     private final UserProfileMapper userProfileMapper;
+    private final UserCollectionMapper userCollectionMapper;
+    private final UserBrowseRecordMapper userBrowseRecordMapper;
+    private final TravelRouteMapper travelRouteMapper;
     private final JwtUtil jwtUtil;
     private final IEmailService emailService;
     private final IUserPreferenceService userPreferenceService;
@@ -384,6 +396,54 @@ public class UserServiceImpl implements IUserService {
         return AvatarUploadResponse.builder()
                 .avatarUrl(avatarUrl)
                 .token(newToken)
+                .build();
+    }
+
+    @Override
+    public UserStatsResponse getUserStats(String token) {
+        token = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        if (userId == null) {
+            throw new IllegalArgumentException("无效的token");
+        }
+
+        // 收藏景点数：实时统计收藏关系表（未逻辑删除）
+        long collectCount = userCollectionMapper.selectCount(
+            new LambdaQueryWrapper<UserCollection>()
+                .eq(UserCollection::getUserId, userId)
+                .eq(UserCollection::getIsDeleted, 0)
+        );
+
+        // 浏览景点数：实时统计浏览记录条数
+        long browsingCount = userBrowseRecordMapper.selectCount(
+            new LambdaQueryWrapper<UserBrowseRecord>()
+                .eq(UserBrowseRecord::getUserId, userId)
+        );
+
+        // 路线规划数：统计用户保存的路线（未逻辑删除）
+        long planningCount = travelRouteMapper.selectCount(
+            new LambdaQueryWrapper<TravelRoute>()
+                .eq(TravelRoute::getUserId, userId)
+                .eq(TravelRoute::getIsDeleted, 0)
+        );
+
+        // 兼容历史数据：若业务表全为0，则回退到 user_count_table
+        if (collectCount == 0 && browsingCount == 0 && planningCount == 0) {
+            LambdaQueryWrapper<UserCountTable> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(UserCountTable::getUserId, userId);
+            UserCountTable countTable = userCountTableMapper.selectOne(wrapper);
+            if (countTable != null) {
+            collectCount = countTable.getCollectCount() == null ? 0 : countTable.getCollectCount();
+            browsingCount = countTable.getBrowsingCount() == null ? 0 : countTable.getBrowsingCount();
+            planningCount = countTable.getPlanningCount() == null ? 0 : countTable.getPlanningCount();
+            }
+        }
+
+        return UserStatsResponse.builder()
+            .browsingCount((int) browsingCount)
+            .collectCount((int) collectCount)
+            .planningCount((int) planningCount)
                 .build();
     }
 }

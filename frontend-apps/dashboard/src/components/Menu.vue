@@ -1,6 +1,6 @@
 <template>
   <!-- 左侧菜单 -->
-  <el-aside :width="isCollapse ? '64px' : '240px'" class="layout-aside">
+  <el-aside :width="asideWidth" class="layout-aside">
     <div class="collapse-btn" @click="toggleCollapse">
       <i v-if="!isCollapse" class="fa-solid fa-angle-left"></i>
       <i v-else class="fa-solid fa-angle-right"></i>
@@ -88,16 +88,36 @@
   </el-aside>
 </template>
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 const route = useRoute();
 const isCollapse = ref(false);
+const isCompactViewport = ref(false);
 
 const activeMenu = computed(() => route.path);
+const asideWidth = computed(() => {
+  if (isCollapse.value) {
+    return "64px";
+  }
+  return isCompactViewport.value ? "220px" : "240px";
+});
+
+const updateViewportMode = () => {
+  isCompactViewport.value = window.innerWidth <= 1536;
+};
 
 const toggleCollapse = () => {
   isCollapse.value = !isCollapse.value;
 };
+
+onMounted(() => {
+  updateViewportMode();
+  window.addEventListener("resize", updateViewportMode);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateViewportMode);
+});
 </script>
 <style scoped>
 .layout-aside {
@@ -180,6 +200,6 @@ const toggleCollapse = () => {
 }
 
 .sidebar-menu:not(.el-menu--collapse) {
-  width: 240px;
+  width: 100%;
 }
 </style>

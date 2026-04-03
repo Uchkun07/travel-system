@@ -9,6 +9,8 @@ import { ElMessage } from "element-plus";
 import { router } from "@/routers";
 import Cookies from "js-cookie";
 
+const TOKEN_COOKIE_NAME = "user_token";
+
 // 响应数据接口
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -31,7 +33,7 @@ const service: AxiosInstance = axios.create({
 service.interceptors.request.use(
   (config: any) => {
     // 从 Cookie 获取 token
-    const token = Cookies.get("token");
+    const token = Cookies.get(TOKEN_COOKIE_NAME);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -40,7 +42,7 @@ service.interceptors.request.use(
   (error: AxiosError) => {
     console.error("请求错误:", error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // 响应拦截器
@@ -88,12 +90,12 @@ service.interceptors.response.use(
             ElMessage.error(data.message || "登录已过期,请重新登录");
 
             // 清除 Cookie (多种方式)
-            Cookies.remove("token", { path: "/" });
-            Cookies.remove("token", {
+            Cookies.remove(TOKEN_COOKIE_NAME, { path: "/" });
+            Cookies.remove(TOKEN_COOKIE_NAME, {
               path: "/",
               domain: window.location.hostname,
             });
-            Cookies.remove("token");
+            Cookies.remove(TOKEN_COOKIE_NAME);
 
             // 清除 localStorage
             localStorage.removeItem("userInfo");
@@ -127,14 +129,14 @@ service.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // 封装GET请求
 export function get<T = any>(
   url: string,
   params?: any,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig,
 ): Promise<T> {
   return service.get(url, { params, ...config });
 }
@@ -143,7 +145,7 @@ export function get<T = any>(
 export function post<T = any>(
   url: string,
   data?: any,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig,
 ): Promise<T> {
   return service.post(url, data, config);
 }
@@ -152,7 +154,7 @@ export function post<T = any>(
 export function put<T = any>(
   url: string,
   data?: any,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig,
 ): Promise<T> {
   return service.put(url, data, config);
 }
@@ -161,7 +163,7 @@ export function put<T = any>(
 export function del<T = any>(
   url: string,
   params?: any,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig,
 ): Promise<T> {
   return service.delete(url, { params, ...config });
 }
@@ -170,7 +172,7 @@ export function del<T = any>(
 export function upload<T = any>(
   url: string,
   file: File,
-  onProgress?: (progressEvent: any) => void
+  onProgress?: (progressEvent: any) => void,
 ): Promise<T> {
   const formData = new FormData();
   formData.append("file", file);
@@ -187,7 +189,7 @@ export function upload<T = any>(
 export function download(
   url: string,
   filename: string,
-  params?: any
+  params?: any,
 ): Promise<void> {
   return service
     .get(url, {

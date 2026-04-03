@@ -129,6 +129,20 @@ public class UserHomeController {
         }
     }
 
+    @Operation(summary = "获取用户统计数据")
+    @GetMapping("/stats")
+    public ApiResponse<UserStatsResponse> getUserStats(@RequestHeader("Authorization") String token) {
+        try {
+            UserStatsResponse response = userService.getUserStats(token);
+            return ApiResponse.success("获取成功", response);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(401, e.getMessage());
+        } catch (Exception e) {
+            log.error("获取用户统计数据失败", e);
+            return ApiResponse.error(500, "获取失败: " + e.getMessage());
+        }
+    }
+
     @Operation(summary = "更新用户基本信息")
     @PutMapping("/profile")
     public ApiResponse<UserProfileResponse> updateUserProfile(

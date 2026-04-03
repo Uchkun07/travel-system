@@ -89,6 +89,10 @@ const recommendPageNum = ref(1);
 const allPageNum = ref(1);
 const recommendHasMore = ref(true);
 const allHasMore = ref(true);
+const inferredTypePriority = ref<string[]>([]);
+
+const MIN_APPEND_ITEMS = 6;
+const MAX_APPEND_FETCH_ROUNDS = 4;
 
 // Store
 const collectionStore = useCollectionStore();
@@ -140,6 +144,57 @@ const appendUniqueAttractions = (
   }
 };
 
+const pickUniqueItems = (
+  items: AttractionCardData[],
+  batchSeen: Set<number>,
+): AttractionCardData[] => {
+  const uniqueItems: AttractionCardData[] = [];
+  for (const item of items) {
+    const id = Number(item.id);
+    if (!Number.isFinite(id)) continue;
+    if (loadedAttractionIds.has(id)) continue;
+    if (batchSeen.has(id)) continue;
+    batchSeen.add(id);
+    uniqueItems.push(item);
+  }
+  return uniqueItems;
+};
+
+const rebuildTypePriorityFromRecommended = (items: AttractionCardData[]) => {
+  const typeCount = new Map<string, number>();
+  for (const item of items) {
+    const type = item.badge?.trim();
+    if (!type) continue;
+    typeCount.set(type, (typeCount.get(type) || 0) + 1);
+  }
+
+  inferredTypePriority.value = [...typeCount.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([type]) => type)
+    .slice(0, 4);
+};
+
+const personalizeFallbackRecords = (
+  records: AttractionCardData[],
+): AttractionCardData[] => {
+  if (!useRecommend.value || inferredTypePriority.value.length === 0) {
+    return records;
+  }
+
+  const priorityIndex = new Map(
+    inferredTypePriority.value.map((type, idx) => [type, idx]),
+  );
+
+  return [...records].sort((a, b) => {
+    const aIdx = priorityIndex.get(a.badge || "") ?? Number.MAX_SAFE_INTEGER;
+    const bIdx = priorityIndex.get(b.badge || "") ?? Number.MAX_SAFE_INTEGER;
+    if (aIdx !== bIdx) {
+      return aIdx - bIdx;
+    }
+    return (b.rating || 0) - (a.rating || 0);
+  });
+};
+
 const loadRecommendPage = async (): Promise<AttractionCardData[]> => {
   if (!useRecommend.value || !recommendHasMore.value) {
     return [];
@@ -159,6 +214,7 @@ const loadRecommendPage = async (): Promise<AttractionCardData[]> => {
       const records = recResponse.data.page.records.map((a, idx) =>
         transformAttraction(a, startPos + idx + 1, requestId, recVersion),
       );
+      rebuildTypePriorityFromRecommended(records);
 
       total.value = Math.max(total.value, recResponse.data.page.total || 0);
       recommendHasMore.value = recResponse.data.page.hasNext;
@@ -168,7 +224,7 @@ const loadRecommendPage = async (): Promise<AttractionCardData[]> => {
       return records;
     }
   } catch (e) {
-    console.warn("个性化推荐接口失败，回退热门列表", e);
+    console.warn("个性化推荐接口失败", e);
   }
 
   recommendHasMore.value = false;
@@ -188,15 +244,37 @@ const loadAllPage = async (): Promise<AttractionCardData[]> => {
   const response = await getAttractionCards(params);
   if (response.code === 200 && response.data) {
     const records = response.data.records.map((a) => transformAttraction(a));
+    const personalized = personalizeFallbackRecords(records).map((item) => ({
+      ...item,
+      recVersion: item.recVersion || "content-java-v2-fallback",
+    }));
     total.value = Math.max(total.value, response.data.total || 0);
     allHasMore.value = response.data.hasNext;
     if (allHasMore.value) {
       allPageNum.value++;
     }
-    return records;
+    return personalized;
   }
 
   allHasMore.value = false;
+  return [];
+};
+
+const loadNextByCurrentFlow = async (): Promise<AttractionCardData[]> => {
+  if (useRecommend.value) {
+    if (recommendHasMore.value) {
+      return await loadRecommendPage();
+    }
+    if (allHasMore.value) {
+      return await loadAllPage();
+    }
+    return [];
+  }
+
+  if (allHasMore.value) {
+    return await loadAllPage();
+  }
+
   return [];
 };
 
@@ -223,21 +301,36 @@ const loadAttractions = async (append: boolean = false) => {
       allPageNum.value = 1;
       recommendHasMore.value = useRecommend.value;
       allHasMore.value = true;
+      inferredTypePriority.value = [];
     }
 
     let newAttractions: AttractionCardData[] = [];
 
-    if (useRecommend.value && recommendHasMore.value) {
-      newAttractions = await loadRecommendPage();
-    }
+    if (append) {
+      const batchSeen = new Set<number>();
+      for (let i = 0; i < MAX_APPEND_FETCH_ROUNDS; i++) {
+        const fetched = await loadNextByCurrentFlow();
+        if (fetched.length > 0) {
+          const uniqueFetched = pickUniqueItems(fetched, batchSeen);
+          newAttractions = [...newAttractions, ...uniqueFetched];
+        }
 
-    if (newAttractions.length === 0 && allHasMore.value) {
-      newAttractions = await loadAllPage();
+        const flowHasMore = useRecommend.value
+          ? recommendHasMore.value || allHasMore.value
+          : allHasMore.value;
+
+        if (newAttractions.length >= MIN_APPEND_ITEMS || !flowHasMore) {
+          break;
+        }
+      }
+    } else {
+      newAttractions = await loadNextByCurrentFlow();
     }
 
     appendUniqueAttractions(newAttractions, append);
-    hasMore.value =
-      (useRecommend.value && recommendHasMore.value) || allHasMore.value;
+    hasMore.value = useRecommend.value
+      ? recommendHasMore.value || allHasMore.value
+      : allHasMore.value;
 
     // 如果用户已登录，初始化收藏列表
     if (userStore.isLoggedIn && !collectionStore.initialized) {
