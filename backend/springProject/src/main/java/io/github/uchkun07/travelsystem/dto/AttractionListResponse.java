@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * 景点列表响应DTO
  */
@@ -27,6 +29,12 @@ public class AttractionListResponse {
 
     @Schema(description = "景点类型名称")
     private String typeName;
+
+    @Schema(description = "景点类型ID列表")
+    private List<Integer> typeIds;
+
+    @Schema(description = "景点类型名称列表")
+    private List<String> typeNames;
 
     @Schema(description = "城市ID")
     private Integer cityId;

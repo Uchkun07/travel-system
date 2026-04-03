@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 景点创建/更新请求DTO
@@ -23,6 +24,9 @@ public class AttractionRequest {
 
     @Schema(description = "景点类型ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer typeId;
+
+    @Schema(description = "景点类型ID列表（支持多类型）")
+    private List<Integer> typeIds;
 
     @Schema(description = "城市ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer cityId;
