@@ -1,14 +1,18 @@
 package io.github.uchkun07.travelsystem.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.uchkun07.travelsystem.dto.ApiResponse;
 import io.github.uchkun07.travelsystem.dto.AttractionCardResponse;
 import io.github.uchkun07.travelsystem.dto.AttractionDetailResponse;
 import io.github.uchkun07.travelsystem.dto.AttractionQueryRequest;
 import io.github.uchkun07.travelsystem.dto.PageResponse;
+import io.github.uchkun07.travelsystem.config.PerformanceProperties;
 import io.github.uchkun07.travelsystem.entity.AttractionType;
 import io.github.uchkun07.travelsystem.service.IAttractionService;
 import io.github.uchkun07.travelsystem.service.IAttractionTypeService;
 import io.github.uchkun07.travelsystem.service.IUserCollectionService;
+import io.github.uchkun07.travelsystem.util.CacheClient;
+import io.github.uchkun07.travelsystem.util.CacheConstants;
 import io.github.uchkun07.travelsystem.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,8 +20,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.DigestUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +38,13 @@ import java.util.Map;
 @RequestMapping("/api/attraction")
 public class AttractionHomeController {
 
+    private static final TypeReference<PageResponse<AttractionCardResponse>> CARD_PAGE_TYPE =
+        new TypeReference<>() {
+        };
+    private static final TypeReference<List<AttractionCardResponse>> CARD_LIST_TYPE =
+        new TypeReference<>() {
+        };
+
     @Autowired
     private IAttractionService attractionService;
 
@@ -43,6 +57,12 @@ public class AttractionHomeController {
     @Autowired
     private IAttractionTypeService attractionTypeService;
 
+    @Autowired
+    private CacheClient cacheClient;
+
+    @Autowired
+    private PerformanceProperties performanceProperties;
+
     @Operation(summary = "分页获取景点卡片数据", description = "前台景点列表展示，支持分页和筛选")
     @PostMapping("/list")
     public ApiResponse<PageResponse<AttractionCardResponse>> getAttractionList(
@@ -52,7 +72,14 @@ public class AttractionHomeController {
             request.setAuditStatus(2); // 2=已通过
             request.setStatus(1); // 1=正常
 
-            PageResponse<AttractionCardResponse> page = attractionService.getAttractionCards(request);
+            String cacheKey = buildAttractionListCacheKey(request);
+            PageResponse<AttractionCardResponse> page = cacheClient.queryWithPassThrough(
+                    cacheKey,
+                    CARD_PAGE_TYPE,
+                    () -> attractionService.getAttractionCards(request),
+                    performanceProperties.getCache().getAttractionListTtlSec(),
+                    performanceProperties.getCache().getNullValueTtlSec(),
+                    performanceProperties.getCache().getTtlJitterSec());
             return ApiResponse.success("获取成功", page);
         } catch (Exception e) {
             log.error("获取景点列表失败", e);
@@ -64,7 +91,24 @@ public class AttractionHomeController {
     @GetMapping("/detail/{attractionId}")
     public ApiResponse<AttractionDetailResponse> getAttractionDetail(@PathVariable Long attractionId) {
         try {
-            AttractionDetailResponse detail = attractionService.getAttractionCardById(attractionId);
+            if (!cacheClient.existsInAttractionIdFilter(attractionId)) {
+                return ApiResponse.error(404, "景点不存在");
+            }
+
+            String cacheKey = CacheConstants.ATTRACTION_DETAIL_KEY + attractionId;
+            String lockKey = CacheConstants.LOCK_ATTRACTION_DETAIL + attractionId;
+            AttractionDetailResponse detail = cacheClient.queryWithMutex(
+                    cacheKey,
+                    lockKey,
+                    AttractionDetailResponse.class,
+                    () -> attractionService.getAttractionCardById(attractionId),
+                    performanceProperties.getCache().getAttractionDetailTtlSec(),
+                    performanceProperties.getCache().getNullValueTtlSec(),
+                    performanceProperties.getCache().getTtlJitterSec());
+
+            if (detail == null) {
+                return ApiResponse.error(404, "景点不存在");
+            }
             return ApiResponse.success("获取成功", detail);
         } catch (IllegalArgumentException e) {
             return ApiResponse.error(404, e.getMessage());
@@ -235,11 +279,45 @@ public class AttractionHomeController {
     @GetMapping("/top/browse")
     public ApiResponse<List<AttractionCardResponse>> getTopThreeByBrowse() {
         try {
-            List<AttractionCardResponse> attractions = attractionService.getTopThreeByBrowse();
+            List<AttractionCardResponse> attractions = cacheClient.queryWithPassThrough(
+                    CacheConstants.ATTRACTION_TOP_BROWSE_KEY,
+                    CARD_LIST_TYPE,
+                    attractionService::getTopThreeByBrowse,
+                    performanceProperties.getCache().getTopAttractionTtlSec(),
+                    performanceProperties.getCache().getNullValueTtlSec(),
+                    performanceProperties.getCache().getTtlJitterSec());
             return ApiResponse.success("获取成功", attractions);
         } catch (Exception e) {
             log.error("获取热门景点失败", e);
             return ApiResponse.error(500, "获取失败: " + e.getMessage());
         }
+    }
+
+    private String buildAttractionListCacheKey(AttractionQueryRequest request) {
+        String raw = "p=" + defaultInt(request.getPageNum())
+                + "&s=" + defaultInt(request.getPageSize())
+                + "&aid=" + defaultLong(request.getAttractionId())
+                + "&name=" + defaultStr(request.getName())
+                + "&type=" + defaultInt(request.getTypeId())
+                + "&city=" + defaultStr(request.getCity())
+                + "&cityId=" + defaultInt(request.getCityId())
+                + "&status=" + defaultInt(request.getStatus())
+                + "&audit=" + defaultInt(request.getAuditStatus())
+                + "&orderBy=" + defaultStr(request.getOrderBy())
+                + "&orderType=" + defaultStr(request.getOrderType());
+        return CacheConstants.ATTRACTION_LIST_KEY
+                + DigestUtils.md5DigestAsHex(raw.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private int defaultInt(Integer value) {
+        return value == null ? 0 : value;
+    }
+
+    private long defaultLong(Long value) {
+        return value == null ? 0L : value;
+    }
+
+    private String defaultStr(String value) {
+        return StringUtils.hasText(value) ? value.trim() : "";
     }
 }
