@@ -12,9 +12,9 @@
           <span class="rating">
             <i class="fa-solid fa-star"></i>
             <span class="rating-text"
-              >{{ attractionDetail?.averageRating }}（{{
+              >{{ attractionDetail?.averageRating }}（热度值{{
                 attractionDetail?.browseCount
-              }}人评论）</span
+              }}）</span
             >
           </span>
         </div>

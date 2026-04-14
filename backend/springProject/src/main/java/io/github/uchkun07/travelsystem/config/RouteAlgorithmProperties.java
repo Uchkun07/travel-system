@@ -12,9 +12,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "route.algorithm")
 public class RouteAlgorithmProperties {
 
-    /** Python 脚本路径，留空则使用默认相对路径 */
-    private String scriptPath = "";
-
     /** 模拟退火初始温度 */
     private double initialTemp = 10000.0;
 

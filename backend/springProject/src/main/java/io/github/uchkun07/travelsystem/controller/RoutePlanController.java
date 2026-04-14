@@ -11,6 +11,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+<<<<<<< HEAD
+=======
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+
+>>>>>>> parent of f9d89de (feat: fix bug)
 /**
  * 路线规划控制器
  * POST /api/route/plan — 提交规划参数，返回最优路线结果
@@ -45,4 +56,26 @@ public class RoutePlanController {
             return ApiResponse.error(500, "路线规划失败：" + e.getMessage());
         }
     }
+<<<<<<< HEAD
+=======
+
+    private RoutePlanResult executeWithTimeout(RoutePlanRequest request) {
+        try {
+            return CompletableFuture
+                    .supplyAsync(() -> routePlanService.plan(request), routePlanExecutor)
+                    .get(performanceProperties.getRoutePlanTimeoutMs(), TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            throw new RuntimeException("路线规划计算超时或执行失败", e);
+        }
+    }
+
+    private String buildRoutePlanCacheKey(RoutePlanRequest request) {
+        List<Long> ids = new ArrayList<>(request.getAttractionIds());
+        Collections.sort(ids);
+        String raw = request.getDeparture() + "|" + request.getBudget() + "|"
+                + request.getDepartureDate() + "|" + request.getTravelMode() + "|"
+                + request.getTravelGroup() + "|" + request.getTravelPreference() + "|" + ids;
+        return CacheConstants.ROUTE_PLAN_KEY + DigestUtils.md5DigestAsHex(raw.getBytes(StandardCharsets.UTF_8));
+    }
+>>>>>>> parent of f9d89de (feat: fix bug)
 }

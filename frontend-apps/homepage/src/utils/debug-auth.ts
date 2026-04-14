@@ -11,6 +11,8 @@
  */
 import Cookies from "js-cookie";
 
+const TOKEN_COOKIE_NAME = "user_token";
+
 /**
  * 打印当前认证状态
  */
@@ -19,7 +21,7 @@ export function debugAuthStatus() {
 
   // Cookie 状态
   console.log("📦 Cookie:");
-  console.log("  - token:", Cookies.get("token") || "❌ 不存在");
+  console.log("  - user_token:", Cookies.get(TOKEN_COOKIE_NAME) || "❌ 不存在");
   console.log("  - 所有 Cookies:", document.cookie || "❌ 空");
 
   // localStorage 状态
@@ -50,7 +52,7 @@ export function forceCleanAuth() {
   console.warn("🧹 强制清除所有认证信息");
 
   // 清除所有可能的 Cookie
-  const cookieNames = ["token", "TOKEN", "jwt", "JWT"];
+  const cookieNames = [TOKEN_COOKIE_NAME, "token", "TOKEN", "jwt", "JWT"];
   const paths = ["/", "/api", ""];
   const domains = [
     window.location.hostname,

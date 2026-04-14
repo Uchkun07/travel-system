@@ -73,7 +73,13 @@
       <el-table :data="attractions" border style="width: 100%">
         <el-table-column prop="attractionId" label="景点ID" width="80" />
         <el-table-column prop="name" label="景点名称" width="180" />
-        <el-table-column prop="typeName" label="景点类型" width="120" />
+        <el-table-column prop="typeName" label="景点类型" width="220">
+          <template #default="{ row }">
+            {{
+              row.typeNames?.length ? row.typeNames.join(" / ") : row.typeName
+            }}
+          </template>
+        </el-table-column>
         <el-table-column prop="cityName" label="城市" width="120" />
         <el-table-column prop="viewCount" label="浏览量" width="100" />
         <el-table-column prop="favoriteCount" label="收藏数" width="100" />
@@ -130,11 +136,14 @@
         <el-form-item label="副标题" prop="subtitle">
           <el-input v-model="formData.subtitle" placeholder="请输入副标题" />
         </el-form-item>
-        <el-form-item label="景点类型" prop="typeId">
+        <el-form-item label="景点类型" prop="typeIds">
           <el-select
-            v-model="formData.typeId"
+            v-model="formData.typeIds"
             placeholder="请选择景点类型"
             style="width: 100%"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
           >
             <el-option
               v-for="type in attractionTypes"
@@ -395,6 +404,7 @@ const formData = reactive<CreateAttractionRequest & { attractionId?: number }>({
   name: "",
   subtitle: "",
   typeId: undefined as any,
+  typeIds: [] as number[],
   cityId: undefined as any,
   address: "",
   latitude: undefined,
@@ -428,7 +438,7 @@ const currentAttractionId = ref<number>(0);
 // 表单验证规则
 const formRules: FormRules = {
   name: [{ required: true, message: "请输入景点名称", trigger: "blur" }],
-  typeId: [{ required: true, message: "请选择景点类型", trigger: "change" }],
+  typeIds: [{ required: true, message: "请选择景点类型", trigger: "change" }],
   cityId: [{ required: true, message: "请选择城市", trigger: "change" }],
   latitude: [
     {
@@ -532,6 +542,12 @@ const handleReset = () => {
   handleSearch();
 };
 
+const syncPrimaryTypeId = () => {
+  formData.typeId = (
+    formData.typeIds?.length ? formData.typeIds[0] : undefined
+  ) as any;
+};
+
 // 处理主图变化
 const handleMainImageChange = (file: UploadFile) => {
   if (file.raw) {
@@ -610,6 +626,7 @@ const handleAdd = () => {
     name: "",
     subtitle: "",
     typeId: undefined,
+    typeIds: [],
     cityId: undefined,
     address: "",
     latitude: undefined,
@@ -643,6 +660,11 @@ const handleEdit = (row: AttractionListResponse) => {
     name: row.name,
     subtitle: "",
     typeId: row.typeId,
+    typeIds: row.typeIds?.length
+      ? [...row.typeIds]
+      : row.typeId
+        ? [row.typeId]
+        : [],
     cityId: row.cityId,
     address: "",
     latitude: undefined,
@@ -711,10 +733,10 @@ const handleSaveTags = async () => {
 
     // 计算需要绑定和解绑的标签
     const tagsToAdd = selectedTags.value.filter(
-      (id) => !currentTagIds.includes(id)
+      (id) => !currentTagIds.includes(id),
     );
     const tagsToRemove = currentTagIds.filter(
-      (id) => !selectedTags.value.includes(id)
+      (id) => !selectedTags.value.includes(id),
     );
 
     // 绑定新标签
@@ -756,7 +778,7 @@ const handleSubmit = async () => {
         // 2. 上传多图
         if (multiImageFiles.value.length > 0) {
           const uploadPromises = multiImageFiles.value.map((file) =>
-            uploadAttractionImage(file)
+            uploadAttractionImage(file),
           );
           const results = await Promise.all(uploadPromises);
           const urls = results
@@ -766,6 +788,7 @@ const handleSubmit = async () => {
         }
 
         // 3. 提交表单数据
+        syncPrimaryTypeId();
         if (formData.attractionId) {
           // 编辑
           await updateAttraction(formData as UpdateAttractionRequest);

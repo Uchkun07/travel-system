@@ -229,9 +229,9 @@ async function loadDashboardData() {
 
     // 趋势
     const tr: TrendData = d.thirtyDayTrend;
-    trendDates = tr.dates;
-    trendUserGrowth = tr.userGrowth;
-    trendPlanGrowth = tr.planGrowth;
+    trendDates = tr?.dates ?? [];
+    trendUserGrowth = tr?.userGrowth ?? [];
+    trendPlanGrowth = tr?.planGrowth ?? [];
 
     // 图表数据
     topAttractions = d.topAttractions?.length
@@ -242,9 +242,7 @@ async function loadDashboardData() {
     prefDist = d.prefDist?.length ? d.prefDist : prefDist;
 
     // 最近路线
-    recentRoutes.value = d.recentRoutes?.length
-      ? d.recentRoutes
-      : recentRoutes.value;
+    recentRoutes.value = d.recentRoutes ?? [];
   } catch (e) {
     console.error("Dashboard API 请求失败，使用 Mock 数据", e);
     ElMessage.warning("网络异常，使用示例数据展示");

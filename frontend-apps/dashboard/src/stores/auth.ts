@@ -5,6 +5,8 @@ import type { LoginRequest } from "../apis/auth";
 import { ElMessage } from "element-plus";
 import Cookies from "js-cookie";
 
+const TOKEN_COOKIE_NAME = "admin_token";
+
 export interface User {
   userId: number;
   username: string;
@@ -25,7 +27,7 @@ export const useAuthStore = defineStore("auth", () => {
   // 初始化时检查本地存储
   const initAuth = () => {
     // 从 cookie 中读取 token
-    const storedToken = Cookies.get("token");
+    const storedToken = Cookies.get(TOKEN_COOKIE_NAME);
     // 从 localStorage 中读取用户信息
     const storedUser = localStorage.getItem("user");
 
@@ -71,7 +73,7 @@ export const useAuthStore = defineStore("auth", () => {
         email,
         phone,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          fullName || username
+          fullName || username,
         )}&background=667eea&color=fff&size=128`,
       };
 
@@ -81,10 +83,10 @@ export const useAuthStore = defineStore("auth", () => {
       // Token 保存到 Cookie (根据 rememberMe 设置过期时间)
       if (loginData.rememberMe) {
         // 记住我：30天过期
-        Cookies.set("token", newToken, { expires: 30 });
+        Cookies.set(TOKEN_COOKIE_NAME, newToken, { expires: 30 });
       } else {
         // 不记住：会话结束后过期
-        Cookies.set("token", newToken);
+        Cookies.set(TOKEN_COOKIE_NAME, newToken);
       }
 
       // 用户信息保存到 localStorage
@@ -97,7 +99,7 @@ export const useAuthStore = defineStore("auth", () => {
       return true;
     } catch (error: any) {
       console.error("登录失败:", error);
-      
+
       // 显示错误消息
       if (error.response?.data?.message) {
         ElMessage.error(error.response.data.message);
@@ -124,7 +126,7 @@ export const useAuthStore = defineStore("auth", () => {
       token.value = "";
 
       // 清除 Cookie 中的 token
-      Cookies.remove("token");
+      Cookies.remove(TOKEN_COOKIE_NAME);
       // 清除 localStorage 中的用户信息
       localStorage.removeItem("user");
       sessionStorage.removeItem("user");
@@ -137,7 +139,7 @@ export const useAuthStore = defineStore("auth", () => {
   // 检查登录状态
   const checkAuth = (): boolean => {
     // 从 cookie 读取 token
-    const storedToken = Cookies.get("token");
+    const storedToken = Cookies.get(TOKEN_COOKIE_NAME);
     // 从 localStorage 读取用户信息
     const storedUser = localStorage.getItem("user");
 

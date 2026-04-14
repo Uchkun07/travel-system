@@ -12,9 +12,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "recommend.algorithm")
 public class RecommendAlgorithmProperties {
 
-    /** Python 推荐脚本路径，留空则使用默认相对路径 */
-    private String scriptPath = "";
-
     /** 行为窗口天数 */
     private int behaviorWindowDays = 30;
 
@@ -46,5 +43,5 @@ public class RecommendAlgorithmProperties {
     private double behaviorStayWeight = 0.6;
 
     /** 推荐版本号 */
-    private String recVersion = "content-py-v1";
+    private String recVersion = "content-java-v2";
 }

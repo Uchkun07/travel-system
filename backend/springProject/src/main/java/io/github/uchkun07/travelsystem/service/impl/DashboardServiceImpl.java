@@ -96,7 +96,7 @@ public class DashboardServiceImpl implements IDashboardService {
         // 生成近 30 天的日期标签列表
         List<String> dates = new ArrayList<>();
         LocalDate today = LocalDate.now();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("M/d");
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM/dd");
         for (int i = 29; i >= 0; i--) {
             dates.add(today.minusDays(i).format(fmt));
         }

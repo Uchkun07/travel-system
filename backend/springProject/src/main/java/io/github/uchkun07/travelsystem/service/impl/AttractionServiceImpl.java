@@ -9,6 +9,7 @@ import io.github.uchkun07.travelsystem.mapper.AttractionMapper;
 import io.github.uchkun07.travelsystem.mapper.AttractionTagMapper;
 import io.github.uchkun07.travelsystem.mapper.AttractionTagRelationMapper;
 import io.github.uchkun07.travelsystem.mapper.AttractionTypeMapper;
+import io.github.uchkun07.travelsystem.mapper.AttractionTypeRelationMapper;
 import io.github.uchkun07.travelsystem.mapper.CityMapper;
 import io.github.uchkun07.travelsystem.service.IAttractionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,13 +18,17 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +41,7 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
     private final AttractionMapper attractionMapper;
     private final CityMapper cityMapper;
     private final AttractionTypeMapper attractionTypeMapper;
+    private final AttractionTypeRelationMapper attractionTypeRelationMapper;
     private final AttractionTagRelationMapper attractionTagRelationMapper;
     private final AttractionTagMapper attractionTagMapper;
 
@@ -48,11 +54,8 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
             throw new RuntimeException("城市不存在");
         }
 
-        // 验证景点类型是否存在
-        AttractionType type = attractionTypeMapper.selectById(request.getTypeId());
-        if (type == null) {
-            throw new RuntimeException("景点类型不存在");
-        }
+        List<Integer> resolvedTypeIds = resolveTypeIds(request, true);
+        validateTypeIdsExist(resolvedTypeIds);
 
         // 检查景点名称是否重复
         LambdaQueryWrapper<Attraction> wrapper = new LambdaQueryWrapper<>();
@@ -64,6 +67,7 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         // 创建景点
         Attraction attraction = new Attraction();
         BeanUtils.copyProperties(request, attraction);
+        attraction.setTypeId(resolvedTypeIds.get(0));
         
         // 设置默认值
         attraction.setAverageRating(null);
@@ -85,6 +89,7 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         }
 
         attractionMapper.insert(attraction);
+        replaceAttractionTypeRelations(attraction.getAttractionId(), resolvedTypeIds);
         return attraction.getAttractionId();
     }
 
@@ -101,6 +106,11 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         LambdaQueryWrapper<AttractionTagRelation> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AttractionTagRelation::getAttractionId, attractionId);
         attractionTagRelationMapper.delete(wrapper);
+
+        // 删除景点关联的类型
+        LambdaQueryWrapper<AttractionTypeRelation> typeWrapper = new LambdaQueryWrapper<>();
+        typeWrapper.eq(AttractionTypeRelation::getAttractionId, attractionId);
+        attractionTypeRelationMapper.delete(typeWrapper);
 
         // 删除景点
         attractionMapper.deleteById(attractionId);
@@ -127,12 +137,9 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
             }
         }
 
-        // 验证景点类型是否存在
-        if (request.getTypeId() != null) {
-            AttractionType type = attractionTypeMapper.selectById(request.getTypeId());
-            if (type == null) {
-                throw new RuntimeException("景点类型不存在");
-            }
+        List<Integer> resolvedTypeIds = resolveTypeIds(request, false);
+        if (!resolvedTypeIds.isEmpty()) {
+            validateTypeIdsExist(resolvedTypeIds);
         }
 
         // 检查景点名称是否重复
@@ -146,7 +153,14 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
 
         // 更新景点信息
         BeanUtils.copyProperties(request, attraction);
+        if (!resolvedTypeIds.isEmpty()) {
+            attraction.setTypeId(resolvedTypeIds.get(0));
+        }
         attractionMapper.updateById(attraction);
+
+        if (!resolvedTypeIds.isEmpty()) {
+            replaceAttractionTypeRelations(attraction.getAttractionId(), resolvedTypeIds);
+        }
     }
 
     @Override
@@ -183,9 +197,22 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
             }
         }
         
-        // 景点类型
+        // 景点类型（兼容主类型字段 + 多类型关联表）
         if (request.getTypeId() != null) {
-            wrapper.eq(Attraction::getTypeId, request.getTypeId());
+            List<Long> relatedAttractionIds = attractionTypeRelationMapper.selectList(
+                            new LambdaQueryWrapper<AttractionTypeRelation>()
+                                    .eq(AttractionTypeRelation::getTypeId, request.getTypeId()))
+                    .stream()
+                    .map(AttractionTypeRelation::getAttractionId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            wrapper.and(w -> {
+                w.eq(Attraction::getTypeId, request.getTypeId());
+                if (!relatedAttractionIds.isEmpty()) {
+                    w.or().in(Attraction::getAttractionId, relatedAttractionIds);
+                }
+            });
         }
         
         // 城市
@@ -224,16 +251,24 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         // 查询分页数据
         Page<Attraction> attractionPage = attractionMapper.selectPage(page, wrapper);
 
-        // 获取所有涉及的城市ID和类型ID
+        // 获取所有涉及的城市ID
         List<Integer> cityIds = attractionPage.getRecords().stream()
                 .map(Attraction::getCityId)
                 .distinct()
                 .collect(Collectors.toList());
-        
-        List<Integer> typeIds = attractionPage.getRecords().stream()
-                .map(Attraction::getTypeId)
-                .distinct()
-                .collect(Collectors.toList());
+
+        List<Long> attractionIds = attractionPage.getRecords().stream()
+            .map(Attraction::getAttractionId)
+            .collect(Collectors.toList());
+        Map<Long, List<Integer>> relationTypeIdsMap = getTypeIdsByAttractionIds(attractionIds);
+
+        Set<Integer> allTypeIds = new LinkedHashSet<>();
+        for (Attraction attraction : attractionPage.getRecords()) {
+            List<Integer> effectiveTypeIds = mergeEffectiveTypeIds(
+                attraction.getTypeId(),
+                relationTypeIdsMap.get(attraction.getAttractionId()));
+            allTypeIds.addAll(effectiveTypeIds);
+        }
 
         // 批量查询城市和类型信息
         Map<Integer, String> cityMap = cityIds.isEmpty() ? Map.of() : 
@@ -241,27 +276,39 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
                         .stream()
                         .collect(Collectors.toMap(City::getCityId, City::getCityName));
 
-        Map<Integer, String> typeMap = typeIds.isEmpty() ? Map.of() :
-                attractionTypeMapper.selectList(new LambdaQueryWrapper<AttractionType>().in(AttractionType::getTypeId, typeIds))
+        Map<Integer, String> typeMap = allTypeIds.isEmpty() ? Map.of() :
+            attractionTypeMapper.selectList(new LambdaQueryWrapper<AttractionType>().in(AttractionType::getTypeId, allTypeIds))
                         .stream()
                         .collect(Collectors.toMap(AttractionType::getTypeId, AttractionType::getTypeName));
 
         // 转换为响应DTO
         List<AttractionListResponse> responseList = attractionPage.getRecords().stream()
-                .map(attraction -> AttractionListResponse.builder()
-                        .attractionId(attraction.getAttractionId())
-                        .name(attraction.getName())
-                        .typeId(attraction.getTypeId())
-                        .typeName(typeMap.get(attraction.getTypeId()))
-                        .cityId(attraction.getCityId())
-                        .cityName(cityMap.get(attraction.getCityId()))
-                        .viewCount(attraction.getBrowseCount())
-                        .favoriteCount(attraction.getFavoriteCount())
-                        .popularityScore(attraction.getPopularity())
-                        .mainImageUrl(attraction.getMainImageUrl())
-                        .status(attraction.getStatus())
-                        .auditStatus(attraction.getAuditStatus())
-                        .build())
+            .map(attraction -> {
+                List<Integer> effectiveTypeIds = mergeEffectiveTypeIds(
+                    attraction.getTypeId(),
+                    relationTypeIdsMap.get(attraction.getAttractionId()));
+                List<String> typeNames = effectiveTypeIds.stream()
+                    .map(typeMap::get)
+                    .filter(StringUtils::hasText)
+                    .collect(Collectors.toList());
+
+                return AttractionListResponse.builder()
+                    .attractionId(attraction.getAttractionId())
+                    .name(attraction.getName())
+                    .typeId(attraction.getTypeId())
+                    .typeName(typeMap.get(attraction.getTypeId()))
+                    .typeIds(effectiveTypeIds)
+                    .typeNames(typeNames)
+                    .cityId(attraction.getCityId())
+                    .cityName(cityMap.get(attraction.getCityId()))
+                    .viewCount(attraction.getBrowseCount())
+                    .favoriteCount(attraction.getFavoriteCount())
+                    .popularityScore(attraction.getPopularity())
+                    .mainImageUrl(attraction.getMainImageUrl())
+                    .status(attraction.getStatus())
+                    .auditStatus(attraction.getAuditStatus())
+                    .build();
+            })
                 .collect(Collectors.toList());
 
         return PageResponse.<AttractionListResponse>builder()
@@ -273,6 +320,81 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
                 .hasPrevious(attractionPage.getCurrent() > 1)
                 .hasNext(attractionPage.getCurrent() < attractionPage.getPages())
                 .build();
+    }
+
+    private List<Integer> resolveTypeIds(AttractionRequest request, boolean required) {
+        LinkedHashSet<Integer> typeIds = new LinkedHashSet<>();
+        if (request.getTypeId() != null) {
+            typeIds.add(request.getTypeId());
+        }
+        if (!CollectionUtils.isEmpty(request.getTypeIds())) {
+            typeIds.addAll(request.getTypeIds().stream()
+                    .filter(i -> i != null && i > 0)
+                    .collect(Collectors.toList()));
+        }
+
+        if (required && typeIds.isEmpty()) {
+            throw new RuntimeException("景点类型不能为空");
+        }
+        return new ArrayList<>(typeIds);
+    }
+
+    private void validateTypeIdsExist(List<Integer> typeIds) {
+        if (CollectionUtils.isEmpty(typeIds)) {
+            return;
+        }
+
+        List<AttractionType> types = attractionTypeMapper.selectList(
+                new LambdaQueryWrapper<AttractionType>().in(AttractionType::getTypeId, typeIds));
+        Set<Integer> existedIds = types.stream().map(AttractionType::getTypeId).collect(Collectors.toSet());
+        List<Integer> missingIds = typeIds.stream().filter(id -> !existedIds.contains(id)).collect(Collectors.toList());
+        if (!missingIds.isEmpty()) {
+            throw new RuntimeException("景点类型不存在: " + missingIds);
+        }
+    }
+
+    private void replaceAttractionTypeRelations(Long attractionId, List<Integer> typeIds) {
+        LambdaQueryWrapper<AttractionTypeRelation> deleteWrapper = new LambdaQueryWrapper<>();
+        deleteWrapper.eq(AttractionTypeRelation::getAttractionId, attractionId);
+        attractionTypeRelationMapper.delete(deleteWrapper);
+
+        if (CollectionUtils.isEmpty(typeIds)) {
+            return;
+        }
+
+        List<AttractionTypeRelation> relations = typeIds.stream()
+                .map(typeId -> AttractionTypeRelation.builder()
+                        .attractionId(attractionId)
+                        .typeId(typeId)
+                        .build())
+                .collect(Collectors.toList());
+        relations.forEach(attractionTypeRelationMapper::insert);
+    }
+
+    private Map<Long, List<Integer>> getTypeIdsByAttractionIds(List<Long> attractionIds) {
+        if (CollectionUtils.isEmpty(attractionIds)) {
+            return Collections.emptyMap();
+        }
+
+        return attractionTypeRelationMapper.selectList(
+                        new LambdaQueryWrapper<AttractionTypeRelation>()
+                                .in(AttractionTypeRelation::getAttractionId, attractionIds))
+                .stream()
+                .collect(Collectors.groupingBy(
+                        AttractionTypeRelation::getAttractionId,
+                        Collectors.mapping(AttractionTypeRelation::getTypeId,
+                                Collectors.collectingAndThen(Collectors.toCollection(LinkedHashSet::new), ArrayList::new))));
+    }
+
+    private List<Integer> mergeEffectiveTypeIds(Integer primaryTypeId, List<Integer> relationTypeIds) {
+        LinkedHashSet<Integer> ids = new LinkedHashSet<>();
+        if (primaryTypeId != null) {
+            ids.add(primaryTypeId);
+        }
+        if (!CollectionUtils.isEmpty(relationTypeIds)) {
+            ids.addAll(relationTypeIds);
+        }
+        return new ArrayList<>(ids);
     }
 
     /**
@@ -306,6 +428,25 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         AttractionType type = attractionTypeMapper.selectById(attraction.getTypeId());
         String typeName = type != null ? type.getTypeName() : null;
 
+        List<Integer> relationTypeIds = attractionTypeRelationMapper.selectList(
+                new LambdaQueryWrapper<AttractionTypeRelation>()
+                    .eq(AttractionTypeRelation::getAttractionId, attractionId))
+            .stream()
+            .map(AttractionTypeRelation::getTypeId)
+            .distinct()
+            .collect(Collectors.toList());
+        List<Integer> effectiveTypeIds = mergeEffectiveTypeIds(attraction.getTypeId(), relationTypeIds);
+
+        Map<Integer, String> typeNameMap = effectiveTypeIds.isEmpty() ? Map.of() :
+            attractionTypeMapper.selectList(new LambdaQueryWrapper<AttractionType>()
+                    .in(AttractionType::getTypeId, effectiveTypeIds))
+                .stream()
+                .collect(Collectors.toMap(AttractionType::getTypeId, AttractionType::getTypeName));
+        List<String> typeNames = effectiveTypeIds.stream()
+            .map(typeNameMap::get)
+            .filter(StringUtils::hasText)
+            .collect(Collectors.toList());
+
         // 查询景点绑定的标签
         LambdaQueryWrapper<AttractionTagRelation> relationWrapper = new LambdaQueryWrapper<>();
         relationWrapper.eq(AttractionTagRelation::getAttractionId, attractionId);
@@ -334,6 +475,8 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         BeanUtils.copyProperties(attraction, response);
         response.setCityName(cityName);
         response.setTypeName(typeName);
+        response.setTypeIds(effectiveTypeIds);
+        response.setTypeNames(typeNames);
         response.setTags(tags);
 
         return response;
@@ -383,13 +526,43 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         
         // 类型筛选
         if (request.getTypeId() != null) {
-            wrapper.eq(Attraction::getTypeId, request.getTypeId());
+            List<Long> relatedAttractionIds = attractionTypeRelationMapper.selectList(
+                            new LambdaQueryWrapper<AttractionTypeRelation>()
+                                    .eq(AttractionTypeRelation::getTypeId, request.getTypeId()))
+                    .stream()
+                    .map(AttractionTypeRelation::getAttractionId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            wrapper.and(w -> {
+                w.eq(Attraction::getTypeId, request.getTypeId());
+                if (!relatedAttractionIds.isEmpty()) {
+                    w.or().in(Attraction::getAttractionId, relatedAttractionIds);
+                }
+            });
         }
         
         // 默认按热度降序排序
         wrapper.orderByDesc(Attraction::getPopularity);
         
         Page<Attraction> attractionPage = attractionMapper.selectPage(page, wrapper);
+
+        List<Long> attractionIds = attractionPage.getRecords().stream()
+            .map(Attraction::getAttractionId)
+            .collect(Collectors.toList());
+        Map<Long, List<Integer>> relationTypeIdsMap = getTypeIdsByAttractionIds(attractionIds);
+
+        Set<Integer> allTypeIds = new LinkedHashSet<>();
+        for (Attraction attraction : attractionPage.getRecords()) {
+            allTypeIds.addAll(mergeEffectiveTypeIds(
+                attraction.getTypeId(),
+                relationTypeIdsMap.get(attraction.getAttractionId())));
+        }
+        Map<Integer, String> typeNameMap = allTypeIds.isEmpty() ? Map.of() :
+            attractionTypeMapper.selectList(new LambdaQueryWrapper<AttractionType>()
+                    .in(AttractionType::getTypeId, allTypeIds))
+                .stream()
+                .collect(Collectors.toMap(AttractionType::getTypeId, AttractionType::getTypeName));
         
         // 转换为响应DTO
         List<AttractionCardResponse> cardList = attractionPage.getRecords().stream()
@@ -398,9 +571,13 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
                     City city = cityMapper.selectById(attraction.getCityId());
                     String cityName = city != null ? city.getCityName() : "";
                     
-                    // 查询类型信息
-                    AttractionType type = attractionTypeMapper.selectById(attraction.getTypeId());
-                    String typeName = type != null ? type.getTypeName() : "";
+                        List<Integer> effectiveTypeIds = mergeEffectiveTypeIds(
+                            attraction.getTypeId(),
+                            relationTypeIdsMap.get(attraction.getAttractionId()));
+                        String typeName = effectiveTypeIds.stream()
+                            .map(typeNameMap::get)
+                            .filter(StringUtils::hasText)
+                            .collect(Collectors.joining(" / "));
                     
                     // 处理图片URL - 如果是相对路径则添加前缀
                     String imageUrl = attraction.getMainImageUrl();
@@ -470,6 +647,18 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
 
         // 批量查询景点
         List<Attraction> attractions = listByIds(attractionIds);
+        Map<Long, List<Integer>> relationTypeIdsMap = getTypeIdsByAttractionIds(attractionIds);
+        Set<Integer> allTypeIds = new LinkedHashSet<>();
+        for (Attraction attraction : attractions) {
+            allTypeIds.addAll(mergeEffectiveTypeIds(
+                attraction.getTypeId(),
+                relationTypeIdsMap.get(attraction.getAttractionId())));
+        }
+        Map<Integer, String> typeNameMap = allTypeIds.isEmpty() ? Map.of() :
+            attractionTypeMapper.selectList(new LambdaQueryWrapper<AttractionType>()
+                    .in(AttractionType::getTypeId, allTypeIds))
+                .stream()
+                .collect(Collectors.toMap(AttractionType::getTypeId, AttractionType::getTypeName));
         
         // 转换为卡片响应
         return attractions.stream().map(attraction -> {
@@ -491,13 +680,13 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
                 }
             }
             
-            // 获取类型信息
-            if (attraction.getTypeId() != null) {
-                AttractionType type = attractionTypeMapper.selectById(attraction.getTypeId());
-                if (type != null) {
-                    card.setType(type.getTypeName());
-                }
-            }
+            List<Integer> effectiveTypeIds = mergeEffectiveTypeIds(
+                    attraction.getTypeId(),
+                    relationTypeIdsMap.get(attraction.getAttractionId()));
+            card.setType(effectiveTypeIds.stream()
+                    .map(typeNameMap::get)
+                    .filter(StringUtils::hasText)
+                    .collect(Collectors.joining(" / ")));
             
             return card;
         }).collect(Collectors.toList());
@@ -513,6 +702,19 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
         wrapper.last("LIMIT 3"); // 只取前3条
         
         List<Attraction> attractions = attractionMapper.selectList(wrapper);
+        List<Long> attractionIds = attractions.stream().map(Attraction::getAttractionId).collect(Collectors.toList());
+        Map<Long, List<Integer>> relationTypeIdsMap = getTypeIdsByAttractionIds(attractionIds);
+        Set<Integer> allTypeIds = new LinkedHashSet<>();
+        for (Attraction attraction : attractions) {
+            allTypeIds.addAll(mergeEffectiveTypeIds(
+                attraction.getTypeId(),
+                relationTypeIdsMap.get(attraction.getAttractionId())));
+        }
+        Map<Integer, String> typeNameMap = allTypeIds.isEmpty() ? Map.of() :
+            attractionTypeMapper.selectList(new LambdaQueryWrapper<AttractionType>()
+                    .in(AttractionType::getTypeId, allTypeIds))
+                .stream()
+                .collect(Collectors.toMap(AttractionType::getTypeId, AttractionType::getTypeName));
         
         // 转换为卡片响应
         return attractions.stream().map(attraction -> {
@@ -534,13 +736,13 @@ public class AttractionServiceImpl extends ServiceImpl<AttractionMapper, Attract
                 }
             }
             
-            // 获取类型信息
-            if (attraction.getTypeId() != null) {
-                AttractionType type = attractionTypeMapper.selectById(attraction.getTypeId());
-                if (type != null) {
-                    card.setType(type.getTypeName());
-                }
-            }
+            List<Integer> effectiveTypeIds = mergeEffectiveTypeIds(
+                    attraction.getTypeId(),
+                    relationTypeIdsMap.get(attraction.getAttractionId()));
+            card.setType(effectiveTypeIds.stream()
+                    .map(typeNameMap::get)
+                    .filter(StringUtils::hasText)
+                    .collect(Collectors.joining(" / ")));
             
             return card;
         }).collect(Collectors.toList());
