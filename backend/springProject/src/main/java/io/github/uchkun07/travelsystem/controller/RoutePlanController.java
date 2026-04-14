@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * 路线规划控制器
@@ -77,10 +78,13 @@ public class RoutePlanController {
     }
 
     private RoutePlanResult executeWithTimeout(RoutePlanRequest request) {
+        CompletableFuture<RoutePlanResult> future = CompletableFuture
+                .supplyAsync(() -> routePlanService.plan(request), routePlanExecutor);
         try {
-            return CompletableFuture
-                    .supplyAsync(() -> routePlanService.plan(request), routePlanExecutor)
-                    .get(performanceProperties.getRoutePlanTimeoutMs(), TimeUnit.MILLISECONDS);
+            return future.get(performanceProperties.getRoutePlanTimeoutMs(), TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw new RuntimeException("路线规划计算超时，请减少景点数量或稍后重试", e);
         } catch (Exception e) {
             throw new RuntimeException("路线规划计算超时或执行失败", e);
         }

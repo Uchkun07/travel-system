@@ -46,27 +46,35 @@ public class CacheClient {
                                       long ttlSeconds,
                                       long nullValueTtlSeconds,
                                       long jitterSeconds) {
+        String cacheVal = null;
         try {
-            String cacheVal = stringRedisTemplate.opsForValue().get(key);
+            cacheVal = stringRedisTemplate.opsForValue().get(key);
             if (cacheVal != null) {
                 if (CacheConstants.NULL_VALUE.equals(cacheVal)) {
                     return null;
                 }
                 return deserialize(cacheVal, type);
             }
-
-            T dbValue = dbFallback.get();
-            if (dbValue == null) {
-                setNull(key, nullValueTtlSeconds);
-                return null;
-            }
-
-            set(key, dbValue, ttlSeconds, jitterSeconds);
-            return dbValue;
         } catch (Exception e) {
-            log.warn("缓存透传读取失败，降级查询数据库 key={}", key, e);
-            return dbFallback.get();
+            log.warn("缓存透传读取失败，继续执行回源查询 key={}", key, e);
         }
+
+        T dbValue = dbFallback.get();
+        if (dbValue == null) {
+            try {
+                setNull(key, nullValueTtlSeconds);
+            } catch (Exception e) {
+                log.warn("缓存空值写入失败 key={}", key, e);
+            }
+            return null;
+        }
+
+        try {
+            set(key, dbValue, ttlSeconds, jitterSeconds);
+        } catch (Exception e) {
+            log.warn("缓存写入失败，不影响本次返回 key={}", key, e);
+        }
+        return dbValue;
     }
 
     public <T> T queryWithMutex(String key,

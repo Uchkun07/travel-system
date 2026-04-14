@@ -67,9 +67,11 @@ public class GeocodingUtil {
                 }
             }
             log.warn("高德地理编码未找到结果，address={}, 降级使用默认坐标", address);
-        } catch (IOException | InterruptedException e) {
-            log.warn("高德地理编码请求失败，address={}, 原因={}，降级使用默认坐标", address, e.getMessage());
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            log.warn("高德地理编码请求被中断，address={}, 原因={}，降级使用默认坐标", address, e.getMessage());
+        } catch (IOException e) {
+            log.warn("高德地理编码请求失败，address={}, 原因={}，降级使用默认坐标", address, e.getMessage());
         } catch (Exception e) {
             log.warn("高德地理编码解析失败，address={}，降级使用默认坐标", address, e);
         }

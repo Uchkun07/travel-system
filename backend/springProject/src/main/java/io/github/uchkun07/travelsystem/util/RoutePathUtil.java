@@ -14,6 +14,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,6 +36,11 @@ public class RoutePathUtil {
 
     private static final long CACHE_TTL_HOURS = 24;
     private static final String CACHE_PREFIX = "route:path:";
+    private static final long MODE_DEGRADE_SECONDS = 300;
+    private static final Set<String> CIRCUIT_BREAKER_INFOCODES = Set.of("10021", "20001");
+
+    /** mode 维度熔断到期时间戳（毫秒） */
+    private final ConcurrentHashMap<String, Long> modeDegradeUntilMap = new ConcurrentHashMap<>();
 
     /**
      * 路径成本
@@ -93,6 +100,12 @@ public class RoutePathUtil {
             return cost;
         }
 
+        if (isModeDegraded(mode)) {
+            PathCost cost = PathCost.mock(from, to, mode);
+            writeCache(cacheKey, cost);
+            return cost;
+        }
+
         // 3. 调用高德 API
         try {
             PathCost cost = "火车".equals(mode)
@@ -101,6 +114,7 @@ public class RoutePathUtil {
             writeCache(cacheKey, cost);
             return cost;
         } catch (Exception e) {
+            openModeCircuitIfNeeded(mode, e);
             log.warn("高德路径规划请求失败，降级模拟，原因={}", e.getMessage());
             return PathCost.mock(from, to, mode);
         }
@@ -177,6 +191,41 @@ public class RoutePathUtil {
     private String buildCacheKey(double[] from, double[] to, String mode) {
         return CACHE_PREFIX + String.format("%.4f,%.4f:%.4f,%.4f:%s",
                 from[0], from[1], to[0], to[1], mode);
+    }
+
+    private boolean isModeDegraded(String mode) {
+        Long until = modeDegradeUntilMap.get(mode);
+        if (until == null) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        if (now < until) {
+            return true;
+        }
+        modeDegradeUntilMap.remove(mode, until);
+        return false;
+    }
+
+    private void openModeCircuitIfNeeded(String mode, Exception e) {
+        String message = e.getMessage();
+        if (message == null) {
+            return;
+        }
+        String infoCode = extractInfoCode(message);
+        if (!CIRCUIT_BREAKER_INFOCODES.contains(infoCode)) {
+            return;
+        }
+        long until = System.currentTimeMillis() + MODE_DEGRADE_SECONDS * 1000;
+        modeDegradeUntilMap.put(mode, until);
+        log.warn("检测到高德稳定错误 infocode={}，{} 模式进入{}秒快速降级", infoCode, mode, MODE_DEGRADE_SECONDS);
+    }
+
+    private String extractInfoCode(String message) {
+        int idx = message.lastIndexOf(':');
+        if (idx < 0 || idx >= message.length() - 1) {
+            return "";
+        }
+        return message.substring(idx + 1).trim();
     }
 
     @SuppressWarnings("null")
