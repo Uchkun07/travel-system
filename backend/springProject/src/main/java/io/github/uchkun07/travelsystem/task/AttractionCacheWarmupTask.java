@@ -34,6 +34,7 @@ public class AttractionCacheWarmupTask {
     }
 
     @Scheduled(cron = "0 */30 * * * ?")
+    @SuppressWarnings("null")
     public void refreshAttractionIdFilter() {
         List<Attraction> attractions = attractionMapper.selectList(
             new LambdaQueryWrapper<Attraction>()

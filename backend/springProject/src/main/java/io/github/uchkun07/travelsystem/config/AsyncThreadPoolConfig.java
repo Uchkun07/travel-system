@@ -1,7 +1,6 @@
 package io.github.uchkun07.travelsystem.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -13,7 +12,6 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 @Configuration
 @RequiredArgsConstructor
-@EnableConfigurationProperties(PerformanceProperties.class)
 public class AsyncThreadPoolConfig {
 
     private final PerformanceProperties performanceProperties;

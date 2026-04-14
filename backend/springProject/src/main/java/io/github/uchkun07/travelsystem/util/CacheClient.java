@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class CacheClient {
 
     private static final long LOCK_TTL_SECONDS = 10;

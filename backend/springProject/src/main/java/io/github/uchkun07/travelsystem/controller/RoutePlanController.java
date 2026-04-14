@@ -90,6 +90,7 @@ public class RoutePlanController {
         }
     }
 
+    @SuppressWarnings("null")
     private String buildRoutePlanCacheKey(RoutePlanRequest request) {
         List<Long> ids = new ArrayList<>(request.getAttractionIds());
         Collections.sort(ids);

@@ -293,6 +293,7 @@ public class AttractionHomeController {
         }
     }
 
+    @SuppressWarnings("null")
     private String buildAttractionListCacheKey(AttractionQueryRequest request) {
         String raw = "p=" + defaultInt(request.getPageNum())
                 + "&s=" + defaultInt(request.getPageSize())
