@@ -1,29 +1,15 @@
 package io.github.uchkun07.travelsystem.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import io.github.uchkun07.travelsystem.config.PerformanceProperties;
 import io.github.uchkun07.travelsystem.dto.ApiResponse;
 import io.github.uchkun07.travelsystem.dto.RoutePlanRequest;
 import io.github.uchkun07.travelsystem.dto.RoutePlanResult;
 import io.github.uchkun07.travelsystem.service.IRoutePlanService;
-import io.github.uchkun07.travelsystem.util.CacheClient;
-import io.github.uchkun07.travelsystem.util.CacheConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
-
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 路线规划控制器
@@ -36,15 +22,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RoutePlanController {
 
-    private static final TypeReference<RoutePlanResult> ROUTE_PLAN_TYPE = new TypeReference<>() {
-    };
-
     private final IRoutePlanService routePlanService;
-    private final CacheClient cacheClient;
-    private final PerformanceProperties performanceProperties;
-
-    @Qualifier("routePlanExecutor")
-    private final Executor routePlanExecutor;
 
     /**
      * 执行路线规划
@@ -58,15 +36,7 @@ public class RoutePlanController {
         try {
             log.info("路线规划请求：departure={}, attractions={}",
                     request.getDeparture(), request.getAttractionIds());
-
-            String cacheKey = buildRoutePlanCacheKey(request);
-            RoutePlanResult result = cacheClient.queryWithPassThrough(
-                    cacheKey,
-                    ROUTE_PLAN_TYPE,
-                    () -> executeWithTimeout(request),
-                    performanceProperties.getCache().getRoutePlanTtlSec(),
-                    performanceProperties.getCache().getNullValueTtlSec(),
-                    performanceProperties.getCache().getTtlJitterSec());
+            RoutePlanResult result = routePlanService.plan(request);
             return ApiResponse.success("路线规划成功", result);
         } catch (IllegalArgumentException e) {
             return ApiResponse.error(400, e.getMessage());
@@ -74,24 +44,5 @@ public class RoutePlanController {
             log.error("路线规划失败", e);
             return ApiResponse.error(500, "路线规划失败：" + e.getMessage());
         }
-    }
-
-    private RoutePlanResult executeWithTimeout(RoutePlanRequest request) {
-        try {
-            return CompletableFuture
-                    .supplyAsync(() -> routePlanService.plan(request), routePlanExecutor)
-                    .get(performanceProperties.getRoutePlanTimeoutMs(), TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            throw new RuntimeException("路线规划计算超时或执行失败", e);
-        }
-    }
-
-    private String buildRoutePlanCacheKey(RoutePlanRequest request) {
-        List<Long> ids = new ArrayList<>(request.getAttractionIds());
-        Collections.sort(ids);
-        String raw = request.getDeparture() + "|" + request.getBudget() + "|"
-                + request.getDepartureDate() + "|" + request.getTravelMode() + "|"
-                + request.getTravelGroup() + "|" + request.getTravelPreference() + "|" + ids;
-        return CacheConstants.ROUTE_PLAN_KEY + DigestUtils.md5DigestAsHex(raw.getBytes(StandardCharsets.UTF_8));
     }
 }

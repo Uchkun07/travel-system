@@ -16,10 +16,10 @@ spring:
       timeout: 3000ms
       lettuce:
         pool:
-          max-active: 64
-          max-idle: 16
-          min-idle: 4
-          max-wait: 2000ms
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
   mail:
     host: smtp.qq.com
     port: 587
@@ -114,30 +114,9 @@ recommend:
 # MyBatis-Plus 配置
 mybatis-plus:
   configuration:
-    # 生产环境默认关闭SQL标准输出日志，必要时通过环境变量开启
-    log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.nologging.NoLoggingImpl}
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       logic-delete-field: deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
-
-# 后端高并发性能参数
-performance:
-  recommend-timeout-ms: 1200
-  route-plan-timeout-ms: 10000
-  cache:
-    attraction-list-ttl-sec: 90
-    attraction-detail-ttl-sec: 300
-    top-attraction-ttl-sec: 120
-    recommend-ttl-sec: 45
-    route-plan-ttl-sec: 180
-    null-value-ttl-sec: 30
-    ttl-jitter-sec: 30
-  executor:
-    general-core-pool-size: 8
-    general-max-pool-size: 32
-    route-core-pool-size: 4
-    route-max-pool-size: 16
-    queue-capacity: 1024
-    keep-alive-seconds: 60
