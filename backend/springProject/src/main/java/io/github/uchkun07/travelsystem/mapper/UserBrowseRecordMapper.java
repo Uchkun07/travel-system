@@ -33,4 +33,17 @@ public interface UserBrowseRecordMapper extends BaseMapper<UserBrowseRecord> {
             "AND (LOCATE('et=click', IFNULL(ubr.device_info, '')) > 0 OR LOCATE('et=stay', IFNULL(ubr.device_info, '')) > 0)")
     Long countRecentBehaviorEvents(@Param("userId") Long userId,
                                    @Param("days") Integer days);
+
+    /**
+     * 查询最近活跃用户ID，用于推荐结果预计算。
+     */
+    @Select("SELECT ubr.user_id " +
+            "FROM user_browse_record ubr " +
+            "WHERE ubr.user_id IS NOT NULL " +
+            "AND ubr.browse_time >= DATE_SUB(NOW(), INTERVAL #{hours} HOUR) " +
+            "GROUP BY ubr.user_id " +
+            "ORDER BY MAX(ubr.browse_time) DESC " +
+            "LIMIT #{limit}")
+    List<Long> selectActiveUserIds(@Param("hours") Integer hours,
+                                   @Param("limit") Integer limit);
 }
