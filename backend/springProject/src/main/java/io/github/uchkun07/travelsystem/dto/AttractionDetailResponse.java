@@ -38,6 +38,12 @@ public class AttractionDetailResponse {
     @Schema(description = "景点类型名称")
     private String typeName;
 
+    @Schema(description = "景点类型ID列表")
+    private List<Integer> typeIds;
+
+    @Schema(description = "景点类型名称列表")
+    private List<String> typeNames;
+
     @Schema(description = "城市ID")
     private Integer cityId;
 

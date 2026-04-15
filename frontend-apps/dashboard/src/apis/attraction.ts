@@ -73,7 +73,7 @@ export function batchDeleteAttractionTypes(typeIds: number[]) {
 export function queryAttractionTypes(params?: QueryAttractionTypesRequest) {
   return get<PageResponse<AttractionType>>(
     "/api/admin/attraction/type/list",
-    params
+    params,
   );
 }
 
@@ -232,7 +232,7 @@ export function batchDeleteTags(tagIds: number[]) {
 export function queryTags(params?: QueryTagsRequest) {
   return get<PageResponse<AttractionTag>>(
     "/api/admin/attraction/tag/list",
-    params
+    params,
   );
 }
 
@@ -260,6 +260,8 @@ export interface AttractionListResponse {
   name: string;
   typeId: number;
   typeName: string;
+  typeIds?: number[];
+  typeNames?: string[];
   cityId: number;
   cityName: string;
   viewCount: number;
@@ -278,6 +280,8 @@ export interface AttractionDetailResponse {
   name: string;
   typeId: number;
   typeName: string;
+  typeIds?: number[];
+  typeNames?: string[];
   cityId: number;
   cityName: string;
   address: string;
@@ -302,6 +306,7 @@ export interface CreateAttractionRequest {
   name: string;
   subtitle?: string;
   typeId: number;
+  typeIds?: number[];
   cityId: number;
   address?: string;
   latitude?: number;
@@ -327,6 +332,7 @@ export interface UpdateAttractionRequest {
   name?: string;
   subtitle?: string;
   typeId?: number;
+  typeIds?: number[];
   cityId?: number;
   address?: string;
   latitude?: number;
@@ -376,14 +382,14 @@ export function deleteAttraction(attractionId: number) {
 export function queryAttractions(params?: QueryAttractionsRequest) {
   return post<PageResponse<AttractionListResponse>>(
     "/api/admin/attraction/list",
-    params
+    params,
   );
 }
 
 // 查询景点详情
 export function getAttractionDetail(attractionId: number) {
   return get<AttractionDetailResponse>(
-    `/api/admin/attraction/detail/${attractionId}`
+    `/api/admin/attraction/detail/${attractionId}`,
   );
 }
 
@@ -435,6 +441,6 @@ export function batchUnbindTags(params: BatchUnbindTagsRequest) {
 // 查询景点的所有标签
 export function getAttractionTags(attractionId: number) {
   return get<TagInfo[]>(
-    `/api/admin/attraction/tag-relation/list/${attractionId}`
+    `/api/admin/attraction/tag-relation/list/${attractionId}`,
   );
 }

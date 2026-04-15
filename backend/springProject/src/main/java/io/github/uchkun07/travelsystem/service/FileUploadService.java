@@ -22,9 +22,9 @@ import java.util.UUID;
  */
 @Service
 public class FileUploadService {
-    
-    @Value("${server.port:8080}")
-    private String serverPort;
+
+    @Value("${file.upload.base-dir:/opt/travel-system/uploads}")
+    private String baseUploadDir;
     
     /**
      * 允许上传的图片格式
@@ -174,13 +174,6 @@ public class FileUploadService {
      * @return 上传目录路径
      */
     private String getUploadDirectory(FileCategory category) {
-        // 获取项目根目录下的 resources/static 目录
-        String classPath = this.getClass().getResource("/").getPath();
-        // 处理 Windows 路径
-        if (classPath.startsWith("/") && System.getProperty("os.name").toLowerCase().contains("windows")) {
-            classPath = classPath.substring(1);
-        }
-        
-        return classPath + "static/" + category.getPath();
+        return Paths.get(baseUploadDir, category.getPath()).toString();
     }
 }

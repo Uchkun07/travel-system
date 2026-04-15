@@ -2,6 +2,7 @@ package io.github.uchkun07.travelsystem.config;
 
 import io.github.uchkun07.travelsystem.interceptor.AdminPermissionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -14,6 +15,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+
+        @Value("${file.upload.base-dir:/opt/travel-system/uploads}")
+        private String baseUploadDir;
 
     @Autowired
     private JwtInterceptor jwtInterceptor;
@@ -42,17 +46,19 @@ public class WebMvcConfig implements WebMvcConfigurer {
     
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        String normalizedBaseDir = baseUploadDir.endsWith("/") ? baseUploadDir : baseUploadDir + "/";
+
         // 配置静态资源访问路径
         registry.addResourceHandler("/avatars/**")
-                .addResourceLocations("classpath:/static/avatars/");
+                .addResourceLocations("file:" + normalizedBaseDir + "avatars/", "classpath:/static/avatars/");
         
         registry.addResourceHandler("/cities/**")
-                .addResourceLocations("classpath:/static/cities/");
+                .addResourceLocations("file:" + normalizedBaseDir + "cities/", "classpath:/static/cities/");
         
         registry.addResourceHandler("/attractions/**")
-                .addResourceLocations("classpath:/static/attractions/");
+                .addResourceLocations("file:" + normalizedBaseDir + "attractions/", "classpath:/static/attractions/");
         
         registry.addResourceHandler("/slideshows/**")
-                .addResourceLocations("classpath:/static/slideshows/");
+                .addResourceLocations("file:" + normalizedBaseDir + "slideshows/", "classpath:/static/slideshows/");
     }
 }

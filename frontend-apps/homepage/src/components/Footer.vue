@@ -189,6 +189,13 @@ import {
   }
 }
 
+@media (max-width: 1536px) {
+  .footer-content {
+    max-width: 1200px;
+    gap: 32px;
+  }
+}
+
 @media (max-width: 768px) {
   .footer-content {
     grid-template-columns: 1fr;

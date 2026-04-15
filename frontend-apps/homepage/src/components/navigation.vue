@@ -293,6 +293,21 @@ const handleCommand = async (command: string) => {
   }
 }
 
+@media (max-width: 1536px) {
+  .navbar {
+    padding: 0 clamp(2rem, 6vw, 6rem);
+  }
+
+  .menu ul {
+    gap: clamp(1.2rem, 2vw, 2.2rem);
+  }
+
+  :deep(.el-button) {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}
+
 @media (max-width: 768px) {
   .navbar {
     height: auto;

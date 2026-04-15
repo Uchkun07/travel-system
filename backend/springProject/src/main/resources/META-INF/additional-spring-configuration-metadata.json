@@ -1,157 +1,263 @@
-{"properties": [
-  {
-    "name": "deepseek.api.url",
-    "type": "java.lang.String",
-    "description": "A description for 'deepseek.api.url'"
-  },
-  {
-    "name": "deepseek.api.model",
-    "type": "java.lang.String",
-    "description": "A description for 'deepseek.api.model'"
-  },
-  {
-    "name": "deepseek.api.model",
-    "type": "java.lang.String",
-    "description": "A description for 'deepseek.api.model'"
-  },
-  {
-    "name": "deepseek.api.key",
-    "type": "java.lang.String",
-    "description": "A description for 'deepseek.api.key'"
-  },
-  {
-    "name": "deepseek.api.timeout",
-    "type": "java.lang.String",
-    "description": "A description for 'deepseek.api.timeout'"
-  },
-  {
-    "name": "amap.key",
-    "type": "java.lang.String",
-    "description": "A description for 'amap.key'"
-  },
-  {
-    "name": "amap.geocode-url",
-    "type": "java.lang.String",
-    "description": "A description for 'amap.geocode-url'"
-  },
-  {
-    "name": "amap.driving-url",
-    "type": "java.lang.String",
-    "description": "A description for 'amap.driving-url'"
-  },
-  {
-    "name": "amap.transit-url",
-    "type": "java.lang.String",
-    "description": "A description for 'amap.transit-url'"
-  },
-  {
-    "name": "amap.timeout",
-    "type": "java.lang.String",
-    "description": "A description for 'amap.timeout'"
-  },
-  {
-    "name": "route.algorithm.script-path",
-    "type": "java.lang.String",
-    "description": "A description for 'route.algorithm.script-path'"
-  },
-  {
-    "name": "recommend.algorithm.script-path",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.script-path'"
-  },
-  {
-    "name": "route.algorithm.initial-temp",
-    "type": "java.lang.String",
-    "description": "A description for 'route.algorithm.initial-temp'"
-  },
-  {
-    "name": "route.algorithm.cooling-rate",
-    "type": "java.lang.String",
-    "description": "A description for 'route.algorithm.cooling-rate'"
-  },
-  {
-    "name": "route.algorithm.min-temp",
-    "type": "java.lang.String",
-    "description": "A description for 'route.algorithm.min-temp'"
-  },
-  {
-    "name": "route.algorithm.iterations-per-temp",
-    "type": "java.lang.String",
-    "description": "A description for 'route.algorithm.iterations-per-temp'"
-  },
-  {
-    "name": "route.algorithm.pref-economy-time-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'route.algorithm.pref-economy-time-weight'"
-  },
-  {
-    "name": "route.algorithm.pref-comfort-time-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'route.algorithm.pref-comfort-time-weight'"
-  },
-  {
-    "name": "route.algorithm.pref-moderate-time-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'route.algorithm.pref-moderate-time-weight'"
-  },
-  {
-    "name": "route.algorithm.pref-moderate-time-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'route.algorithm.pref-moderate-time-weight'"
-  },
-  {
-    "name": "recommend.algorithm.behavior-switch-threshold",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.behavior-switch-threshold'"
-  },
-  {
-    "name": "recommend.algorithm.behavior-window-days",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.behavior-window-days'"
-  },
-  {
-    "name": "recommend.algorithm.cold-preference-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.cold-preference-weight'"
-  },
-  {
-    "name": "recommend.algorithm.cold-hot-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.cold-hot-weight'"
-  },
-  {
-    "name": "recommend.algorithm.mature-profile-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.mature-profile-weight'"
-  },
-  {
-    "name": "recommend.algorithm.mature-hot-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.mature-hot-weight'"
-  },
-  {
-    "name": "recommend.algorithm.profile-implicit-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.profile-implicit-weight'"
-  },
-  {
-    "name": "recommend.algorithm.profile-explicit-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.profile-explicit-weight'"
-  },
-  {
-    "name": "recommend.algorithm.behavior-click-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.behavior-click-weight'"
-  },
-  {
-    "name": "recommend.algorithm.behavior-stay-weight",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.behavior-stay-weight'"
-  },
-  {
-    "name": "recommend.algorithm.rec-version",
-    "type": "java.lang.String",
-    "description": "A description for 'recommend.algorithm.rec-version'"
-  }
-]}
+{
+  "groups": [
+    {
+      "name": "deepseek.api",
+      "type": "java.lang.Object",
+      "description": "DeepSeek API 配置"
+    },
+    {
+      "name": "amap",
+      "type": "java.lang.Object",
+      "description": "高德地图配置"
+    },
+    {
+      "name": "route.algorithm",
+      "type": "java.lang.Object",
+      "description": "路线算法配置"
+    },
+    {
+      "name": "recommend.algorithm",
+      "type": "java.lang.Object",
+      "description": "推荐算法配置"
+    },
+    {
+      "name": "file.upload",
+      "type": "io.github.uchkun07.travelsystem.config.FileUploadProperties",
+      "sourceType": "io.github.uchkun07.travelsystem.config.FileUploadProperties",
+      "description": "文件上传配置"
+    },
+    {
+      "name": "performance",
+      "type": "io.github.uchkun07.travelsystem.config.PerformanceProperties",
+      "sourceType": "io.github.uchkun07.travelsystem.config.PerformanceProperties",
+      "description": "高并发性能参数配置"
+    }
+  ],
+  "properties": [
+    {
+      "name": "deepseek.api.url",
+      "type": "java.lang.String",
+      "description": "DeepSeek 接口地址"
+    },
+    {
+      "name": "deepseek.api.model",
+      "type": "java.lang.String",
+      "description": "DeepSeek 模型名称"
+    },
+    {
+      "name": "deepseek.api.key",
+      "type": "java.lang.String",
+      "description": "DeepSeek API Key"
+    },
+    {
+      "name": "deepseek.api.timeout",
+      "type": "java.lang.Integer",
+      "description": "DeepSeek 请求超时时间（秒）"
+    },
+    {
+      "name": "amap.key",
+      "type": "java.lang.String",
+      "description": "高德 API Key"
+    },
+    {
+      "name": "amap.geocode-url",
+      "type": "java.lang.String",
+      "description": "高德地理编码接口"
+    },
+    {
+      "name": "amap.driving-url",
+      "type": "java.lang.String",
+      "description": "高德驾车接口"
+    },
+    {
+      "name": "amap.transit-url",
+      "type": "java.lang.String",
+      "description": "高德公交接口"
+    },
+    {
+      "name": "amap.timeout",
+      "type": "java.lang.Integer",
+      "description": "高德请求超时时间（毫秒）"
+    },
+    {
+      "name": "route.algorithm.initial-temp",
+      "type": "java.lang.Double",
+      "description": "模拟退火初始温度"
+    },
+    {
+      "name": "route.algorithm.cooling-rate",
+      "type": "java.lang.Double",
+      "description": "模拟退火冷却系数"
+    },
+    {
+      "name": "route.algorithm.min-temp",
+      "type": "java.lang.Double",
+      "description": "模拟退火最小温度"
+    },
+    {
+      "name": "route.algorithm.iterations-per-temp",
+      "type": "java.lang.Integer",
+      "description": "每温度迭代次数"
+    },
+    {
+      "name": "route.algorithm.pref-economy-time-weight",
+      "type": "java.lang.Double",
+      "description": "经济偏好时间权重"
+    },
+    {
+      "name": "route.algorithm.pref-comfort-time-weight",
+      "type": "java.lang.Double",
+      "description": "舒适偏好时间权重"
+    },
+    {
+      "name": "route.algorithm.pref-moderate-time-weight",
+      "type": "java.lang.Double",
+      "description": "适中偏好时间权重"
+    },
+    {
+      "name": "recommend.algorithm.behavior-switch-threshold",
+      "type": "java.lang.Integer",
+      "description": "行为切换阈值"
+    },
+    {
+      "name": "recommend.algorithm.behavior-window-days",
+      "type": "java.lang.Integer",
+      "description": "行为窗口天数"
+    },
+    {
+      "name": "recommend.algorithm.cold-preference-weight",
+      "type": "java.lang.Double",
+      "description": "冷启动偏好权重"
+    },
+    {
+      "name": "recommend.algorithm.cold-hot-weight",
+      "type": "java.lang.Double",
+      "description": "冷启动热门权重"
+    },
+    {
+      "name": "recommend.algorithm.mature-profile-weight",
+      "type": "java.lang.Double",
+      "description": "成熟期画像权重"
+    },
+    {
+      "name": "recommend.algorithm.mature-hot-weight",
+      "type": "java.lang.Double",
+      "description": "成熟期热门权重"
+    },
+    {
+      "name": "recommend.algorithm.profile-implicit-weight",
+      "type": "java.lang.Double",
+      "description": "画像隐式权重"
+    },
+    {
+      "name": "recommend.algorithm.profile-explicit-weight",
+      "type": "java.lang.Double",
+      "description": "画像显式权重"
+    },
+    {
+      "name": "recommend.algorithm.behavior-click-weight",
+      "type": "java.lang.Double",
+      "description": "点击行为权重"
+    },
+    {
+      "name": "recommend.algorithm.behavior-stay-weight",
+      "type": "java.lang.Double",
+      "description": "停留行为权重"
+    },
+    {
+      "name": "recommend.algorithm.rec-version",
+      "type": "java.lang.String",
+      "description": "推荐算法版本"
+    },
+    {
+      "name": "file.upload.base-dir",
+      "type": "java.lang.String",
+      "description": "上传文件根目录"
+    },
+    {
+      "name": "file.upload.avatar-dir",
+      "type": "java.lang.String",
+      "description": "头像上传目录"
+    },
+    {
+      "name": "file.upload.max-size",
+      "type": "java.lang.Long",
+      "description": "文件最大大小（字节）"
+    },
+    {
+      "name": "performance.recommend-timeout-ms",
+      "type": "java.lang.Long",
+      "description": "推荐接口超时阈值（毫秒）"
+    },
+    {
+      "name": "performance.route-plan-timeout-ms",
+      "type": "java.lang.Long",
+      "description": "路线规划接口超时阈值（毫秒）"
+    },
+    {
+      "name": "performance.cache.attraction-list-ttl-sec",
+      "type": "java.lang.Long",
+      "description": "景点列表缓存 TTL（秒）"
+    },
+    {
+      "name": "performance.cache.attraction-detail-ttl-sec",
+      "type": "java.lang.Long",
+      "description": "景点详情缓存 TTL（秒）"
+    },
+    {
+      "name": "performance.cache.top-attraction-ttl-sec",
+      "type": "java.lang.Long",
+      "description": "热门景点缓存 TTL（秒）"
+    },
+    {
+      "name": "performance.cache.recommend-ttl-sec",
+      "type": "java.lang.Long",
+      "description": "推荐结果缓存 TTL（秒）"
+    },
+    {
+      "name": "performance.cache.route-plan-ttl-sec",
+      "type": "java.lang.Long",
+      "description": "路线规划缓存 TTL（秒）"
+    },
+    {
+      "name": "performance.cache.null-value-ttl-sec",
+      "type": "java.lang.Long",
+      "description": "空值缓存 TTL（秒）"
+    },
+    {
+      "name": "performance.cache.ttl-jitter-sec",
+      "type": "java.lang.Long",
+      "description": "缓存过期抖动上限（秒）"
+    },
+    {
+      "name": "performance.executor.general-core-pool-size",
+      "type": "java.lang.Integer",
+      "description": "通用线程池核心线程数"
+    },
+    {
+      "name": "performance.executor.general-max-pool-size",
+      "type": "java.lang.Integer",
+      "description": "通用线程池最大线程数"
+    },
+    {
+      "name": "performance.executor.route-core-pool-size",
+      "type": "java.lang.Integer",
+      "description": "路线线程池核心线程数"
+    },
+    {
+      "name": "performance.executor.route-max-pool-size",
+      "type": "java.lang.Integer",
+      "description": "路线线程池最大线程数"
+    },
+    {
+      "name": "performance.executor.queue-capacity",
+      "type": "java.lang.Integer",
+      "description": "线程池队列容量"
+    },
+    {
+      "name": "performance.executor.keep-alive-seconds",
+      "type": "java.lang.Integer",
+      "description": "线程池空闲保活秒数"
+    }
+  ]
+}

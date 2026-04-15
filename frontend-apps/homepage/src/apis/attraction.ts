@@ -33,6 +33,8 @@ export interface AttractionDetail {
   description?: string;
   typeId?: number;
   typeName?: string;
+  typeIds?: number[];
+  typeNames?: string[];
   cityId?: number;
   cityName?: string;
   address?: string;

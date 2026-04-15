@@ -16,7 +16,7 @@
           <ElIcon><Suitcase /></ElIcon>
         </div>
         <div class="overview-number">{{ stats.orders }}</div>
-        <div class="overview-label">已完成订单</div>
+        <div class="overview-label">浏览景点数</div>
       </div>
 
       <div class="overview-card">
@@ -24,7 +24,7 @@
           <ElIcon><Star /></ElIcon>
         </div>
         <div class="overview-number">{{ stats.favorites }}</div>
-        <div class="overview-label">收藏目的地</div>
+        <div class="overview-label">收藏景点数</div>
       </div>
 
       <div class="overview-card">
@@ -32,7 +32,7 @@
           <ElIcon><Calendar /></ElIcon>
         </div>
         <div class="overview-number">{{ stats.plans }}</div>
-        <div class="overview-label">旅行计划</div>
+        <div class="overview-label">路线规划数</div>
       </div>
     </div>
 
@@ -239,6 +239,7 @@ import { useUserStore } from "@/stores";
 import { useAttractionTypeStore } from "@/stores/attractionType";
 import {
   getUserProfile,
+  getUserStats,
   updateUserProfile,
   type UpdateProfileRequest,
 } from "@/apis/auth";
@@ -261,9 +262,9 @@ const selectedSeasons = ref<string[]>([]);
 
 // 统计数据
 const stats = reactive({
-  orders: 12,
-  favorites: 24,
-  plans: 8,
+  orders: 0,
+  favorites: 0,
+  plans: 0,
 });
 
 // 个人资料表单
@@ -324,6 +325,22 @@ const loadUserPreference = async () => {
   }
 };
 
+// 加载用户统计信息
+const loadUserStats = async () => {
+  try {
+    const response = await getUserStats();
+    const statsData = response.data || response;
+
+    if (statsData) {
+      stats.orders = statsData.browsingCount ?? 0;
+      stats.favorites = statsData.collectCount ?? 0;
+      stats.plans = statsData.planningCount ?? 0;
+    }
+  } catch (error) {
+    console.error("加载用户统计失败:", error);
+  }
+};
+
 // 组件挂载时加载用户信息和偏好
 onMounted(async () => {
   dataLoading.value = true;
@@ -368,6 +385,7 @@ onMounted(async () => {
   attractionTypeStore.fetchAttractionTypes().catch((error) => {
     console.error("加载景点类型失败:", error);
   });
+  await loadUserStats();
   await loadUserPreference();
 });
 

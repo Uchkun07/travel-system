@@ -8,6 +8,8 @@ import type {
 import { ElMessage } from "element-plus";
 import Cookies from "js-cookie";
 
+const TOKEN_COOKIE_NAME = "admin_token";
+
 // 响应数据接口
 export interface ApiResponse<T = any> {
   code: number;
@@ -28,7 +30,7 @@ const service: AxiosInstance = axios.create({
 service.interceptors.request.use(
   (config: any) => {
     // 从 Cookie 获取 token
-    const token = Cookies.get("token");
+    const token = Cookies.get(TOKEN_COOKIE_NAME);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -37,7 +39,7 @@ service.interceptors.request.use(
   (error: AxiosError) => {
     console.error("请求错误:", error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // 响应拦截器
@@ -65,7 +67,7 @@ service.interceptors.response.use(
         case 401:
           ElMessage.error(data.message || "登录已过期,请重新登录");
           // 清除 Cookie 和本地存储
-          Cookies.remove("token");
+          Cookies.remove(TOKEN_COOKIE_NAME);
           localStorage.removeItem("user");
           sessionStorage.removeItem("user");
           sessionStorage.removeItem("token");
@@ -93,14 +95,14 @@ service.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // 封装GET请求
 export function get<T = any>(
   url: string,
   params?: any,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig,
 ): Promise<ApiResponse<T>> {
   return service.get(url, { params, ...config });
 }
@@ -109,7 +111,7 @@ export function get<T = any>(
 export function post<T = any>(
   url: string,
   data?: any,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig,
 ): Promise<ApiResponse<T>> {
   return service.post(url, data, config);
 }
@@ -118,7 +120,7 @@ export function post<T = any>(
 export function put<T = any>(
   url: string,
   data?: any,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig,
 ): Promise<ApiResponse<T>> {
   return service.put(url, data, config);
 }
@@ -127,7 +129,7 @@ export function put<T = any>(
 export function del<T = any>(
   url: string,
   params?: any,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig,
 ): Promise<ApiResponse<T>> {
   return service.delete(url, { params, ...config });
 }

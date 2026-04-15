@@ -1,24 +1,24 @@
 package io.github.uchkun07.travelsystem.config;
 
 import lombok.Data;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * 文件上传配置属性
  */
 @Data
-@Configuration
+@ConfigurationProperties(prefix = "file.upload")
 public class FileUploadProperties {
-    
+
     /**
-     * 文件上传路径
+     * 文件上传根目录
      */
-    private String path = "public/img/avatars";
+    private String baseDir = "/opt/travel-system/uploads";
 
     /**
      * 头像上传目录
      */
-    private String avatarDir = "src/main/resources/static/avatars";
+    private String avatarDir = "/opt/travel-system/uploads/avatars";
 
     /**
      * 最大文件大小（字节）

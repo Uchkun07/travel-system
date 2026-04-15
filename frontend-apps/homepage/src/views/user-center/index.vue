@@ -46,7 +46,7 @@ onMounted(() => {
 }
 
 .container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 30px;
 }
@@ -55,6 +55,16 @@ onMounted(() => {
   display: flex;
   gap: 40px;
   align-items: flex-start;
+}
+
+@media (max-width: 1536px) {
+  .container {
+    padding: 0 20px;
+  }
+
+  .user-center-wrapper {
+    gap: 24px;
+  }
 }
 
 @media (max-width: 992px) {

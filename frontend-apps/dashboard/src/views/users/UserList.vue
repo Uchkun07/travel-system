@@ -322,7 +322,10 @@ const currentUserId = ref<number>(0);
 const getFullAvatarUrl = (avatarUrl?: string) => {
   if (!avatarUrl) return "";
   if (avatarUrl.startsWith("http")) return avatarUrl;
-  return `http://localhost:8080${avatarUrl}`;
+  const baseUrl = (
+    import.meta.env.VITE_API_BASE_URL || window.location.origin
+  ).replace(/\/$/, "");
+  return `${baseUrl}${avatarUrl.startsWith("/") ? avatarUrl : `/${avatarUrl}`}`;
 };
 
 // 获取性别文本
@@ -418,10 +421,10 @@ const handleSaveTags = async () => {
 
     // 计算需要绑定和解绑的标签
     const tagsToAdd = selectedTags.value.filter(
-      (id) => !currentTagIds.includes(id)
+      (id) => !currentTagIds.includes(id),
     );
     const tagsToRemove = currentTagIds.filter(
-      (id) => !selectedTags.value.includes(id)
+      (id) => !selectedTags.value.includes(id),
     );
 
     // 绑定新标签

@@ -111,14 +111,18 @@
     </el-dialog>
 
     <!-- 分配权限弹窗 -->
-    <el-dialog v-model="permissionDialogVisible" title="分配权限" width="600px">
+    <el-dialog
+      v-model="permissionDialogVisible"
+      title="分配权限"
+      width="600px"
+      @closed="handlePermissionDialogClosed"
+    >
       <el-tree
         ref="permissionTreeRef"
         :data="allPermissions"
         :props="{ label: 'permissionName' }"
         show-checkbox
         node-key="permissionId"
-        :default-checked-keys="currentRolePermissions"
       ></el-tree>
       <template #footer>
         <el-button @click="permissionDialogVisible = false">取消</el-button>
@@ -132,7 +136,7 @@
 
 <script setup lang="ts">
 import Pagination from "@/components/common/Pagination.vue";
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, reactive, nextTick } from "vue";
 import {
   queryRoles,
   createRole,
@@ -175,6 +179,12 @@ const allPermissions = ref<AdminPermission[]>([]);
 const currentRolePermissions = ref<number[]>([]);
 const currentRoleId = ref<number | null>(null);
 const permissionTreeRef = ref<InstanceType<typeof ElTree>>();
+
+const syncPermissionTreeCheckedKeys = async (permissionIds: number[]) => {
+  await nextTick();
+  permissionTreeRef.value?.setCheckedKeys([]);
+  permissionTreeRef.value?.setCheckedKeys(permissionIds);
+};
 
 // 获取角色列表
 const fetchRoles = async () => {
@@ -283,13 +293,20 @@ const openPermissionDialog = async (role: AdminRole) => {
     const res = await getRolePermissions(role.roleId);
     const permissions = res?.data ?? [];
     currentRolePermissions.value = permissions.map(
-      (p: AdminPermission) => p.permissionId
+      (p: AdminPermission) => p.permissionId,
     );
     permissionDialogVisible.value = true;
+    await syncPermissionTreeCheckedKeys(currentRolePermissions.value);
   } catch (error) {
     console.error("获取角色权限失败", error);
     ElMessage.error("获取角色权限失败");
   }
+};
+
+const handlePermissionDialogClosed = () => {
+  currentRolePermissions.value = [];
+  currentRoleId.value = null;
+  permissionTreeRef.value?.setCheckedKeys([]);
 };
 
 // 保存权限分配

@@ -129,13 +129,14 @@ public class RecommendationServiceImpl implements IRecommendationService {
         }
 
         String eventType = normalizeEventType(request.getEventType());
-        // 仅保留“详情停留”行为，首页曝光/点击不再入库。
-        if (!"stay".equals(eventType)) {
+        // impression 信号噪声较大，暂不入库；click/stay 均参与画像。
+        if ("impression".equals(eventType)) {
             return;
         }
 
         int staySeconds = Math.max(defaultInt(request.getStaySeconds()), 0);
-        if (staySeconds < 2) {
+        // stay 少于 2 秒通常是误触，过滤掉；click 事件不过滤。
+        if ("stay".equals(eventType) && staySeconds < 2) {
             return;
         }
 
@@ -160,9 +161,11 @@ public class RecommendationServiceImpl implements IRecommendationService {
         UserBrowseRecord record = UserBrowseRecord.builder()
                 .userId(userId)
                 .attractionId(request.getAttractionId())
-                .browseDuration(staySeconds)
-            // 记录用户进入详情页的大致时间点，便于后续行为分析。
-            .browseTime(LocalDateTime.now().minusSeconds(staySeconds))
+                .browseDuration("stay".equals(eventType) ? staySeconds : 0)
+                // click 记录当前时间，stay 记录进入详情的大致时间。
+                .browseTime("stay".equals(eventType)
+                        ? LocalDateTime.now().minusSeconds(staySeconds)
+                        : LocalDateTime.now())
                 .deviceInfo(deviceInfo)
                 .build();
 

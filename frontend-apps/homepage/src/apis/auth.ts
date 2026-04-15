@@ -79,13 +79,19 @@ export interface UpdateProfileResponse {
   residentAddress?: string;
 }
 
+export interface UserStatsResponse {
+  browsingCount: number;
+  collectCount: number;
+  planningCount: number;
+}
+
 /**
  * 发送邮箱验证码
  */
 export function sendVerificationCode(data: SendCodeRequest) {
   return post<{ success: boolean; message: string }>(
     "/api/email/sendCode",
-    data
+    data,
   );
 }
 
@@ -115,6 +121,13 @@ export function logout() {
  */
 export function getUserProfile() {
   return get<ApiResponse<UpdateProfileResponse>>("/api/user/profile");
+}
+
+/**
+ * 获取用户统计信息
+ */
+export function getUserStats() {
+  return get<ApiResponse<UserStatsResponse>>("/api/user/stats");
 }
 
 /**
@@ -216,11 +229,11 @@ export function changeEmail(data: ChangeEmailRequest) {
  * @returns 返回头像URL和新token
  */
 export const uploadAvatar = async (
-  file: File
+  file: File,
 ): Promise<ApiResponse<{ avatarUrl: string; token: string }>> => {
   const { upload } = await import("./request");
   return upload<ApiResponse<{ avatarUrl: string; token: string }>>(
     "/api/user/avatar",
-    file
+    file,
   );
 };

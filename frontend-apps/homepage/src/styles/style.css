@@ -1,4 +1,21 @@
+/* 统一桌面基准分辨率: 1536 x 864 */
+:root {
+  --desktop-base-width: 1536;
+  --desktop-content-max-width: 1200px;
+  --desktop-section-padding: clamp(16px, 2.2vw, 32px);
+}
+
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+@media (max-width: 1536px) {
+  body {
+    font-size: 15px;
+  }
 }
