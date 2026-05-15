@@ -1,12 +1,15 @@
 package io.github.uchkun07.travelsystem.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.github.uchkun07.travelsystem.dto.CityQueryRequest;
 import io.github.uchkun07.travelsystem.dto.CityRequest;
 import io.github.uchkun07.travelsystem.dto.CityResponse;
 import io.github.uchkun07.travelsystem.dto.PageResponse;
+import io.github.uchkun07.travelsystem.entity.Attraction;
 import io.github.uchkun07.travelsystem.entity.City;
+import io.github.uchkun07.travelsystem.mapper.AttractionMapper;
 import io.github.uchkun07.travelsystem.mapper.CityMapper;
 import io.github.uchkun07.travelsystem.service.ICityService;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -22,6 +27,9 @@ public class CityServiceImpl implements ICityService {
 
     @Autowired
     private CityMapper cityMapper;
+
+    @Autowired
+    private AttractionMapper attractionMapper;
 
     @Override
     @Transactional
@@ -164,6 +172,28 @@ public class CityServiceImpl implements ICityService {
         Page<City> page = new Page<>(request.getPageNum(), request.getPageSize());
         Page<City> result = cityMapper.selectPage(page, wrapper);
 
+        List<City> cities = result.getRecords();
+        Map<Integer, Integer> attractionCountMap = new HashMap<>();
+        if (!cities.isEmpty()) {
+            List<Integer> cityIds = cities.stream().map(City::getCityId).toList();
+            QueryWrapper<Attraction> countWrapper = new QueryWrapper<>();
+            countWrapper.select("city_id", "COUNT(*) AS attraction_count")
+                    .in("city_id", cityIds)
+                    .eq("status", 1)
+                    .eq("audit_status", 2)
+                    .groupBy("city_id");
+
+            List<Map<String, Object>> countRows = attractionMapper.selectMaps(countWrapper);
+            for (Map<String, Object> row : countRows) {
+                Object cityId = row.get("city_id");
+                Object count = row.get("attraction_count");
+                if (cityId instanceof Number) {
+                    int parsedCount = count instanceof Number ? ((Number) count).intValue() : 0;
+                    attractionCountMap.put(((Number) cityId).intValue(), parsedCount);
+                }
+            }
+        }
+
         // 转换为客户端响应DTO
         List<CityResponse> cityResponses = result.getRecords().stream()
                 .map(city -> CityResponse.builder()
@@ -172,7 +202,7 @@ public class CityServiceImpl implements ICityService {
                         .description(city.getDescription())
                         .cityUrl(city.getCityUrl())
                         .averageTemperature(city.getAverageTemperature())
-                        .attractionCount(city.getAttractionCount())
+                        .attractionCount(attractionCountMap.getOrDefault(city.getCityId(), 0))
                         .popularity(city.getPopularity())
                         .build())
                 .toList();
