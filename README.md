@@ -1,4 +1,4 @@
-# 旅游推荐系统 (Travel System)
+# 个性化旅游推荐系统 (Travel System)
 
 ## 项目简介
 
