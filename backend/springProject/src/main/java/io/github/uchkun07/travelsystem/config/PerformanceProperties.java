@@ -18,6 +18,7 @@ public class PerformanceProperties {
 
     private Cache cache = new Cache();
     private Executor executor = new Executor();
+    private Monitor monitor = new Monitor();
 
     @Data
     public static class Cache {
@@ -62,5 +63,68 @@ public class PerformanceProperties {
 
         /** 线程空闲保活时间(秒) */
         private int keepAliveSeconds = 60;
+    }
+
+    @Data
+    public static class Monitor {
+        /** 推荐结果预计算开关 */
+        private boolean recommendPrecomputeEnabled = true;
+
+        /** 推荐预计算执行间隔(ms) */
+        private long recommendPrecomputeIntervalMs = 300000;
+
+        /** 推荐预计算首次延迟(ms) */
+        private long recommendPrecomputeInitialDelayMs = 45000;
+
+        /** 推荐预计算活跃用户时间窗口(小时) */
+        private int precomputeActiveWindowHours = 24;
+
+        /** 推荐预计算用户上限 */
+        private int precomputeUserLimit = 200;
+
+        /** 推荐预计算页码 */
+        private long precomputePageNum = 1;
+
+        /** 推荐预计算每页数量 */
+        private long precomputePageSize = 20;
+
+        /** 是否包含游客缓存(匿名用户) */
+        private boolean includeGuestPrecompute = true;
+
+        /** 热点Key监控开关 */
+        private boolean hotKeyEnabled = true;
+
+        /** 热点Key采样率(0~1) */
+        private double hotKeySampleRate = 1.0;
+
+        /** 每分钟热点Key告警阈值 */
+        private long hotKeyThresholdPerMinute = 80;
+
+        /** 超过阈值后每多少次追加告警 */
+        private long hotKeyAlertStep = 40;
+
+        /** 热点Key汇总TopN */
+        private int hotKeyTopN = 10;
+
+        /** 热点Key汇总间隔(ms) */
+        private long hotKeyReportIntervalMs = 60000;
+
+        /** 慢SQL采样开关 */
+        private boolean slowSqlEnabled = true;
+
+        /** 慢SQL阈值(ms) */
+        private long slowSqlThresholdMs = 300;
+
+        /** 慢SQL采样率(0~1) */
+        private double slowSqlSampleRate = 0.3;
+
+        /** 慢SQL窗口分析TopN */
+        private int slowSqlReportTopN = 5;
+
+        /** 慢SQL分析汇总间隔(ms) */
+        private long slowSqlReportIntervalMs = 60000;
+
+        /** 单条慢SQL样本最大长度 */
+        private int slowSqlSampleSqlMaxLen = 500;
     }
 }

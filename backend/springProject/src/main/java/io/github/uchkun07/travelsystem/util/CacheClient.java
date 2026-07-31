@@ -2,6 +2,7 @@ package io.github.uchkun07.travelsystem.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.uchkun07.travelsystem.monitor.HotKeyMonitorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -26,6 +27,7 @@ public class CacheClient {
 
     private final StringRedisTemplate stringRedisTemplate;
     private final ObjectMapper objectMapper;
+    private final HotKeyMonitorService hotKeyMonitorService;
 
     public void set(String key, Object value, long ttlSeconds, long jitterSeconds) {
         try {
@@ -49,6 +51,7 @@ public class CacheClient {
                                       long jitterSeconds) {
         String cacheVal = null;
         try {
+            hotKeyMonitorService.recordAccess(key);
             cacheVal = stringRedisTemplate.opsForValue().get(key);
             if (cacheVal != null) {
                 if (CacheConstants.NULL_VALUE.equals(cacheVal)) {
@@ -87,6 +90,7 @@ public class CacheClient {
                                 long jitterSeconds) {
         try {
             while (true) {
+                hotKeyMonitorService.recordAccess(key);
                 String cacheVal = stringRedisTemplate.opsForValue().get(key);
                 if (cacheVal != null) {
                     if (CacheConstants.NULL_VALUE.equals(cacheVal)) {
@@ -134,6 +138,7 @@ public class CacheClient {
             return false;
         }
         try {
+            hotKeyMonitorService.recordAccess(CacheConstants.ATTR_ID_FILTER_KEY);
             Boolean keyExists = stringRedisTemplate.hasKey(CacheConstants.ATTR_ID_FILTER_KEY);
             // 过滤器未初始化时直接放行，避免误判404
             if (!Boolean.TRUE.equals(keyExists)) {
